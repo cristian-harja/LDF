@@ -21,19 +21,16 @@
 
 package java_cup.anttask;
 
-import org.apache.tools.ant.Task;
+import java_cup.version;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.Task;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URL;
-
-import java_cup.version;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CUPTask extends Task 
 {

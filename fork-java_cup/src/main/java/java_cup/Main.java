@@ -1,9 +1,10 @@
 
 package java_cup;
 
-import java.util.Enumeration; 
+import java_cup.runtime.ComplexSymbolFactory;
+
 import java.io.*;
-import java_cup.runtime.*;
+import java.util.Enumeration;
 
 /** This class serves as the main driver for the JavaCup system.
  *  It accepts user options and coordinates overall control flow.
