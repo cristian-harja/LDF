@@ -2,7 +2,7 @@ package java_cup.runtime;
 
 /**
  * Defines the Symbol class, which is used to represent all terminals
- * and nonterminals while parsing.  The lexer should pass CUP Symbols 
+ * and nonterminals while parsing.  The lexer should pass CUP Symbols
  * and CUP returns a Symbol.
  *
  * @version last updated: 7/3/96
@@ -11,7 +11,7 @@ package java_cup.runtime;
 
 /* ****************************************************************
   Class Symbol
-  what the parser expects to receive from the lexer. 
+  what the parser expects to receive from the lexer.
   the token is identified as follows:
   sym:    the symbol type
   parse_state: the parse state.
@@ -88,8 +88,8 @@ public class Symbol {
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
   /** The parse state to be recorded on the parse stack with this symbol.
-   *  This field is for the convenience of the parser and shouldn't be 
-   *  modified except by the parser. 
+   *  This field is for the convenience of the parser and shouldn't be
+   *  modified except by the parser.
    */
   public int parse_state;
   /** This allows us to catch some errors caused by scanners recycling

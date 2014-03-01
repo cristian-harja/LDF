@@ -10,25 +10,25 @@ package java_cup.runtime;
 
 /* *************************************************
   class DefaultSymbolFactory
-  interface for creating new symbols  
+  interface for creating new symbols
  ***************************************************/
 public class ComplexSymbolFactory implements SymbolFactory{
     public static class Location {
         private String unit="unknown";
         private int line, column, offset=0;
         public Location(String unit, int line, int column, int offset){
-	   this(unit,line,column);
-	   this.offset=offset;
-	}
+           this(unit,line,column);
+           this.offset=offset;
+        }
         public Location(String unit, int line, int column){
             this.unit=unit;
             this.line=line;
             this.column=column;
         }
         public Location(int line, int column, int offset){
-	    this(line,column);
-	    this.offset=offset;
-	}
+            this(line,column);
+            this.offset=offset;
+        }
         public Location(int line, int column){
             this.line=line;
             this.column=column;

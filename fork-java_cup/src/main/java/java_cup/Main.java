@@ -173,7 +173,7 @@ public class Main {
       parse_args(argv);
 
       /* frankf 6/18/96
-	 hackish, yes, but works */
+         hackish, yes, but works */
       emit.set_lr_values(lr_values);
       emit.set_locations(locations);
       /* open output files */
@@ -185,37 +185,37 @@ public class Main {
 
       /* parse spec into internal data structures */
       if (print_progress)
-	System.err.println("Parsing specification from standard input...");
+        System.err.println("Parsing specification from standard input...");
       parse_grammar_spec();
 
       parse_end = System.currentTimeMillis();
 
       /* don't proceed unless we are error free */
       if (ErrorManager.getManager().getErrorCount() == 0)
-	{
-	  /* check for unused bits */
+        {
+          /* check for unused bits */
           if (print_progress) System.err.println("Checking specification...");
           check_unused();
 
           check_end = System.currentTimeMillis();
 
-	  /* build the state machine and parse tables */
+          /* build the state machine and parse tables */
           if (print_progress) System.err.println("Building parse tables...");
           build_parser();
 
           build_end = System.currentTimeMillis();
 
-	  /* output the generated code, if # of conflicts permits */
-	  if (ErrorManager.getManager().getErrorCount() != 0) {
-	      // conflicts! don't emit code, don't dump tables.
-	      opt_dump_tables = false;
-	  } else { // everything's okay, emit parser.
-	      if (print_progress) System.err.println("Writing parser...");
-	      open_files();
-	      emit_parser();
-	      did_output = true;
-	  }
-	}
+          /* output the generated code, if # of conflicts permits */
+          if (ErrorManager.getManager().getErrorCount() != 0) {
+              // conflicts! don't emit code, don't dump tables.
+              opt_dump_tables = false;
+          } else { // everything's okay, emit parser.
+              if (print_progress) System.err.println("Writing parser...");
+              open_files();
+              emit_parser();
+              did_output = true;
+          }
+        }
       /* fix up the times to make the summary easier */
       emit_end = System.currentTimeMillis();
 
@@ -236,7 +236,7 @@ public class Main {
       /* If there were errors during the run,
        * exit with non-zero status (makefile-friendliness). --CSA */
       if (ErrorManager.getManager().getErrorCount() != 0)
-	  System.exit(100);
+          System.exit(100);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -292,112 +292,112 @@ public class Main {
 
       /* parse the options */
       for (i=0; i<len; i++)
-	{
-	  /* try to get the various options */
-	  if (argv[i].equals("-package"))
-	    {
-	      /* must have an arg */
-	      if (++i >= len || argv[i].startsWith("-") ||
-				argv[i].endsWith(".cup"))
-		usage("-package must have a name argument");
+        {
+          /* try to get the various options */
+          if (argv[i].equals("-package"))
+            {
+              /* must have an arg */
+              if (++i >= len || argv[i].startsWith("-") ||
+                                argv[i].endsWith(".cup"))
+                usage("-package must have a name argument");
 
-	      /* record the name */
-	      emit.package_name = argv[i];
-	    }
-	  else if (argv[i].equals("-destdir"))
-	    {
-	      /* must have an arg */
-	      if (++i >= len || argv[i].startsWith("-") ||
-				argv[i].endsWith(".cup"))
-		usage("-destdir must have a name argument");
-	      /* record the name */
-	      Main.dest_dir = new java.io.File(argv[i]);
-	    }
-	  else if (argv[i].equals("-parser"))
-	    {
-	      /* must have an arg */
-	      if (++i >= len || argv[i].startsWith("-") ||
-				argv[i].endsWith(".cup"))
-		usage("-parser must have a name argument");
+              /* record the name */
+              emit.package_name = argv[i];
+            }
+          else if (argv[i].equals("-destdir"))
+            {
+              /* must have an arg */
+              if (++i >= len || argv[i].startsWith("-") ||
+                                argv[i].endsWith(".cup"))
+                usage("-destdir must have a name argument");
+              /* record the name */
+              Main.dest_dir = new java.io.File(argv[i]);
+            }
+          else if (argv[i].equals("-parser"))
+            {
+              /* must have an arg */
+              if (++i >= len || argv[i].startsWith("-") ||
+                                argv[i].endsWith(".cup"))
+                usage("-parser must have a name argument");
 
-	      /* record the name */
-	      emit.parser_class_name = argv[i];
-	    }
-	  else if (argv[i].equals("-symbols"))
-	    {
-	      /* must have an arg */
-	      if (++i >= len || argv[i].startsWith("-") ||
-				argv[i].endsWith(".cup"))
-		usage("-symbols must have a name argument");
+              /* record the name */
+              emit.parser_class_name = argv[i];
+            }
+          else if (argv[i].equals("-symbols"))
+            {
+              /* must have an arg */
+              if (++i >= len || argv[i].startsWith("-") ||
+                                argv[i].endsWith(".cup"))
+                usage("-symbols must have a name argument");
 
-	      /* record the name */
-	      emit.symbol_const_class_name = argv[i];
-	    }
-	  else if (argv[i].equals("-nonterms"))
-	    {
-	      include_non_terms = true;
-	    }
-	  else if (argv[i].equals("-expect"))
-	    {
-	      /* must have an arg */
-	      if (++i >= len || argv[i].startsWith("-") ||
-				argv[i].endsWith(".cup"))
-		usage("-expect must have a name argument");
+              /* record the name */
+              emit.symbol_const_class_name = argv[i];
+            }
+          else if (argv[i].equals("-nonterms"))
+            {
+              include_non_terms = true;
+            }
+          else if (argv[i].equals("-expect"))
+            {
+              /* must have an arg */
+              if (++i >= len || argv[i].startsWith("-") ||
+                                argv[i].endsWith(".cup"))
+                usage("-expect must have a name argument");
 
-	      /* record the number */
-	      try {
-	        expect_conflicts = Integer.parseInt(argv[i]);
-	      } catch (NumberFormatException e) {
-		usage("-expect must be followed by a decimal integer");
-	      }
-	    }
-	  else if (argv[i].equals("-compact_red"))  opt_compact_red = true;
-	  else if (argv[i].equals("-nosummary"))    no_summary = true;
-	  else if (argv[i].equals("-nowarn"))       emit.nowarn = true;
-	  else if (argv[i].equals("-dump_states"))  opt_dump_states = true;
-	  else if (argv[i].equals("-dump_tables"))  opt_dump_tables = true;
-	  else if (argv[i].equals("-progress"))     print_progress = true;
-	  else if (argv[i].equals("-dump_grammar")) opt_dump_grammar = true;
-	  else if (argv[i].equals("-dump"))
-	        opt_dump_states = opt_dump_tables = opt_dump_grammar = true;
-	  else if (argv[i].equals("-time"))         opt_show_timing = true;
-	  else if (argv[i].equals("-debug"))        opt_do_debug = true;
-	  /* frankf 6/18/96 */
-	  else if (argv[i].equals("-nopositions"))  lr_values = false;
-	  else if (argv[i].equals("-locations"))    locations = true;
-	  /* CSA 12/21/97 */
-	  else if (argv[i].equals("-interface"))    sym_interface = true;
-	  /* CSA 23-Jul-1999 */
-	  else if (argv[i].equals("-noscanner"))    suppress_scanner = true;
-	  /* CSA 23-Jul-1999 */
-	  else if (argv[i].equals("-version")) {
-	      System.out.println(version.title_str);
-	      System.exit(1);
-	  }
+              /* record the number */
+              try {
+                expect_conflicts = Integer.parseInt(argv[i]);
+              } catch (NumberFormatException e) {
+                usage("-expect must be followed by a decimal integer");
+              }
+            }
+          else if (argv[i].equals("-compact_red"))  opt_compact_red = true;
+          else if (argv[i].equals("-nosummary"))    no_summary = true;
+          else if (argv[i].equals("-nowarn"))       emit.nowarn = true;
+          else if (argv[i].equals("-dump_states"))  opt_dump_states = true;
+          else if (argv[i].equals("-dump_tables"))  opt_dump_tables = true;
+          else if (argv[i].equals("-progress"))     print_progress = true;
+          else if (argv[i].equals("-dump_grammar")) opt_dump_grammar = true;
+          else if (argv[i].equals("-dump"))
+                opt_dump_states = opt_dump_tables = opt_dump_grammar = true;
+          else if (argv[i].equals("-time"))         opt_show_timing = true;
+          else if (argv[i].equals("-debug"))        opt_do_debug = true;
+          /* frankf 6/18/96 */
+          else if (argv[i].equals("-nopositions"))  lr_values = false;
+          else if (argv[i].equals("-locations"))    locations = true;
+          /* CSA 12/21/97 */
+          else if (argv[i].equals("-interface"))    sym_interface = true;
+          /* CSA 23-Jul-1999 */
+          else if (argv[i].equals("-noscanner"))    suppress_scanner = true;
+          /* CSA 23-Jul-1999 */
+          else if (argv[i].equals("-version")) {
+              System.out.println(version.title_str);
+              System.exit(1);
+          }
       /* TUM changes; suggested by Henning Niss 20050628*/
- 	  else if (argv[i].equals("-typearg")){
- 	      if (++i >= len || argv[i].startsWith("-") ||
+           else if (argv[i].equals("-typearg")){
+               if (++i >= len || argv[i].startsWith("-") ||
               argv[i].endsWith(".cup"))
               usage("-symbols must have a name argument");
 
- 	      /* record the typearg */
- 	      emit.class_type_argument = argv[i];
+               /* record the typearg */
+               emit.class_type_argument = argv[i];
       }
 
-	  /* CSA 24-Jul-1999; suggestion by Jean Vaucher */
-	  else if (!argv[i].startsWith("-") && i==len-1) {
-	      /* use input from file. */
-	      try {
-		  System.setIn(new FileInputStream(argv[i]));
-	      } catch (java.io.FileNotFoundException e) {
-		  usage("Unable to open \"" + argv[i] +"\" for input");
-	      }
-	  }
-	  else
-	    {
-	      usage("Unrecognized option \"" + argv[i] + "\"");
-	    }
-	}
+          /* CSA 24-Jul-1999; suggestion by Jean Vaucher */
+          else if (!argv[i].startsWith("-") && i==len-1) {
+              /* use input from file. */
+              try {
+                  System.setIn(new FileInputStream(argv[i]));
+              } catch (java.io.FileNotFoundException e) {
+                  usage("Unable to open \"" + argv[i] +"\" for input");
+              }
+          }
+          else
+            {
+              usage("Unrecognized option \"" + argv[i] + "\"");
+            }
+        }
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -432,10 +432,10 @@ public class Main {
       fil = new File(dest_dir,out_name);
       try {
         parser_class_file = new PrintWriter(
-		 new BufferedOutputStream(new FileOutputStream(fil), 4096));
+                 new BufferedOutputStream(new FileOutputStream(fil), 4096));
       } catch(Exception e) {
-	System.err.println("Can't open \"" + out_name + "\" for output");
-	System.exit(3);
+        System.err.println("Can't open \"" + out_name + "\" for output");
+        System.exit(3);
       }
 
       /* symbol constants class */
@@ -443,10 +443,10 @@ public class Main {
       fil = new File(dest_dir,out_name);
       try {
         symbol_class_file = new PrintWriter(
-		 new BufferedOutputStream(new FileOutputStream(fil), 4096));
+                 new BufferedOutputStream(new FileOutputStream(fil), 4096));
       } catch(Exception e) {
-	System.err.println("Can't open \"" + out_name + "\" for output");
-	System.exit(4);
+        System.err.println("Can't open \"" + out_name + "\" for output");
+        System.exit(4);
       }
     }
 
@@ -476,16 +476,16 @@ public class Main {
       ComplexSymbolFactory csf = new ComplexSymbolFactory();
       parser_obj = new parser(new Lexer(csf),csf);
       try {
-	if (opt_do_debug)
+        if (opt_do_debug)
           parser_obj.debug_parse();
-	else
+        else
           parser_obj.parse();
       } catch (Exception e)
       {
-	/* something threw an exception.  catch it and emit a message so we
-	   have a line number to work with, then re-throw it */
-	ErrorManager.getManager().emit_error("Internal error: Unexpected exception");
-	throw e;
+        /* something threw an exception.  catch it and emit a message so we
+           have a line number to work with, then re-throw it */
+        ErrorManager.getManager().emit_error("Internal error: Unexpected exception");
+        throw e;
       }
     }
 
@@ -501,43 +501,43 @@ public class Main {
 
       /* check for unused terminals */
       for (Enumeration t = terminal.all(); t.hasMoreElements(); )
-	{
-	  term = (terminal)t.nextElement();
+        {
+          term = (terminal)t.nextElement();
 
-	  /* don't issue a message for EOF */
-	  if (term == terminal.EOF) continue;
+          /* don't issue a message for EOF */
+          if (term == terminal.EOF) continue;
 
-	  /* or error */
-	  if (term == terminal.error) continue;
+          /* or error */
+          if (term == terminal.error) continue;
 
-	  /* is this one unused */
-	  if (term.use_count() == 0)
-	    {
-	      /* count it and warn if we are doing warnings */
-	      emit.unused_term++;
-	      if (!emit.nowarn)
-		{
-		    ErrorManager.getManager().emit_warning("Terminal \"" + term.name() +  "\" was declared but never used");
-		}
-	    }
-	}
+          /* is this one unused */
+          if (term.use_count() == 0)
+            {
+              /* count it and warn if we are doing warnings */
+              emit.unused_term++;
+              if (!emit.nowarn)
+                {
+                    ErrorManager.getManager().emit_warning("Terminal \"" + term.name() +  "\" was declared but never used");
+                }
+            }
+        }
 
       /* check for unused non terminals */
       for (Enumeration n = non_terminal.all(); n.hasMoreElements(); )
-	{
-	  nt = (non_terminal)n.nextElement();
+        {
+          nt = (non_terminal)n.nextElement();
 
-	  /* is this one unused */
-	  if (nt.use_count() == 0)
-	    {
-	      /* count and warn if we are doing warnings */
-	      emit.unused_term++;
-	      if (!emit.nowarn)
-		{
-		    ErrorManager.getManager().emit_warning("Non terminal \"" + nt.name() +  "\" was declared but never used");
-		}
-	    }
-	}
+          /* is this one unused */
+          if (nt.use_count() == 0)
+            {
+              /* count and warn if we are doing warnings */
+              emit.unused_term++;
+              if (!emit.nowarn)
+                {
+                    ErrorManager.getManager().emit_warning("Non terminal \"" + nt.name() +  "\" was declared but never used");
+                }
+            }
+        }
 
     }
 
@@ -569,54 +569,54 @@ public class Main {
     {
       /* compute nullability of all non terminals */
       if (opt_do_debug || print_progress)
-	System.err.println("  Computing non-terminal nullability...");
+        System.err.println("  Computing non-terminal nullability...");
       non_terminal.compute_nullability();
 
       nullability_end = System.currentTimeMillis();
 
       /* compute first sets of all non terminals */
       if (opt_do_debug || print_progress)
-	System.err.println("  Computing first sets...");
+        System.err.println("  Computing first sets...");
       non_terminal.compute_first_sets();
 
       first_end = System.currentTimeMillis();
 
       /* build the LR viable prefix recognition machine */
       if (opt_do_debug || print_progress)
-	System.err.println("  Building state machine...");
+        System.err.println("  Building state machine...");
       start_state = lalr_state.build_machine(emit.start_production);
 
       machine_end = System.currentTimeMillis();
 
       /* build the LR parser action and reduce-goto tables */
       if (opt_do_debug || print_progress)
-	System.err.println("  Filling in tables...");
+        System.err.println("  Filling in tables...");
       action_table = new parse_action_table();
       reduce_table = new parse_reduce_table();
       for (Enumeration st = lalr_state.all(); st.hasMoreElements(); )
-	{
-	  lalr_state lst = (lalr_state)st.nextElement();
-	  lst.build_table_entries(
-			                      action_table, reduce_table);
-	}
+        {
+          lalr_state lst = (lalr_state)st.nextElement();
+          lst.build_table_entries(
+                                              action_table, reduce_table);
+        }
 
       table_end = System.currentTimeMillis();
 
       /* check and warn for non-reduced productions */
       if (opt_do_debug || print_progress)
-	System.err.println("  Checking for non-reduced productions...");
+        System.err.println("  Checking for non-reduced productions...");
       action_table.check_reductions();
 
       reduce_check_end = System.currentTimeMillis();
 
       /* if we have more conflicts than we expected issue a message and die */
       if (emit.num_conflicts > expect_conflicts)
-	{
-	    ErrorManager.getManager().emit_error("*** More conflicts encountered than expected " +
-			     "-- parser generation aborted");
-	  // indicate the problem.
-	  // we'll die on return, after clean up.
-	}
+        {
+            ErrorManager.getManager().emit_error("*** More conflicts encountered than expected " +
+                             "-- parser generation aborted");
+          // indicate the problem.
+          // we'll die on return, after clean up.
+        }
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -626,8 +626,8 @@ public class Main {
     {
       emit.symbols(symbol_class_file, include_non_terms, sym_interface);
       emit.parser(parser_class_file, action_table, reduce_table,
-		  start_state.index(), emit.start_production, opt_compact_red,
-		  suppress_scanner);
+                  start_state.index(), emit.start_production, opt_compact_red,
+                  suppress_scanner);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -638,9 +638,9 @@ public class Main {
   protected static String plural(int val)
     {
       if (val == 1)
-	return "";
+        return "";
       else
-	return "s";
+        return "s";
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -658,50 +658,50 @@ public class Main {
       if (no_summary) return;
 
       System.err.println("------- " + version.title_str +
-			 " Parser Generation Summary -------");
+                         " Parser Generation Summary -------");
 
       /* error and warning count */
       System.err.println("  " + ErrorManager.getManager().getErrorCount() + " error" +
-	 plural(ErrorManager.getManager().getErrorCount()) + " and " + ErrorManager.getManager().getWarningCount() +
-	 " warning" + plural(ErrorManager.getManager().getWarningCount()));
+         plural(ErrorManager.getManager().getErrorCount()) + " and " + ErrorManager.getManager().getWarningCount() +
+         " warning" + plural(ErrorManager.getManager().getWarningCount()));
 
       /* basic stats */
       System.err.print("  " + terminal.number() + " terminal" +
-			 plural(terminal.number()) + ", ");
+                         plural(terminal.number()) + ", ");
       System.err.print(non_terminal.number() + " non-terminal" +
-			 plural(non_terminal.number()) + ", and ");
+                         plural(non_terminal.number()) + ", and ");
       System.err.println(production.number() + " production" +
-			 plural(production.number()) + " declared, ");
+                         plural(production.number()) + " declared, ");
       System.err.println("  producing " + lalr_state.number() +
-			 " unique parse states.");
+                         " unique parse states.");
 
       /* unused symbols */
       System.err.println("  " + emit.unused_term + " terminal" +
-			 plural(emit.unused_term) + " declared but not used.");
+                         plural(emit.unused_term) + " declared but not used.");
       System.err.println("  " + emit.unused_non_term + " non-terminal" +
-			 plural(emit.unused_term) + " declared but not used.");
+                         plural(emit.unused_term) + " declared but not used.");
 
       /* productions that didn't reduce */
       System.err.println("  " + emit.not_reduced + " production" +
-			 plural(emit.not_reduced) + " never reduced.");
+                         plural(emit.not_reduced) + " never reduced.");
 
       /* conflicts */
       System.err.println("  " + emit.num_conflicts + " conflict" +
-			 plural(emit.num_conflicts) + " detected" +
-	                 " (" + expect_conflicts + " expected).");
+                         plural(emit.num_conflicts) + " detected" +
+                         " (" + expect_conflicts + " expected).");
 
       /* code location */
       if (output_produced)
-	System.err.println("  Code written to \"" + emit.parser_class_name +
-	        ".java\", and \"" + emit.symbol_const_class_name + ".java\".");
+        System.err.println("  Code written to \"" + emit.parser_class_name +
+                ".java\", and \"" + emit.symbol_const_class_name + ".java\".");
       else
-	System.err.println("  No code produced.");
+        System.err.println("  No code produced.");
 
       if (opt_show_timing) show_times();
 
       System.err.println(
-	"---------------------------------------------------- (" +
-	 version.version_str + ")");
+        "---------------------------------------------------- (" +
+         version.version_str + ")");
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -716,54 +716,54 @@ public class Main {
       System.err.println("    Total time       "
         + timestr(final_time-start_time, total_time));
       System.err.println("      Startup        "
-	+ timestr(prelim_end-start_time, total_time));
+        + timestr(prelim_end-start_time, total_time));
       System.err.println("      Parse          "
-	+ timestr(parse_end-prelim_end, total_time) );
+        + timestr(parse_end-prelim_end, total_time) );
       if (check_end != 0)
         System.err.println("      Checking       "
-	    + timestr(check_end-parse_end, total_time));
+            + timestr(check_end-parse_end, total_time));
       if (check_end != 0 && build_end != 0)
         System.err.println("      Parser Build   "
-	    + timestr(build_end-check_end, total_time));
+            + timestr(build_end-check_end, total_time));
       if (nullability_end != 0 && check_end != 0)
         System.err.println("        Nullability  "
-	    + timestr(nullability_end-check_end, total_time));
+            + timestr(nullability_end-check_end, total_time));
       if (first_end != 0 && nullability_end != 0)
         System.err.println("        First sets   "
             + timestr(first_end-nullability_end, total_time));
       if (machine_end != 0 && first_end != 0)
         System.err.println("        State build  "
-	    + timestr(machine_end-first_end, total_time));
+            + timestr(machine_end-first_end, total_time));
       if (table_end != 0 && machine_end != 0)
         System.err.println("        Table build  "
-	    + timestr(table_end-machine_end, total_time));
+            + timestr(table_end-machine_end, total_time));
       if (reduce_check_end != 0 && table_end != 0)
         System.err.println("        Checking     "
-	    + timestr(reduce_check_end-table_end, total_time));
+            + timestr(reduce_check_end-table_end, total_time));
       if (emit_end != 0 && build_end != 0)
         System.err.println("      Code Output    "
-	    + timestr(emit_end-build_end, total_time));
+            + timestr(emit_end-build_end, total_time));
       if (emit.symbols_time != 0)
-	System.err.println("        Symbols      "
-	    + timestr(emit.symbols_time, total_time));
+        System.err.println("        Symbols      "
+            + timestr(emit.symbols_time, total_time));
       if (emit.parser_time != 0)
-	System.err.println("        Parser class "
-	    + timestr(emit.parser_time, total_time));
+        System.err.println("        Parser class "
+            + timestr(emit.parser_time, total_time));
       if (emit.action_code_time != 0)
-	System.err.println("          Actions    "
-	    + timestr(emit.action_code_time, total_time));
+        System.err.println("          Actions    "
+            + timestr(emit.action_code_time, total_time));
       if (emit.production_table_time != 0)
-	System.err.println("          Prod table "
-	    + timestr(emit.production_table_time, total_time));
+        System.err.println("          Prod table "
+            + timestr(emit.production_table_time, total_time));
       if (emit.action_table_time != 0)
-	System.err.println("          Action tab "
-	    + timestr(emit.action_table_time, total_time));
+        System.err.println("          Action tab "
+            + timestr(emit.action_table_time, total_time));
       if (emit.goto_table_time != 0)
-	System.err.println("          Reduce tab "
-	    + timestr(emit.goto_table_time, total_time));
+        System.err.println("          Reduce tab "
+            + timestr(emit.goto_table_time, total_time));
 
       System.err.println("      Dump Output    "
-	+ timestr(dump_end-emit_end, total_time));
+        + timestr(dump_end-emit_end, total_time));
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -793,21 +793,21 @@ public class Main {
 
       /* construct a pad to blank fill seconds out to 4 places */
       if (sec < 10)
-	pad = "   ";
+        pad = "   ";
       else if (sec < 100)
-	pad = "  ";
+        pad = "  ";
       else if (sec < 1000)
-	pad = " ";
+        pad = " ";
       else
-	pad = "";
+        pad = "";
 
       /* calculate 10 times the percentage of total */
       percent10 = (time_val*1000)/total_time;
 
       /* build and return the output string */
       return (neg ? "-" : "") + pad + sec + "." +
-	     ((ms%1000)/100) + ((ms%100)/10) + (ms%10) + "sec" +
-	     " (" + percent10/10 + "." + percent10%10 + "%)";
+             ((ms%1000)/100) + ((ms%100)/10) + (ms%10) + "sec" +
+             " (" + percent10/10 + "." + percent10%10 + "%)";
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -817,36 +817,36 @@ public class Main {
     {
       System.err.println("===== Terminals =====");
       for (int tidx=0, cnt=0; tidx < terminal.number(); tidx++, cnt++)
-	{
-	  System.err.print("["+tidx+"]"+terminal.find(tidx).name()+" ");
-	  if ((cnt+1) % 5 == 0) System.err.println();
-	}
+        {
+          System.err.print("["+tidx+"]"+terminal.find(tidx).name()+" ");
+          if ((cnt+1) % 5 == 0) System.err.println();
+        }
       System.err.println();
       System.err.println();
 
       System.err.println("===== Non terminals =====");
       for (int nidx=0, cnt=0; nidx < non_terminal.number(); nidx++, cnt++)
-	{
-	  System.err.print("["+nidx+"]"+non_terminal.find(nidx).name()+" ");
-	  if ((cnt+1) % 5 == 0) System.err.println();
-	}
+        {
+          System.err.print("["+nidx+"]"+non_terminal.find(nidx).name()+" ");
+          if ((cnt+1) % 5 == 0) System.err.println();
+        }
       System.err.println();
       System.err.println();
 
 
       System.err.println("===== Productions =====");
       for (int pidx=0; pidx < production.number(); pidx++)
-	{
-	  production prod = production.find(pidx);
-	  System.err.print("["+pidx+"] "+prod.lhs().the_symbol().name() + " ::= ");
-	  for (int i=0; i<prod.rhs_length(); i++)
-	    if (prod.rhs(i).is_action())
-	      System.err.print("{action} ");
-	    else
-	      System.err.print(
-			 ((symbol_part)prod.rhs(i)).the_symbol().name() + " ");
-	  System.err.println();
-	}
+        {
+          production prod = production.find(pidx);
+          System.err.print("["+pidx+"] "+prod.lhs().the_symbol().name() + " ::= ");
+          for (int i=0; i<prod.rhs_length(); i++)
+            if (prod.rhs(i).is_action())
+              System.err.print("{action} ");
+            else
+              System.err.print(
+                         ((symbol_part)prod.rhs(i)).the_symbol().name() + " ");
+          System.err.println();
+        }
       System.err.println();
     }
 
@@ -861,18 +861,18 @@ public class Main {
 
       /* put the states in sorted order for a nicer display */
       for (Enumeration s = lalr_state.all(); s.hasMoreElements(); )
-	{
-	  lalr_state st = (lalr_state)s.nextElement();
-	  ordered[st.index()] = st;
-	}
+        {
+          lalr_state st = (lalr_state)s.nextElement();
+          ordered[st.index()] = st;
+        }
 
       System.err.println("===== Viable Prefix Recognizer =====");
       for (int i = 0; i<lalr_state.number(); i++)
-	{
-	  if (ordered[i] == start_state) System.err.print("START ");
+        {
+          if (ordered[i] == start_state) System.err.print("START ");
           System.err.println(ordered[i]);
-	  System.err.println("-------------------");
-	}
+          System.err.println("-------------------");
+        }
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

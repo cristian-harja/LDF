@@ -1,7 +1,7 @@
 
 package java_cup;
 
-/** This class represents one row (corresponding to one machine state) of the 
+/** This class represents one row (corresponding to one machine state) of the
  *  parse action table.
  */
 public class parse_action_row {
@@ -9,7 +9,7 @@ public class parse_action_row {
   /*-----------------------------------------------------------*/
   /*--- Constructor(s) ----------------------------------------*/
   /*-----------------------------------------------------------*/
-	       
+
   /** Simple constructor.  Note: this should not be used until the number of
    *  terminals in the grammar has been established.
    */
@@ -23,7 +23,7 @@ public class parse_action_row {
 
       /* set each element to an error action */
       for (int i=0; i<_size; i++)
-	under_term[i] = new parse_action();
+        under_term[i] = new parse_action();
     }
 
   /*-----------------------------------------------------------*/
@@ -56,21 +56,21 @@ public class parse_action_row {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Default (reduce) action for this row.  -1 will represent default 
-   *  of error. 
+  /** Default (reduce) action for this row.  -1 will represent default
+   *  of error.
    */
   public int default_reduce;
 
   /*-----------------------------------------------------------*/
   /*--- General Methods ---------------------------------------*/
   /*-----------------------------------------------------------*/
-	
-  /** Compute the default (reduce) action for this row and store it in 
-   *  default_reduce.  In the case of non-zero default we will have the 
-   *  effect of replacing all errors by that reduction.  This may cause 
-   *  us to do erroneous reduces, but will never cause us to shift past 
-   *  the point of the error and never cause an incorrect parse.  -1 will 
-   *  be used to encode the fact that no reduction can be used as a 
+
+  /** Compute the default (reduce) action for this row and store it in
+   *  default_reduce.  In the case of non-zero default we will have the
+   *  effect of replacing all errors by that reduction.  This may cause
+   *  us to do erroneous reduces, but will never cause us to shift past
+   *  the point of the error and never cause an incorrect parse.  -1 will
+   *  be used to encode the fact that no reduction can be used as a
    *  default (in which case error will be used).
    */
   public void compute_default()
@@ -78,29 +78,29 @@ public class parse_action_row {
       int i, prod, max_prod, max_red;
 
       /* if we haven't allocated the count table, do so now */
-      if (reduction_count == null) 
-	reduction_count = new int[production.number()];
+      if (reduction_count == null)
+        reduction_count = new int[production.number()];
 
       /* clear the reduction count table and maximums */
       for (i = 0; i < production.number(); i++)
-	reduction_count[i] = 0;
+        reduction_count[i] = 0;
       max_prod = -1;
       max_red = 0;
-     
+
       /* walk down the row and look at the reduces */
       for (i = 0; i < size(); i++)
-	if (under_term[i].kind() == parse_action.REDUCE)
-	  {
-	    /* count the reduce in the proper production slot and keep the 
-	       max up to date */
-	    prod = ((reduce_action)under_term[i]).reduce_with().index();
-	    reduction_count[prod]++;
-	    if (reduction_count[prod] > max_red)
-	      {
-		max_red = reduction_count[prod];
-		max_prod = prod;
-	      }
-	  }
+        if (under_term[i].kind() == parse_action.REDUCE)
+          {
+            /* count the reduce in the proper production slot and keep the
+               max up to date */
+            prod = ((reduce_action)under_term[i]).reduce_with().index();
+            reduction_count[prod]++;
+            if (reduction_count[prod] > max_red)
+              {
+                max_red = reduction_count[prod];
+                max_prod = prod;
+              }
+          }
 
        /* record the max as the default (or -1 for not found) */
        default_reduce = max_prod;

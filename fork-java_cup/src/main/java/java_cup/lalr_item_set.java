@@ -90,8 +90,8 @@ public class lalr_item_set {
 
       /* walk down our set and make sure every element is in the other */
       for (Enumeration e = all(); e.hasMoreElements(); )
-	if (!other.contains((lalr_item)e.nextElement()))
-	  return false;
+        if (!other.contains((lalr_item)e.nextElement()))
+          return false;
 
       /* they were all there */
       return true;
@@ -126,19 +126,19 @@ public class lalr_item_set {
 
       /* if so, merge this lookahead into the original and leave it */
       if (other != null)
-	{
-	  other.lookahead().add(itm.lookahead());
-	  return other;
-	}
+        {
+          other.lookahead().add(itm.lookahead());
+          return other;
+        }
       /* otherwise we just go in the set */
       else
-	{
+        {
           /* invalidate cached hashcode */
           hashcode_cache = null;
 
           _all.put(itm,itm);
-	  return itm;
-	}
+          return itm;
+        }
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -169,7 +169,7 @@ public class lalr_item_set {
 
       /* walk down the other set and do the adds individually */
       for (Enumeration e = other.all(); e.hasMoreElements(); )
-	add((lalr_item)e.nextElement());
+        add((lalr_item)e.nextElement());
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -183,7 +183,7 @@ public class lalr_item_set {
 
       /* walk down the other set and do the removes individually */
       for (Enumeration e = other.all(); e.hasMoreElements(); )
-	remove((lalr_item)e.nextElement());
+        remove((lalr_item)e.nextElement());
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -196,13 +196,13 @@ public class lalr_item_set {
 
       the_set = all();
       if (the_set.hasMoreElements())
-	{
+        {
           result = (lalr_item)the_set.nextElement();
           remove(result);
-	  return result;
-	}
+          return result;
+        }
       else
-	return null;
+        return null;
     }
 
   /*-----------------------------------------------------------*/
@@ -216,7 +216,7 @@ public class lalr_item_set {
   protected void not_null(Object obj) throws internal_error
     {
       if (obj == null)
-	throw new internal_error("Null object used in set operation");
+        throw new internal_error("Null object used in set operation");
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -257,44 +257,44 @@ public class lalr_item_set {
 
       /* repeat this until there is nothing else to consider */
       while (consider.size() > 0)
-	{
-	  /* get one item to consider */
-	  itm = consider.get_one();
+        {
+          /* get one item to consider */
+          itm = consider.get_one();
 
-	  /* do we have a dot before a non terminal */
-	  nt = itm.dot_before_nt();
-	  if (nt != null)
-	    {
-	      /* create the lookahead set based on first after dot */
-	      new_lookaheads = itm.calc_lookahead(itm.lookahead());
+          /* do we have a dot before a non terminal */
+          nt = itm.dot_before_nt();
+          if (nt != null)
+            {
+              /* create the lookahead set based on first after dot */
+              new_lookaheads = itm.calc_lookahead(itm.lookahead());
 
-	      /* are we going to need to propagate our lookahead to new item */
-	      need_prop = itm.lookahead_visible();
+              /* are we going to need to propagate our lookahead to new item */
+              need_prop = itm.lookahead_visible();
 
-	      /* create items for each production of that non term */
-	      for (p = nt.productions(); p.hasMoreElements(); )
-		{
-		  prod = (production)p.nextElement();
+              /* create items for each production of that non term */
+              for (p = nt.productions(); p.hasMoreElements(); )
+                {
+                  prod = (production)p.nextElement();
 
-		  /* create new item with dot at start and that lookahead */
-		  new_itm = new lalr_item(prod,
-					     new terminal_set(new_lookaheads));
+                  /* create new item with dot at start and that lookahead */
+                  new_itm = new lalr_item(prod,
+                                             new terminal_set(new_lookaheads));
 
-		  /* add/merge item into the set */
-		  add_itm = add(new_itm);
-		  /* if propagation is needed link to that item */
-		  if (need_prop)
-		    itm.add_propagate(add_itm);
+                  /* add/merge item into the set */
+                  add_itm = add(new_itm);
+                  /* if propagation is needed link to that item */
+                  if (need_prop)
+                    itm.add_propagate(add_itm);
 
-		  /* was this was a new item*/
-		  if (add_itm == new_itm)
-		    {
-		      /* that may need further closure, consider it also */
-		      consider.add(new_itm);
-		    }
-		}
-	    }
-	}
+                  /* was this was a new item*/
+                  if (add_itm == new_itm)
+                    {
+                      /* that may need further closure, consider it also */
+                      consider.add(new_itm);
+                    }
+                }
+            }
+        }
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -308,9 +308,9 @@ public class lalr_item_set {
       try {
         return is_subset_of(other);
       } catch (internal_error e) {
-	/* can't throw error from here (because superclass doesn't) so crash */
-	e.crash();
-	return false;
+        /* can't throw error from here (because superclass doesn't) so crash */
+        e.crash();
+        return false;
       }
 
     }
@@ -334,16 +334,16 @@ public class lalr_item_set {
 
       /* only compute a new one if we don't have it cached */
       if (hashcode_cache == null)
-	{
+        {
           /* hash together codes from at most first 5 elements */
-	  //   CSA fix! we'd *like* to hash just a few elements, but
-	  //   that means equal sets will have inequal hashcodes, which
-	  //   we're not allowed (by contract) to do.  So hash them all.
+          //   CSA fix! we'd *like* to hash just a few elements, but
+          //   that means equal sets will have inequal hashcodes, which
+          //   we're not allowed (by contract) to do.  So hash them all.
           for (e = all(), cnt=0 ; e.hasMoreElements() /*&& cnt<5*/; cnt++)
-	    result ^= e.nextElement().hashCode();
+            result ^= e.nextElement().hashCode();
 
-	  hashcode_cache = result;
-	}
+          hashcode_cache = result;
+        }
 
       return hashcode_cache;
     }
@@ -357,9 +357,9 @@ public class lalr_item_set {
 
       result.append("{\n");
       for (Enumeration e=all(); e.hasMoreElements(); )
- 	{
- 	  result.append("  ").append(e.nextElement()).append("\n");
- 	}
+         {
+           result.append("  ").append(e.nextElement()).append("\n");
+         }
        result.append("}");
 
        return result.toString();

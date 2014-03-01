@@ -3,7 +3,7 @@ package java_cup;
 
 import java.util.BitSet;
 
-/** A set of terminals implemented as a bitset. 
+/** A set of terminals implemented as a bitset.
  * @version last updated: 11/25/95
  * @author  Scott Hudson
  */
@@ -14,18 +14,18 @@ public class terminal_set {
   /*-----------------------------------------------------------*/
 
   /** Constructor for an empty set. */
-  public terminal_set() 
-    { 
+  public terminal_set()
+    {
       /* allocate the bitset at what is probably the right size */
       _elements = new BitSet(terminal.number());
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Constructor for cloning from another set. 
+  /** Constructor for cloning from another set.
    * @param other the set we are cloning from.
    */
-  public terminal_set(terminal_set other) 
+  public terminal_set(terminal_set other)
     throws internal_error
     {
       not_null(other);
@@ -51,13 +51,13 @@ public class terminal_set {
   /*-----------------------------------------------------------*/
 
   /** Helper function to test for a null object and throw an exception if
-   *  one is found. 
+   *  one is found.
    * @param obj the object we are testing.
    */
   protected void not_null(Object obj) throws internal_error
     {
-      if (obj == null) 
-	throw new internal_error("Null object used in set operation");
+      if (obj == null)
+        throw new internal_error("Null object used in set operation");
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -70,22 +70,22 @@ public class terminal_set {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Determine if the set contains a particular terminal. 
+  /** Determine if the set contains a particular terminal.
    * @param sym the terminal symbol we are looking for.
    */
-  public boolean contains(terminal sym) 
+  public boolean contains(terminal sym)
     throws internal_error
     {
-      not_null(sym); 
+      not_null(sym);
       return _elements.get(sym.index());
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Given its index determine if the set contains a particular terminal. 
+  /** Given its index determine if the set contains a particular terminal.
    * @param indx the index of the terminal in question.
    */
-  public boolean contains(int indx) 
+  public boolean contains(int indx)
     {
       return _elements.get(indx);
     }
@@ -124,23 +124,23 @@ public class terminal_set {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Add a single terminal to the set.  
+  /** Add a single terminal to the set.
    * @param sym the terminal being added.
    * @return true if this changes the set.
    */
-  public boolean add(terminal sym) 
+  public boolean add(terminal sym)
     throws internal_error
     {
       boolean result;
 
-      not_null(sym); 
+      not_null(sym);
 
-      /* see if we already have this */ 
+      /* see if we already have this */
       result = _elements.get(sym.index());
 
       /* if not we add it */
       if (!result)
-	_elements.set(sym.index());
+        _elements.set(sym.index());
 
       return result;
     }
@@ -150,16 +150,16 @@ public class terminal_set {
   /** Remove a terminal if it is in the set.
    * @param sym the terminal being removed.
    */
-  public void remove(terminal sym) 
+  public void remove(terminal sym)
     throws internal_error
     {
-      not_null(sym); 
+      not_null(sym);
       _elements.clear(sym.index());
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Add (union) in a complete set.  
+  /** Add (union) in a complete set.
    * @param other the set being added.
    * @return true if this changes the set.
    */
@@ -221,21 +221,21 @@ public class terminal_set {
     {
       String result;
       boolean comma_flag;
-      
+
       result = "{";
       comma_flag = false;
       for (int t = 0; t < terminal.number(); t++)
-	{
-	  if (_elements.get(t))
-	    {
-	      if (comma_flag)
-	        result += ", ";
-	      else
-	        comma_flag = true;
+        {
+          if (_elements.get(t))
+            {
+              if (comma_flag)
+                result += ", ";
+              else
+                comma_flag = true;
 
-	      result += terminal.find(t).name();
-	    }
-	}
+              result += terminal.find(t).name();
+            }
+        }
       result += "}";
 
       return result;

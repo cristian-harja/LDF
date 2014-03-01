@@ -69,113 +69,113 @@ public class CUPTask extends Task
     {
         List<String> sc = new ArrayList<String>();  // sc = simulated
         // commandline
-	// here, we parse our elements
-	if (parser!=null)  { sc.add("-parser"); sc.add(parser);}
+        // here, we parse our elements
+        if (parser!=null)  { sc.add("-parser"); sc.add(parser);}
         else parser="parser"; // set the default name to check actuality
-	if (_package!=null){ sc.add("-package"); sc.add(_package); }
-	if (symbols!=null) { sc.add("-symbols"); sc.add(symbols); }
+        if (_package!=null){ sc.add("-package"); sc.add(_package); }
+        if (symbols!=null) { sc.add("-symbols"); sc.add(symbols); }
         else symbols="sym";
-	if (expect!=null)  {  sc.add("-expect"); sc.add(expect); }
-	if (_interface)    {  sc.add("-interface"); }
-	if (nonterms)      {  sc.add("-nonterms"); }
-	if (compact_red)   {  sc.add("-compact_red"); }
-	if (nowarn)        {  sc.add("-nowarn"); }
-	if (nosummary)     {  sc.add("-nosummary");}
-	if (progress)      {  sc.add("-progress"); }
-	if (dump_grammar)  {  sc.add("-dump_grammar"); }
-	if (dump_states)   {  sc.add("-dump_states"); }
-	if (dump_tables)   {  sc.add("-dump_tables"); }
-	if (dump)          {  sc.add("-dump"); }
-	if (time)          {  sc.add("-time"); }
-	if (debug)         {  sc.add("-debug"); }
-	if (nopositions)   {  sc.add("-nopositions"); }
-	if (locations)     {  sc.add("-locations"); }
-	if (noscanner)     {  sc.add("-noscanner"); }
-	if (!quiet) log ("This is "+version.title_str);
+        if (expect!=null)  {  sc.add("-expect"); sc.add(expect); }
+        if (_interface)    {  sc.add("-interface"); }
+        if (nonterms)      {  sc.add("-nonterms"); }
+        if (compact_red)   {  sc.add("-compact_red"); }
+        if (nowarn)        {  sc.add("-nowarn"); }
+        if (nosummary)     {  sc.add("-nosummary");}
+        if (progress)      {  sc.add("-progress"); }
+        if (dump_grammar)  {  sc.add("-dump_grammar"); }
+        if (dump_states)   {  sc.add("-dump_states"); }
+        if (dump_tables)   {  sc.add("-dump_tables"); }
+        if (dump)          {  sc.add("-dump"); }
+        if (time)          {  sc.add("-time"); }
+        if (debug)         {  sc.add("-debug"); }
+        if (nopositions)   {  sc.add("-nopositions"); }
+        if (locations)     {  sc.add("-locations"); }
+        if (noscanner)     {  sc.add("-noscanner"); }
+        if (!quiet) log ("This is "+version.title_str);
         if (!quiet) log ("Authors : "+version.author_str);
-	if (!quiet) log ("Bugreports to petter@cs.tum.edu");
+        if (!quiet) log ("Bugreports to petter@cs.tum.edu");
 
-	// look for package name and add to destdir
-	String packagename = inspect(srcfile);
-
-
-	// now, that's sweet:
-	if (destdir==null) {
-	    destdir=System.getProperty("user.dir");
-	    if (!quiet) log("No destination directory specified; using working directory: "+destdir);
-	}
-	File dest = new File(destdir+packagename);
-	if (!(dest).exists()) {
-	    if (!quiet) log("Destination directory didn't exist; creating new one: "+destdir+packagename);
-	    dest.mkdirs();
-	    force=true;
-	}
-	else {
-	    if (force&& !quiet) { log("anyway, this generation will be processed because of option force set to \"true\""); }
-	    else { if (!quiet) log("checking, whether this run is necessary"); }
-	    // let's check, whether there exists any Parser fragment...
-	    File parserfile = new File(destdir+packagename,parser+".java");
-	    File symfile    = new File(destdir+packagename,symbols+".java");
-	    File cupfile    = new File(srcfile);
-
-	    if (!parserfile.exists() || !symfile.exists()) {
-		if (!quiet) log("Either Parserfile or Symbolfile didn't exist");
-		force=true;
-	    }else { if (!quiet) log("Parserfile and symbolfile are existing"); }
+        // look for package name and add to destdir
+        String packagename = inspect(srcfile);
 
 
-	    if (parserfile.lastModified()<=cupfile.lastModified()) {
-		if (!quiet) log("Parserfile "+parserfile+" isn't actual");
-		force=true;
-	    }else { if (!quiet) log("Parserfile "+parserfile+" is actual"); }
+        // now, that's sweet:
+        if (destdir==null) {
+            destdir=System.getProperty("user.dir");
+            if (!quiet) log("No destination directory specified; using working directory: "+destdir);
+        }
+        File dest = new File(destdir+packagename);
+        if (!(dest).exists()) {
+            if (!quiet) log("Destination directory didn't exist; creating new one: "+destdir+packagename);
+            dest.mkdirs();
+            force=true;
+        }
+        else {
+            if (force&& !quiet) { log("anyway, this generation will be processed because of option force set to \"true\""); }
+            else { if (!quiet) log("checking, whether this run is necessary"); }
+            // let's check, whether there exists any Parser fragment...
+            File parserfile = new File(destdir+packagename,parser+".java");
+            File symfile    = new File(destdir+packagename,symbols+".java");
+            File cupfile    = new File(srcfile);
 
-	    if (symfile.lastModified()<=cupfile.lastModified()) {
-		if (!quiet) log("Symbolfile "+symfile+" isn't actual");
-		force=true;
-	    }else { if (!quiet) log("Symbolfile"+symfile+" is actual"); }
+            if (!parserfile.exists() || !symfile.exists()) {
+                if (!quiet) log("Either Parserfile or Symbolfile didn't exist");
+                force=true;
+            }else { if (!quiet) log("Parserfile and symbolfile are existing"); }
 
 
-	    if (!force) {
-		if (!quiet) log("skipping generation of "+srcfile);
-		if (!quiet) log("use option force=\"true\" to override");
-		return;
-	    }
-	}
+            if (parserfile.lastModified()<=cupfile.lastModified()) {
+                if (!quiet) log("Parserfile "+parserfile+" isn't actual");
+                force=true;
+            }else { if (!quiet) log("Parserfile "+parserfile+" is actual"); }
 
-	sc.add("-destdir");
+            if (symfile.lastModified()<=cupfile.lastModified()) {
+                if (!quiet) log("Symbolfile "+symfile+" isn't actual");
+                force=true;
+            }else { if (!quiet) log("Symbolfile"+symfile+" is actual"); }
+
+
+            if (!force) {
+                if (!quiet) log("skipping generation of "+srcfile);
+                if (!quiet) log("use option force=\"true\" to override");
+                return;
+            }
+        }
+
+        sc.add("-destdir");
         sc.add(dest.getAbsolutePath());
 
         // also catch the not existing input file
-	if (srcfile==null) throw new BuildException("Input file needed: Specify <cup srcfile=\"myfile.cup\"> ");
-	if (!(new File(srcfile)).exists()) throw new BuildException("Input file not found: srcfile=\""+srcfile+"\" ");
+        if (srcfile==null) throw new BuildException("Input file needed: Specify <cup srcfile=\"myfile.cup\"> ");
+        if (!(new File(srcfile)).exists()) throw new BuildException("Input file not found: srcfile=\""+srcfile+"\" ");
 
         sc.add(srcfile);
-	String[] args = new String[sc.size()];
+        String[] args = new String[sc.size()];
         for (int i=0;i<args.length;i++) args[i]= sc.get(i);
 
 
-	try {
+        try {
             java_cup.Main.main(args);
         }catch(Exception e){
             log("CUP error occured int CUP task: "+e);
         }
 
-	// this is a dirty hack to determine the apropriate class path
-//	URL url = CUPTask.class.getResource("/java_cup/Main.class");
-//	String path = url.getPath().substring(0,url.getPath().length()-20);
-//	// if called from a .jar or .zip remove the last "!"
-//	if (path.endsWith("!")) path=path.substring(0,path.length()-1);
-//	createClasspath().setPath(path);
+        // this is a dirty hack to determine the apropriate class path
+//        URL url = CUPTask.class.getResource("/java_cup/Main.class");
+//        String path = url.getPath().substring(0,url.getPath().length()-20);
+//        // if called from a .jar or .zip remove the last "!"
+//        if (path.endsWith("!")) path=path.substring(0,path.length()-1);
+//        createClasspath().setPath(path);
 //
-//	setFailonerror(true);
-//	setFork(true);
+//        setFailonerror(true);
+//        setFork(true);
 //
 
-	// here, we prepare for calling CUP
-//	setClassname("java_cup.Main");
+        // here, we prepare for calling CUP
+//        setClassname("java_cup.Main");
 
-	// let's call CUP
-//	super.execute();
+        // let's call CUP
+//        super.execute();
 
     }
 
@@ -187,21 +187,21 @@ public class CUPTask extends Task
      * @return the package folder structure
      */
     protected String inspect(String cupfile){
-	try{
-	BufferedReader br = new BufferedReader(new FileReader(cupfile));
-	while (br.ready()){
-	    String line = br.readLine();
-	    if ((line.startsWith("package"))&&(line.contains(";")))
-		{
-		    String result = line.substring(8,line.indexOf(";"));
-		    result = result.replace('.',System.getProperty("file.separator").charAt(0));
-		    return System.getProperty("file.separator") + result;
-		}
+        try{
+        BufferedReader br = new BufferedReader(new FileReader(cupfile));
+        while (br.ready()){
+            String line = br.readLine();
+            if ((line.startsWith("package"))&&(line.contains(";")))
+                {
+                    String result = line.substring(8,line.indexOf(";"));
+                    result = result.replace('.',System.getProperty("file.separator").charAt(0));
+                    return System.getProperty("file.separator") + result;
+                }
 
-	}
-	}catch (IOException ignored){
-	}
-	return "";
+        }
+        }catch (IOException ignored){
+        }
+        return "";
     }
 
     /**
@@ -210,7 +210,7 @@ public class CUPTask extends Task
      * @return the value of quiet
      */
     public boolean getQuiet()  {
-	return this.quiet;
+        return this.quiet;
     }
 
     /**
@@ -219,7 +219,7 @@ public class CUPTask extends Task
      * @param argquiet Value to assign to this.quiet
      */
     public void setQuiet(boolean argquiet) {
-	this.quiet = argquiet;
+        this.quiet = argquiet;
     }
     /**
      * Gets the value of force
@@ -227,7 +227,7 @@ public class CUPTask extends Task
      * @return the value of force
      */
     public boolean getForce()  {
-	return this.force;
+        return this.force;
     }
 
     /**
@@ -236,7 +236,7 @@ public class CUPTask extends Task
      * @param argforce Value to assign to this.force
      */
     public void setForce(boolean argforce) {
-	this.force = argforce;
+        this.force = argforce;
     }
     /**
      * Gets the value of _package
@@ -244,7 +244,7 @@ public class CUPTask extends Task
      * @return the value of _package
      */
     public String getPackage()  {
-	return this._package;
+        return this._package;
     }
 
     /**
@@ -253,7 +253,7 @@ public class CUPTask extends Task
      * @param arg_package Value to assign to this._package
      */
     public void setPackage(String arg_package) {
-	this._package = arg_package;
+        this._package = arg_package;
     }
 
     /**
@@ -262,7 +262,7 @@ public class CUPTask extends Task
      * @return the value of destdir
      */
     public String getDestdir()  {
-	return this.destdir;
+        return this.destdir;
     }
 
     /**
@@ -271,7 +271,7 @@ public class CUPTask extends Task
      * @param destdir Value to assign to this.destdir
      */
     public void setDestdir(String destdir) {
-	this.destdir = destdir;
+        this.destdir = destdir;
     }
 
     /**
@@ -280,7 +280,7 @@ public class CUPTask extends Task
      * @return the value of _interface
      */
     public boolean isInterface()  {
-	return this._interface;
+        return this._interface;
     }
 
     /**
@@ -289,7 +289,7 @@ public class CUPTask extends Task
      * @param arg_interface Value to assign to this._interface
      */
     public void setInterface(boolean arg_interface) {
-	this._interface = arg_interface;
+        this._interface = arg_interface;
     }
 
     /**
@@ -297,7 +297,7 @@ public class CUPTask extends Task
      * @return the Srcfile value.
      */
     public String getSrcfile() {
-	return srcfile;
+        return srcfile;
     }
 
     /**
@@ -305,7 +305,7 @@ public class CUPTask extends Task
      * @param newSrcfile The new Srcfile value.
      */
     public void setSrcfile(String newSrcfile) {
-	this.srcfile = newSrcfile;
+        this.srcfile = newSrcfile;
     }
 
 
@@ -316,7 +316,7 @@ public class CUPTask extends Task
      * @return the value of parser
      */
     public String getParser() {
-	return this.parser;
+        return this.parser;
     }
 
     /**
@@ -325,7 +325,7 @@ public class CUPTask extends Task
      * @param argParser Value to assign to this.parser
      */
     public void setParser(String argParser){
-	this.parser = argParser;
+        this.parser = argParser;
     }
 
     /**
@@ -334,7 +334,7 @@ public class CUPTask extends Task
      * @return the value of symbols
      */
     public String getSymbols() {
-	return this.symbols;
+        return this.symbols;
     }
 
     /**
@@ -343,7 +343,7 @@ public class CUPTask extends Task
      * @param argSymbols Value to assign to this.symbols
      */
     public void setSymbols(String argSymbols){
-	this.symbols = argSymbols;
+        this.symbols = argSymbols;
     }
 
     /**
@@ -352,7 +352,7 @@ public class CUPTask extends Task
      * @return the value of nonterms
      */
     public boolean isNonterms() {
-	return this.nonterms;
+        return this.nonterms;
     }
 
     /**
@@ -361,7 +361,7 @@ public class CUPTask extends Task
      * @param argNonterms Value to assign to this.nonterms
      */
     public void setNonterms(boolean argNonterms){
-	this.nonterms = argNonterms;
+        this.nonterms = argNonterms;
     }
 
     /**
@@ -370,7 +370,7 @@ public class CUPTask extends Task
      * @return the value of expect
      */
     public String getExpect() {
-	return this.expect;
+        return this.expect;
     }
 
     /**
@@ -379,7 +379,7 @@ public class CUPTask extends Task
      * @param argExpect Value to assign to this.expect
      */
     public void setExpect(String argExpect){
-	this.expect = argExpect;
+        this.expect = argExpect;
     }
 
     /**
@@ -388,7 +388,7 @@ public class CUPTask extends Task
      * @return the value of compact_red
      */
     public boolean isCompact_red() {
-	return this.compact_red;
+        return this.compact_red;
     }
 
     /**
@@ -397,7 +397,7 @@ public class CUPTask extends Task
      * @param argCompact_red Value to assign to this.compact_red
      */
     public void setCompact_red(boolean argCompact_red){
-	this.compact_red = argCompact_red;
+        this.compact_red = argCompact_red;
     }
 
     /**
@@ -406,7 +406,7 @@ public class CUPTask extends Task
      * @return the value of nowarn
      */
     public boolean isNowarn() {
-	return this.nowarn;
+        return this.nowarn;
     }
 
     /**
@@ -415,7 +415,7 @@ public class CUPTask extends Task
      * @param argNowarn Value to assign to this.nowarn
      */
     public void setNowarn(boolean argNowarn){
-	this.nowarn = argNowarn;
+        this.nowarn = argNowarn;
     }
 
     /**
@@ -424,7 +424,7 @@ public class CUPTask extends Task
      * @return the value of nosummary
      */
     public boolean isNosummary() {
-	return this.nosummary;
+        return this.nosummary;
     }
 
     /**
@@ -433,7 +433,7 @@ public class CUPTask extends Task
      * @param argNosummary Value to assign to this.nosummary
      */
     public void setNosummary(boolean argNosummary){
-	this.nosummary = argNosummary;
+        this.nosummary = argNosummary;
     }
 
     /**
@@ -442,7 +442,7 @@ public class CUPTask extends Task
      * @return the value of progress
      */
     public boolean isProgress() {
-	return this.progress;
+        return this.progress;
     }
 
     /**
@@ -451,7 +451,7 @@ public class CUPTask extends Task
      * @param argProgress Value to assign to this.progress
      */
     public void setProgress(boolean argProgress){
-	this.progress = argProgress;
+        this.progress = argProgress;
     }
 
     /**
@@ -460,7 +460,7 @@ public class CUPTask extends Task
      * @return the value of dump_grammar
      */
     public boolean isDump_grammar() {
-	return this.dump_grammar;
+        return this.dump_grammar;
     }
 
     /**
@@ -469,7 +469,7 @@ public class CUPTask extends Task
      * @param argDump_grammar Value to assign to this.dump_grammar
      */
     public void setDump_grammar(boolean argDump_grammar){
-	this.dump_grammar = argDump_grammar;
+        this.dump_grammar = argDump_grammar;
     }
 
     /**
@@ -478,7 +478,7 @@ public class CUPTask extends Task
      * @return the value of dump_states
      */
     public boolean isDump_states() {
-	return this.dump_states;
+        return this.dump_states;
     }
 
     /**
@@ -487,7 +487,7 @@ public class CUPTask extends Task
      * @param argDump_states Value to assign to this.dump_states
      */
     public void setDump_states(boolean argDump_states){
-	this.dump_states = argDump_states;
+        this.dump_states = argDump_states;
     }
 
     /**
@@ -496,7 +496,7 @@ public class CUPTask extends Task
      * @return the value of dump_tables
      */
     public boolean isDump_tables() {
-	return this.dump_tables;
+        return this.dump_tables;
     }
 
     /**
@@ -505,7 +505,7 @@ public class CUPTask extends Task
      * @param argDump_tables Value to assign to this.dump_tables
      */
     public void setDump_tables(boolean argDump_tables){
-	this.dump_tables = argDump_tables;
+        this.dump_tables = argDump_tables;
     }
 
     /**
@@ -514,7 +514,7 @@ public class CUPTask extends Task
      * @return the value of dump
      */
     public boolean isDump() {
-	return this.dump;
+        return this.dump;
     }
 
     /**
@@ -523,7 +523,7 @@ public class CUPTask extends Task
      * @param argDump Value to assign to this.dump
      */
     public void setDump(boolean argDump){
-	this.dump = argDump;
+        this.dump = argDump;
     }
 
     /**
@@ -532,7 +532,7 @@ public class CUPTask extends Task
      * @return the value of time
      */
     public boolean isTime() {
-	return this.time;
+        return this.time;
     }
 
     /**
@@ -541,7 +541,7 @@ public class CUPTask extends Task
      * @param argTime Value to assign to this.time
      */
     public void setTime(boolean argTime){
-	this.time = argTime;
+        this.time = argTime;
     }
 
     /**
@@ -550,7 +550,7 @@ public class CUPTask extends Task
      * @return the value of debug
      */
     public boolean isDebug() {
-	return this.debug;
+        return this.debug;
     }
 
     /**
@@ -559,7 +559,7 @@ public class CUPTask extends Task
      * @param argDebug Value to assign to this.debug
      */
     public void setDebug(boolean argDebug){
-	this.debug = argDebug;
+        this.debug = argDebug;
     }
 
     /**
@@ -568,7 +568,7 @@ public class CUPTask extends Task
      * @return the value of nopositions
      */
     public boolean isNopositions() {
-	return this.nopositions;
+        return this.nopositions;
     }
 
     /**
@@ -577,7 +577,7 @@ public class CUPTask extends Task
      * @param argNopositions Value to assign to this.nopositions
      */
     public void setNopositions(boolean argNopositions){
-	this.nopositions = argNopositions;
+        this.nopositions = argNopositions;
     }
     /**
      * Gets the value of locations
@@ -585,7 +585,7 @@ public class CUPTask extends Task
      * @return the value of locations
      */
     public boolean isLocations() {
-	return this.locations;
+        return this.locations;
     }
 
     /**
@@ -594,7 +594,7 @@ public class CUPTask extends Task
      * @param argLocations Value to assign to this.locations
      */
     public void setLocations(boolean argLocations){
-	this.locations = argLocations;
+        this.locations = argLocations;
     }
 
     /**
@@ -603,7 +603,7 @@ public class CUPTask extends Task
      * @return the value of noscanner
      */
     public boolean isNoscanner() {
-	return this.noscanner;
+        return this.noscanner;
     }
 
     /**
@@ -612,7 +612,7 @@ public class CUPTask extends Task
      * @param argNoscanner Value to assign to this.noscanner
      */
     public void setNoscanner(boolean argNoscanner){
-	this.noscanner = argNoscanner;
+        this.noscanner = argNoscanner;
     }
 
 

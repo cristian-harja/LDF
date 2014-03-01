@@ -1,11 +1,11 @@
 
 package java_cup;
 
-/** This class serves as the base class for entries in a parse action table.  
+/** This class serves as the base class for entries in a parse action table.
  *  Full entries will either be SHIFT(state_num), REDUCE(production), NONASSOC,
  *  or ERROR. Objects of this base class will default to ERROR, while
- *  the other three types will be represented by subclasses. 
- * 
+ *  the other three types will be represented by subclasses.
+ *
  * @see     java_cup.reduce_action
  * @see     java_cup.shift_action
  * @version last updated: 7/2/96
@@ -24,7 +24,7 @@ public class parse_action {
       /* nothing to do in the base class */
     }
 
- 
+
   /*-----------------------------------------------------------*/
   /*--- (Access to) Static (Class) Variables ------------------*/
   /*-----------------------------------------------------------*/
@@ -50,7 +50,7 @@ public class parse_action {
   /*-----------------------------------------------------------*/
   /*--- General Methods ---------------------------------------*/
   /*-----------------------------------------------------------*/
-	 
+
   /** Quick access to the type -- base class defaults to error. */
   public int kind() {return ERROR;}
 
@@ -86,4 +86,4 @@ public class parse_action {
 
   /*-----------------------------------------------------------*/
 }
-    
+

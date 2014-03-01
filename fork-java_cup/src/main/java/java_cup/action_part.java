@@ -1,7 +1,7 @@
 
 package java_cup;
 
-/** 
+/**
  * This class represents a part of a production which contains an
  * action.  These are eventually eliminated from productions and converted
  * to trailing actions by factoring out with a production that derives the
@@ -18,7 +18,7 @@ public class action_part extends production_part {
   /*--- Constructors ------------------------------------------*/
   /*-----------------------------------------------------------*/
 
-  /** Simple constructor. 
+  /** Simple constructor.
    * @param code_str string containing the actual user code.
    */
   public action_part(String code_str)
@@ -57,8 +57,8 @@ public class action_part extends production_part {
   public boolean equals(action_part other)
     {
       /* compare the strings */
-      return other != null && super.equals(other) && 
-	     other.code_string().equals(code_string());
+      return other != null && super.equals(other) &&
+             other.code_string().equals(code_string());
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -74,8 +74,8 @@ public class action_part extends production_part {
   /** Produce a hash code. */
   public int hashCode()
     {
-      return super.hashCode() ^ 
-	     (code_string()==null ? 0 : code_string().hashCode());
+      return super.hashCode() ^
+             (code_string()==null ? 0 : code_string().hashCode());
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

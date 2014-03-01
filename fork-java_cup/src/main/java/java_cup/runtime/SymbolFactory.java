@@ -9,8 +9,8 @@ package java_cup.runtime;
 
 /* *************************************************
   Interface SymbolFactory
-  
-  interface for creating new symbols  
+
+  interface for creating new symbols
   You can also use this interface for your own callback hooks
   Declare Your own factory methods for creation of Objects in Your scanner!
  ***************************************************/

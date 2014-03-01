@@ -16,25 +16,25 @@ import java.io.InputStreamReader;
 %cup
 %{
     public Lexer(ComplexSymbolFactory sf){
-	this(new InputStreamReader(System.in));
+        this(new InputStreamReader(System.in));
         symbolFactory = sf;
     }
     private StringBuffer sb;
     private ComplexSymbolFactory symbolFactory;
     private int csline,cscolumn;
     public Symbol symbol(String name, int code){
-//	System.out.println("code:"+code+" "+yytext());
-	return symbolFactory.newSymbol(name, code,new Location(yyline+1,yycolumn+1-yylength()),new Location(yyline+1,yycolumn+1));
+//        System.out.println("code:"+code+" "+yytext());
+        return symbolFactory.newSymbol(name, code,new Location(yyline+1,yycolumn+1-yylength()),new Location(yyline+1,yycolumn+1));
     }
     public Symbol symbol(String name, int code, String lexem){
-//	System.out.println("code:"+code+", lexem :"+lexem);
-	return symbolFactory.newSymbol(name, code, new Location(yyline+1, yycolumn +1), new Location(yyline+1,yycolumn+yylength()), lexem);
+//        System.out.println("code:"+code+", lexem :"+lexem);
+        return symbolFactory.newSymbol(name, code, new Location(yyline+1, yycolumn +1), new Location(yyline+1,yycolumn+yylength()), lexem);
     }
     protected void emit_warning(String message){
-	ErrorManager.getManager().emit_warning("Scanner at " + (yyline+1) + "(" + (yycolumn+1) + "): " + message);
+        ErrorManager.getManager().emit_warning("Scanner at " + (yyline+1) + "(" + (yycolumn+1) + "): " + message);
     }
     protected void emit_error(String message){
-	ErrorManager.getManager().emit_error("Scanner at " + (yyline+1) + "(" + (yycolumn+1) +  "): " + message);
+        ErrorManager.getManager().emit_error("Scanner at " + (yyline+1) + "(" + (yycolumn+1) +  "): " + message);
     }
 %}
 
@@ -56,7 +56,7 @@ ident = ([:jletter:] | "_" ) ([:jletterdigit:] | [:jletter:] | "_" )*
 
 %state CODESEG
 
-%%  
+%%
 
 <YYINITIAL> {
 
@@ -76,26 +76,26 @@ ident = ([:jletter:] | "_" ) ([:jletterdigit:] | [:jletter:] | "_" )*
   "<"           { return symbol("LT",LT);                      }
   {Comment}     {                                              }
   "{:"          { sb = new StringBuffer(); csline=yyline+1; cscolumn=yycolumn+1; yybegin(CODESEG);    }
-  "package"     { return symbol("PACKAGE",PACKAGE);            } 
-  "import"      { return symbol("IMPORT",IMPORT);	       }
-  "code"        { return symbol("CODE",CODE);		       }
-  "action"      { return symbol("ACTION",ACTION);	       }
-  "parser"      { return symbol("PARSER",PARSER);	       }
-  "terminal"    { return symbol("PARSER",TERMINAL);	       }
-  "non"         { return symbol("NON",NON);		       }
+  "package"     { return symbol("PACKAGE",PACKAGE);            }
+  "import"      { return symbol("IMPORT",IMPORT);               }
+  "code"        { return symbol("CODE",CODE);                       }
+  "action"      { return symbol("ACTION",ACTION);               }
+  "parser"      { return symbol("PARSER",PARSER);               }
+  "terminal"    { return symbol("PARSER",TERMINAL);               }
+  "non"         { return symbol("NON",NON);                       }
   "nonterminal" { return symbol("NONTERMINAL",NONTERMINAL);    }
-  "init"        { return symbol("INIT",INIT);		       }
-  "scan"        { return symbol("SCAN",SCAN);		       }
-  "with"        { return symbol("WITH",WITH);		       }
-  "start"       { return symbol("START",START);		       }
+  "init"        { return symbol("INIT",INIT);                       }
+  "scan"        { return symbol("SCAN",SCAN);                       }
+  "with"        { return symbol("WITH",WITH);                       }
+  "start"       { return symbol("START",START);                       }
   "precedence"  { return symbol("PRECEDENCE",PRECEDENCE);      }
-  "left"        { return symbol("LEFT",LEFT);		       }
-  "right"       { return symbol("RIGHT",RIGHT);		       }
+  "left"        { return symbol("LEFT",LEFT);                       }
+  "right"       { return symbol("RIGHT",RIGHT);                       }
   "nonassoc"    { return symbol("NONASSOC",NONASSOC);          }
   "extends"     { return symbol("EXTENDS",EXTENDS);            }
   "super"       { return symbol("SUPER",SUPER);                }
   {ident}       { return symbol("ID",ID,yytext());             }
-  
+
 }
 
 <CODESEG> {

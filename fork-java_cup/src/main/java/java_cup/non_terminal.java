@@ -6,7 +6,7 @@ import java.util.Enumeration;
 /** This class represents a non-terminal symbol in the grammar.  Each
  *  non terminal has a textual name, an index, and a string which indicates
  *  the type of object it will be implemented with at runtime (i.e. the class
- *  of object that will be pushed on the parse stack to represent it). 
+ *  of object that will be pushed on the parse stack to represent it).
  *
  * @version last updated: 11/25/95
  * @author  Scott Hudson
@@ -22,7 +22,7 @@ public class non_terminal extends symbol {
    * @param nm  the name of the non terminal.
    * @param tp  the type string for the non terminal.
    */
-  public non_terminal(String nm, String tp) 
+  public non_terminal(String nm, String tp)
     {
       /* super class does most of the work */
       super(nm, tp);
@@ -30,11 +30,11 @@ public class non_terminal extends symbol {
       /* add to set of all non terminals and check for duplicates */
       Object conflict = _all.put(nm,this);
       if (conflict != null)
-	// can't throw an exception here because these are used in static
-	// initializers, so we crash instead
-	// was: 
-	// throw new internal_error("Duplicate non-terminal ("+nm+") created");
-	(new internal_error("Duplicate non-terminal ("+nm+") created")).crash();
+        // can't throw an exception here because these are used in static
+        // initializers, so we crash instead
+        // was:
+        // throw new internal_error("Duplicate non-terminal ("+nm+") created");
+        (new internal_error("Duplicate non-terminal ("+nm+") created")).crash();
 
       /* assign a unique index */
       _index = next_index++;
@@ -45,10 +45,10 @@ public class non_terminal extends symbol {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Constructor with default type. 
+  /** Constructor with default type.
    * @param nm  the name of the non terminal.
    */
-  public non_terminal(String nm) 
+  public non_terminal(String nm)
     {
       this(nm, null);
     }
@@ -57,8 +57,8 @@ public class non_terminal extends symbol {
   /*--- (Access to) Static (Class) Variables ------------------*/
   /*-----------------------------------------------------------*/
 
-  /** Table of all non-terminals -- elements are stored using name strings 
-   *  as the key 
+  /** Table of all non-terminals -- elements are stored using name strings
+   *  as the key
    */
   protected static Hashtable<String, non_terminal> _all =
           new Hashtable<String, non_terminal>();
@@ -74,12 +74,12 @@ public class non_terminal extends symbol {
   /** Access to all non-terminals. */
   public static Enumeration all() {return _all.elements();}
 
-  /** lookup a non terminal by name string */ 
+  /** lookup a non terminal by name string */
   public static non_terminal find(String with_name)
     {
       if (with_name == null)
         return null;
-      else 
+      else
         return _all.get(with_name);
     }
 
@@ -125,10 +125,10 @@ public class non_terminal extends symbol {
   /*-----------------------------------------------------------*/
   /*--- Static Methods ----------------------------------------*/
   /*-----------------------------------------------------------*/
-	 
-  /** Method for creating a new uniquely named hidden non-terminal using 
+
+  /** Method for creating a new uniquely named hidden non-terminal using
    *  the given string as a base for the name (or "NT$" if null is passed).
-   * @param prefix base name to construct unique name from. 
+   * @param prefix base name to construct unique name from.
    */
   static non_terminal create_new(String prefix) throws internal_error
     {
@@ -139,8 +139,8 @@ public class non_terminal extends symbol {
 
   /** static routine for creating a new uniquely named hidden non-terminal */
   static non_terminal create_new() throws internal_error
-    { 
-      return create_new(null); 
+    {
+      return create_new(null);
     }
     /**
      * TUM 20060608 bugfix for embedded action codes
@@ -161,33 +161,33 @@ public class non_terminal extends symbol {
 
       /* repeat this process until there is no change */
       while (change)
-	{
-	  /* look for a new change */
-	  change = false;
+        {
+          /* look for a new change */
+          change = false;
 
-	  /* consider each non-terminal */
-	  for (e=all(); e.hasMoreElements(); )
-	    {
-	      nt = (non_terminal)e.nextElement();
+          /* consider each non-terminal */
+          for (e=all(); e.hasMoreElements(); )
+            {
+              nt = (non_terminal)e.nextElement();
 
-	      /* only look at things that aren't already marked nullable */
-	      if (!nt.nullable())
-		{
-		  if (nt.looks_nullable())
-		    {
-		      nt._nullable = true;
-		      change = true;
-		    }
-		}
-	    }
-	}
-      
+              /* only look at things that aren't already marked nullable */
+              if (!nt.nullable())
+                {
+                  if (nt.looks_nullable())
+                    {
+                      nt._nullable = true;
+                      change = true;
+                    }
+                }
+            }
+        }
+
       /* do one last pass over the productions to finalize all of them */
       for (e=production.all(); e.hasMoreElements(); )
-	{
-	  prod = (production)e.nextElement();
-	  prod.set_nullable(prod.check_nullable());
-	}
+        {
+          prod = (production)e.nextElement();
+          prod.set_nullable(prod.check_nullable());
+        }
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -206,32 +206,32 @@ public class non_terminal extends symbol {
 
       /* repeat this process until we have no change */
       while (change)
-	{
-	  /* look for a new change */
-	  change = false;
+        {
+          /* look for a new change */
+          change = false;
 
-	  /* consider each non-terminal */
-	  for (n = all(); n.hasMoreElements(); )
-	    {
-	      nt = (non_terminal)n.nextElement();
+          /* consider each non-terminal */
+          for (n = all(); n.hasMoreElements(); )
+            {
+              nt = (non_terminal)n.nextElement();
 
-	      /* consider every production of that non terminal */
-	      for (p = nt.productions(); p.hasMoreElements(); )
-		{
-		  prod = (production)p.nextElement();
+              /* consider every production of that non terminal */
+              for (p = nt.productions(); p.hasMoreElements(); )
+                {
+                  prod = (production)p.nextElement();
 
-		  /* get the updated first of that production */
-		  prod_first = prod.check_first_set();
+                  /* get the updated first of that production */
+                  prod_first = prod.check_first_set();
 
-		  /* if this going to add anything, add it */
-		  if (!prod_first.is_subset_of(nt._first_set))
-		    {
-		      change = true;
-		      nt._first_set.add(prod_first);
-		    }
-		}
-	    }
-	}
+                  /* if this going to add anything, add it */
+                  if (!prod_first.is_subset_of(nt._first_set))
+                    {
+                      change = true;
+                      nt._first_set.add(prod_first);
+                    }
+                }
+            }
+        }
     }
 
   /*-----------------------------------------------------------*/
@@ -257,8 +257,8 @@ public class non_terminal extends symbol {
     {
       /* catch improper productions */
       if (prod == null || prod.lhs() == null || prod.lhs().the_symbol() != this)
-	throw new internal_error(
-	  "Attempt to add invalid production to non terminal production table");
+        throw new internal_error(
+          "Attempt to add invalid production to non terminal production table");
 
       /* add it to the table, keyed with itself */
       _productions.put(prod,prod);
@@ -285,7 +285,7 @@ public class non_terminal extends symbol {
   /*-----------------------------------------------------------*/
 
   /** Indicate that this symbol is a non-terminal. */
-  public boolean is_non_term() 
+  public boolean is_non_term()
     {
       return true;
     }
@@ -297,9 +297,9 @@ public class non_terminal extends symbol {
     {
       /* look and see if any of the productions now look nullable */
       for (Enumeration e = productions(); e.hasMoreElements(); )
-	/* if the production can go to empty, we are nullable */
-	if (((production)e.nextElement()).check_nullable())
-	  return true;
+        /* if the production can go to empty, we are nullable */
+        if (((production)e.nextElement()).check_nullable())
+          return true;
 
       /* none of the productions can go to empty, so we are not nullable */
       return false;

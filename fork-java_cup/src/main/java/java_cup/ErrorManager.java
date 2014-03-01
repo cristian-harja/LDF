@@ -19,7 +19,7 @@ public class ErrorManager{
     }
     //TODO: migrate to java.util.logging
     /**
-     * Error message format: 
+     * Error message format:
      * ERRORLEVEL at (LINE/COLUMN)@SYMBOL: MESSAGE
      * ERRORLEVEL : MESSAGE
      **/
@@ -34,7 +34,7 @@ public class ErrorManager{
     }
     public void emit_warning(String message){
         System.err.println("Warning : " + message);
-        warnings++;	
+        warnings++;
     }
     public void emit_warning(String message, Symbol sym){
 //        System.err.println("Warning at ("+sym.left+"/"+sym.right+")@"+convSymbol(sym)+" : "+message);
@@ -63,5 +63,5 @@ public class ErrorManager{
         }
         return symbol.toString()+result;
     }
-    
+
 }

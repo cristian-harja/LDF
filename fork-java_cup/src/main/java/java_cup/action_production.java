@@ -2,7 +2,7 @@
 package java_cup;
 
 /** A specialized version of a production used when we split an existing
- *  production in order to remove an embedded action.  Here we keep a bit 
+ *  production in order to remove an embedded action.  Here we keep a bit
  *  of extra bookkeeping so that we know where we came from.
  * @version last updated: 11/25/95
  * @author  Scott Hudson
@@ -17,10 +17,10 @@ public class action_production extends production {
    * @param rhs_len    how much of the rhs_parts array is valid.
    * @param action_str the trailing reduce action for this production.
    * @param indexOfIntermediateResult the index of the result of the previous intermediate action on the stack relative to top, -1 if no previous action
-   */ 
+   */
   public action_production(
     production      base,
-    non_terminal    lhs_sym, 
+    non_terminal    lhs_sym,
     production_part rhs_parts[],
     int             rhs_len,
     String          action_str,

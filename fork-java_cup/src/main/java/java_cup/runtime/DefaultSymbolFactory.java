@@ -11,7 +11,7 @@ package java_cup.runtime;
 /* *************************************************
   class DefaultSymbolFactory
 
-  interface for creating new symbols  
+  interface for creating new symbols
  ***************************************************/
 public class DefaultSymbolFactory implements SymbolFactory{
     // Factory methods
@@ -25,7 +25,7 @@ public class DefaultSymbolFactory implements SymbolFactory{
      * @deprecated as of CUP v11a
      * replaced by the new java_cup.runtime.ComplexSymbolFactory
      */
-    //@deprecated 
+    //@deprecated
     public DefaultSymbolFactory(){
     }
     public Symbol newSymbol(String name ,int id, Symbol left, Symbol right, Object value){

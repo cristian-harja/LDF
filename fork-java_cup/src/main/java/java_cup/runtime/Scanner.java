@@ -11,7 +11,7 @@ package java_cup.runtime;
 
 /* *************************************************
   Interface Scanner
-  
+
   Declares the next_token() method that should be
   implemented by scanners.  This method is typically
   called by lr_parser.scan().  End-of-file can be
