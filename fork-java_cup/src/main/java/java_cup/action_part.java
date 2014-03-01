@@ -66,10 +66,7 @@ public class action_part extends production_part {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof action_part)) 
-	return false;
-      else
-	return equals((action_part)other);
+        return other instanceof action_part && equals((action_part) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

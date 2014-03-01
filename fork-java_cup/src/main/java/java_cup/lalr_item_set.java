@@ -9,7 +9,7 @@ import java.util.Enumeration;
  *  (i.e., ignoring differences in their lookahead sets).<p>
  *
  *  This class provides fairly conventional set oriented operations (union,
- *  sub/super-set tests, etc.), as well as an LALR "closure" operation (see 
+ *  sub/super-set tests, etc.), as well as an LALR "closure" operation (see
  *  compute_closure()).
  *
  * @see     java_cup.lalr_item
@@ -29,14 +29,14 @@ public class lalr_item_set {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Constructor for cloning from another set. 
+  /** Constructor for cloning from another set.
    * @param other indicates set we should copy from.
    */
-  public lalr_item_set(lalr_item_set other) 
+  public lalr_item_set(lalr_item_set other)
     throws internal_error
     {
       not_null(other);
-      _all = (Hashtable)other._all.clone();
+      _all.putAll(other._all);
     }
 
   /*-----------------------------------------------------------*/
@@ -44,12 +44,13 @@ public class lalr_item_set {
   /*-----------------------------------------------------------*/
 
   /** A hash table to implement the set.  We store the items using themselves
-   *  as keys. 
+   *  as keys.
    */
-  protected Hashtable _all = new Hashtable(11);
+  protected Hashtable<lalr_item, lalr_item> _all = new
+          Hashtable<lalr_item, lalr_item>(11);
 
   /** Access to all elements of the set. */
-  public Enumeration all() {return _all.elements();}
+  public Enumeration<lalr_item> all() {return _all.elements();}
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
@@ -65,22 +66,22 @@ public class lalr_item_set {
   /*--- Set Operation Methods ---------------------------------*/
   /*-----------------------------------------------------------*/
 
-  /** Does the set contain a particular item? 
+  /** Does the set contain a particular item?
    * @param itm the item in question.
    */
   public boolean contains(lalr_item itm) {return _all.containsKey(itm);}
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Return the item in the set matching a particular item (or null if not 
-   *  found) 
+  /** Return the item in the set matching a particular item (or null if not
+   *  found)
    *  @param itm the item we are looking for.
    */
-  public lalr_item find(lalr_item itm) {return (lalr_item)_all.get(itm);}
+  public lalr_item find(lalr_item itm) {return _all.get(itm);}
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Is this set an (improper) subset of another? 
+  /** Is this set an (improper) subset of another?
    * @param other the other set in question.
    */
   public boolean is_subset_of(lalr_item_set other) throws internal_error
@@ -98,7 +99,7 @@ public class lalr_item_set {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Is this set an (improper) superset of another? 
+  /** Is this set an (improper) superset of another?
    * @param other the other set in question.
    */
   public boolean is_superset_of(lalr_item_set other) throws internal_error
@@ -109,8 +110,8 @@ public class lalr_item_set {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Add a singleton item, merging lookahead sets if the item is already 
-   *  part of the set.  returns the element of the set that was added or 
+  /** Add a singleton item, merging lookahead sets if the item is already
+   *  part of the set.  returns the element of the set that was added or
    *  merged into.
    * @param itm the item being added.
    */
@@ -118,10 +119,10 @@ public class lalr_item_set {
     {
       lalr_item other;
 
-      not_null(itm); 
+      not_null(itm);
 
       /* see if an item with a matching core is already there */
-      other = (lalr_item)_all.get(itm);
+      other = _all.get(itm);
 
       /* if so, merge this lookahead into the original and leave it */
       if (other != null)
@@ -142,12 +143,12 @@ public class lalr_item_set {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Remove a single item if it is in the set. 
+  /** Remove a single item if it is in the set.
    * @param itm the item to remove.
    */
   public void remove(lalr_item itm) throws internal_error
     {
-      not_null(itm); 
+      not_null(itm);
 
       /* invalidate cached hashcode */
       hashcode_cache = null;
@@ -158,8 +159,8 @@ public class lalr_item_set {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Add a complete set, merging lookaheads where items are already in 
-   *  the set 
+  /** Add a complete set, merging lookaheads where items are already in
+   *  the set
    * @param other the set to be added.
    */
   public void add(lalr_item_set other) throws internal_error
@@ -173,7 +174,7 @@ public class lalr_item_set {
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
-  /** Remove (set subtract) a complete set. 
+  /** Remove (set subtract) a complete set.
    * @param other the set to remove.
    */
   public void remove(lalr_item_set other) throws internal_error
@@ -214,7 +215,7 @@ public class lalr_item_set {
    */
   protected void not_null(Object obj) throws internal_error
     {
-      if (obj == null) 
+      if (obj == null)
 	throw new internal_error("Null object used in set operation");
     }
 
@@ -222,17 +223,17 @@ public class lalr_item_set {
 
   /** Compute the closure of the set using the LALR closure rules.  Basically
    *  for every item of the form: <pre>
-   *    [L ::= a *N alpha, l] 
+   *    [L ::= a *N alpha, l]
    *  </pre>
-   *  (where N is a a non terminal and alpha is a string of symbols) make 
+   *  (where N is a a non terminal and alpha is a string of symbols) make
    *  sure there are also items of the form:  <pre>
-   *    [N ::= *beta, first(alpha l)] 
+   *    [N ::= *beta, first(alpha l)]
    *  </pre>
-   *  corresponding to each production of N.  Items with identical cores but 
-   *  differing lookahead sets are merged by creating a new item with the same 
-   *  core and the union of the lookahead sets (the LA in LALR stands for 
-   *  "lookahead merged" and this is where the merger is).  This routine 
-   *  assumes that nullability and first sets have been computed for all 
+   *  corresponding to each production of N.  Items with identical cores but
+   *  differing lookahead sets are merged by creating a new item with the same
+   *  core and the union of the lookahead sets (the LA in LALR stands for
+   *  "lookahead merged" and this is where the merger is).  This routine
+   *  assumes that nullability and first sets have been computed for all
    *  productions before it is called.
    */
   public void compute_closure()
@@ -258,7 +259,7 @@ public class lalr_item_set {
       while (consider.size() > 0)
 	{
 	  /* get one item to consider */
-	  itm = consider.get_one(); 
+	  itm = consider.get_one();
 
 	  /* do we have a dot before a non terminal */
 	  nt = itm.dot_before_nt();
@@ -276,7 +277,7 @@ public class lalr_item_set {
 		  prod = (production)p.nextElement();
 
 		  /* create new item with dot at start and that lookahead */
-		  new_itm = new lalr_item(prod, 
+		  new_itm = new lalr_item(prod,
 					     new terminal_set(new_lookaheads));
 
 		  /* add/merge item into the set */
@@ -288,12 +289,12 @@ public class lalr_item_set {
 		  /* was this was a new item*/
 		  if (add_itm == new_itm)
 		    {
-		      /* that may need further closure, consider it also */ 
+		      /* that may need further closure, consider it also */
 		      consider.add(new_itm);
-		    } 
-		} 
-	    } 
-	} 
+		    }
+		}
+	    }
+	}
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -319,10 +320,7 @@ public class lalr_item_set {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof lalr_item_set))
-	return false;
-      else
-	return equals((lalr_item_set)other);
+        return other instanceof lalr_item_set && equals((lalr_item_set) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -342,12 +340,12 @@ public class lalr_item_set {
 	  //   that means equal sets will have inequal hashcodes, which
 	  //   we're not allowed (by contract) to do.  So hash them all.
           for (e = all(), cnt=0 ; e.hasMoreElements() /*&& cnt<5*/; cnt++)
-	    result ^= ((lalr_item)e.nextElement()).hashCode();
+	    result ^= e.nextElement().hashCode();
 
-	  hashcode_cache = new Integer(result);
+	  hashcode_cache = result;
 	}
 
-      return hashcode_cache.intValue();
+      return hashcode_cache;
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -355,12 +353,12 @@ public class lalr_item_set {
   /** Convert to string. */
   public String toString()
     {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
 
       result.append("{\n");
-      for (Enumeration e=all(); e.hasMoreElements(); ) 
+      for (Enumeration e=all(); e.hasMoreElements(); )
  	{
- 	  result.append("  " + (lalr_item)e.nextElement() + "\n");
+ 	  result.append("  ").append(e.nextElement()).append("\n");
  	}
        result.append("}");
 

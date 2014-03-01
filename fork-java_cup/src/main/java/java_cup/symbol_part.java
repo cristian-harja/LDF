@@ -69,10 +69,7 @@ public class symbol_part extends production_part {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof symbol_part))
-	return false;
-      else
-	return equals((symbol_part)other);
+        return other instanceof symbol_part && equals((symbol_part) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

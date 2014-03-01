@@ -9,7 +9,7 @@
  * -- overrides org.apache.tools.ant.taskdefs.Java
  * -- providing cool interface to CUP
  * -- mapping all existing parameters to attributes
- * -- trys to add new useful features to CUP, like 
+ * -- trys to add new useful features to CUP, like
  *     - automatic package discovery
  *     - re-generate .java only when necessary
  *     - possibility to generate into a dest-directory
@@ -32,7 +32,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CUPTask extends Task 
+@SuppressWarnings("unused")
+public class CUPTask extends Task
 {
     private String srcfile=null;
     private String parser=null;
@@ -57,16 +58,17 @@ public class CUPTask extends Task
     private boolean noscanner=false;
     private boolean force=false;
     private boolean quiet=false;
-  
+
     /**
      * executes the task
      * parses all attributes and validates options...
      *
      */
 
-    public void execute() throws BuildException 
+    public void execute() throws BuildException
     {
-        List sc = new ArrayList();  // sc = simulated commandline
+        List<String> sc = new ArrayList<String>();  // sc = simulated
+        // commandline
 	// here, we parse our elements
 	if (parser!=null)  { sc.add("-parser"); sc.add(parser);}
         else parser="parser"; // set the default name to check actuality
@@ -95,7 +97,7 @@ public class CUPTask extends Task
 
 	// look for package name and add to destdir
 	String packagename = inspect(srcfile);
-	
+
 
 	// now, that's sweet:
 	if (destdir==null) {
@@ -115,49 +117,49 @@ public class CUPTask extends Task
 	    File parserfile = new File(destdir+packagename,parser+".java");
 	    File symfile    = new File(destdir+packagename,symbols+".java");
 	    File cupfile    = new File(srcfile);
-	    
+
 	    if (!parserfile.exists() || !symfile.exists()) {
 		if (!quiet) log("Either Parserfile or Symbolfile didn't exist");
-		force=true;	    
+		force=true;
 	    }else { if (!quiet) log("Parserfile and symbolfile are existing"); }
-	    
-	    
+
+
 	    if (parserfile.lastModified()<=cupfile.lastModified()) {
 		if (!quiet) log("Parserfile "+parserfile+" isn't actual");
 		force=true;
 	    }else { if (!quiet) log("Parserfile "+parserfile+" is actual"); }
-	    
+
 	    if (symfile.lastModified()<=cupfile.lastModified()) {
 		if (!quiet) log("Symbolfile "+symfile+" isn't actual");
 		force=true;
 	    }else { if (!quiet) log("Symbolfile"+symfile+" is actual"); }
-	    
-	    
+
+
 	    if (!force) {
 		if (!quiet) log("skipping generation of "+srcfile);
 		if (!quiet) log("use option force=\"true\" to override");
 		return;
 	    }
 	}
-        
+
 	sc.add("-destdir");
         sc.add(dest.getAbsolutePath());
-        
+
         // also catch the not existing input file
 	if (srcfile==null) throw new BuildException("Input file needed: Specify <cup srcfile=\"myfile.cup\"> ");
 	if (!(new File(srcfile)).exists()) throw new BuildException("Input file not found: srcfile=\""+srcfile+"\" ");
-	
+
         sc.add(srcfile);
 	String[] args = new String[sc.size()];
-        for (int i=0;i<args.length;i++) args[i]=(String)sc.get(i);
-        
+        for (int i=0;i<args.length;i++) args[i]= sc.get(i);
+
 
 	try {
             java_cup.Main.main(args);
         }catch(Exception e){
             log("CUP error occured int CUP task: "+e);
         }
-	
+
 	// this is a dirty hack to determine the apropriate class path
 //	URL url = CUPTask.class.getResource("/java_cup/Main.class");
 //	String path = url.getPath().substring(0,url.getPath().length()-20);
@@ -167,11 +169,11 @@ public class CUPTask extends Task
 //
 //	setFailonerror(true);
 //	setFork(true);
-//	
+//
 
 	// here, we prepare for calling CUP
 //	setClassname("java_cup.Main");
-	
+
 	// let's call CUP
 //	super.execute();
 
@@ -189,15 +191,15 @@ public class CUPTask extends Task
 	BufferedReader br = new BufferedReader(new FileReader(cupfile));
 	while (br.ready()){
 	    String line = br.readLine();
-	    if ((line.startsWith("package"))&&(line.indexOf(";")!=-1))
+	    if ((line.startsWith("package"))&&(line.contains(";")))
 		{
 		    String result = line.substring(8,line.indexOf(";"));
 		    result = result.replace('.',System.getProperty("file.separator").charAt(0));
 		    return System.getProperty("file.separator") + result;
 		}
-	    
+
 	}
-	}catch (IOException ioe){
+	}catch (IOException ignored){
 	}
 	return "";
     }
@@ -214,7 +216,7 @@ public class CUPTask extends Task
     /**
      * Sets the value of quiet
      *
-     * @param arg_quiet Value to assign to this.quiet
+     * @param argquiet Value to assign to this.quiet
      */
     public void setQuiet(boolean argquiet) {
 	this.quiet = argquiet;
@@ -231,7 +233,7 @@ public class CUPTask extends Task
     /**
      * Sets the value of force
      *
-     * @param arg_package Value to assign to this.force
+     * @param argforce Value to assign to this.force
      */
     public void setForce(boolean argforce) {
 	this.force = argforce;
@@ -266,7 +268,7 @@ public class CUPTask extends Task
     /**
      * Sets the value of destdir
      *
-     * @param arg_package Value to assign to this.destdir
+     * @param destdir Value to assign to this.destdir
      */
     public void setDestdir(String destdir) {
 	this.destdir = destdir;
@@ -306,7 +308,7 @@ public class CUPTask extends Task
 	this.srcfile = newSrcfile;
     }
 
-  
+
 
     /**
      * Gets the value of parser
@@ -616,5 +618,5 @@ public class CUPTask extends Task
 
 }
 
-  
-  
+
+

@@ -64,10 +64,7 @@ public abstract class production_part {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof production_part))
-        return false;
-      else
-	return equals((production_part)other);
+        return other instanceof production_part && equals((production_part) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

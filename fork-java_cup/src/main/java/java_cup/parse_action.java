@@ -68,10 +68,7 @@ public class parse_action {
   /** Generic equality test. */
   public boolean equals(Object other)
     {
-      if (other instanceof parse_action)
-	return equals((parse_action)other);
-      else
-	return false;
+        return other instanceof parse_action && equals((parse_action) other);
     }
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 

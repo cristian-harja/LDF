@@ -203,10 +203,7 @@ public class terminal_set {
   /** Equality comparison. */
   public boolean equals(terminal_set other)
     {
-      if (other == null) 
-	return false;
-      else
-	return _elements.equals(other._elements);
+        return other != null && _elements.equals(other._elements);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -214,10 +211,7 @@ public class terminal_set {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof terminal_set))
-	return false;
-      else
-	return equals((terminal_set)other);
+        return other instanceof terminal_set && equals((terminal_set) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

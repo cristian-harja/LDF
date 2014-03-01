@@ -32,7 +32,6 @@ public class lr_item_core {
    */
   public lr_item_core(production prod, int pos) throws internal_error
     {
-      symbol          after_dot = null;
       production_part part;
 
       if (prod == null)
@@ -176,10 +175,7 @@ public class lr_item_core {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof lr_item_core))
-	return false;
-      else
-	return equals((lr_item_core)other);
+        return other instanceof lr_item_core && equals((lr_item_core) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

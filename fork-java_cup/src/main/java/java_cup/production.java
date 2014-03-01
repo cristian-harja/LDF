@@ -67,12 +67,12 @@ public class production {
 
       /* remember the length */
       if (rhs_l >= 0)
-	_rhs_length = rhs_l;
+        _rhs_length = rhs_l;
       else if (rhs_parts != null)
-	_rhs_length = rhs_parts.length;
+        _rhs_length = rhs_parts.length;
       else
-	_rhs_length = 0;
-	
+        _rhs_length = 0;
+
       /* make sure we have a valid left-hand-side */
       if (lhs_sym == null) 
 	throw new internal_error(
@@ -154,7 +154,7 @@ public class production {
       _index = next_index++;
 
       /* put us in the global collection of productions */
-      _all.put(new Integer(_index),this);
+      _all.put(_index,this);
 
       /* put us in the production list of the lhs non terminal */
       lhs_sym.add_production(this);
@@ -220,14 +220,15 @@ public class production {
   /** Table of all productions.  Elements are stored using their index as 
    *  the key.
    */
-  protected static Hashtable _all = new Hashtable();
+  protected static Hashtable<Integer, production> _all =
+          new Hashtable<Integer, production>();
  
   /** Access to all productions. */
   public static Enumeration all() {return _all.elements();}
 
     /** Lookup a production by index. */
   public static production find(int indx) {
-    return (production) _all.get(new Integer(indx));
+    return _all.get(new Integer(indx));
   }
 
   //Hm Added clear  to clear all static fields
@@ -385,7 +386,6 @@ public class production {
   /** Return label declaration code
    * @param labelname    the label name
    * @param stack_type   the stack type of label?
-   * @author frankf
    */ 
   protected String make_declaration(
 				    String  labelname,
@@ -433,8 +433,7 @@ public class production {
   /** Declare label names as valid variables within the action string
    * @param rhs          array of RHS parts.
    * @param rhs_len      how much of rhs to consider valid.
-   * @param final_action the final action string of the production. 
-   * @param lhs_type     the object type associated with the LHS symbol.
+   * @param final_action the final action string of the production.
    */ 
   protected String declare_labels(
     production_part  rhs[], 
@@ -703,8 +702,7 @@ public class production {
   /** Equality comparison. */
   public boolean equals(production other)
     {
-      if (other == null) return false;
-      return other._index == _index;
+        return other != null && other._index == _index;
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -712,10 +710,7 @@ public class production {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof production))
-	return false;
-      else
-	return equals((production)other);
+        return other instanceof production && equals((production) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

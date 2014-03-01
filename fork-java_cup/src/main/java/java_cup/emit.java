@@ -49,7 +49,7 @@ import java.util.Date;
  *
  * This class is "static" (contains only static data and methods).<p> 
  *
- * @see java_cup.main
+ * @see java_cup.Main
  * @version last update: 11/25/95
  * @author Scott Hudson
  */
@@ -387,7 +387,7 @@ public class emit {
       for (int instancecounter = 0; instancecounter <= production.number()/UPPERLIMIT; instancecounter++) {
       out.println("  /** Method "+instancecounter+" with the actual generated action code for actions "+(instancecounter*UPPERLIMIT)+" to "+((instancecounter+1)*UPPERLIMIT) +". */");
       out.println("  public final java_cup.runtime.Symbol " + 
-		     pre("do_action_part")+ String.format("%08d",new Integer(instancecounter)) +"(");
+		     pre("do_action_part")+ String.format("%08d", instancecounter) +"(");
       out.println("    int                        " + pre("act_num,"));
       out.println("    java_cup.runtime.lr_parser " + pre("parser,"));
       out.println("    java.util.Stack            " + pre("stack,"));
@@ -404,7 +404,7 @@ public class emit {
       /* emit action code for each production as a separate case */
       int proditeration = instancecounter*UPPERLIMIT;
       prod=production.find(proditeration);
-      for ( ;proditeration<Math.min((instancecounter+1)*UPPERLIMIT,production.number());prod=(production)production.find(++proditeration) )
+      for ( ;proditeration<Math.min((instancecounter+1)*UPPERLIMIT,production.number());prod= production.find(++proditeration))
 	{
 	  /* case label */
           out.println("          /*. . . . . . . . . . . . . . . . . . . .*/");
@@ -448,7 +448,7 @@ public class emit {
 	    if (!(s instanceof non_terminal)) continue;
 	    // skip this non-terminal unless it corresponds to
 	    // an embedded action production.
-	    if (((non_terminal)s).is_embedded_action == false) continue;
+	    if (!((non_terminal) s).is_embedded_action) continue;
 	    // OK, it fits.  Make a conditional assignment to RESULT.
 	    int index = prod.rhs_length() - i - 1; // last rhs is on top.
             // set comment to inform about where the intermediate result came from
@@ -473,9 +473,10 @@ public class emit {
 	  }
 
         /* if there is an action string, emit it */
-          if (prod.action() != null && prod.action().code_string() != null &&
-              !prod.action().equals(""))
-            out.println(prod.action().code_string());
+        String code_string = prod.action().code_string();
+        if (prod.action() != null && code_string != null &&
+              !code_string.equals(""))
+            out.println(code_string);
 
 	  /* here we have the left and right values being propagated.  
 		must make this a command line option.
@@ -554,7 +555,7 @@ public class emit {
       out.println("    {");
 
       if (production.number()<UPPERLIMIT) { // Make it simple for the optimizer to inline!
-	  out.println("              return " + pre("do_action_part")+ String.format("%08d",new Integer(0))+"(");
+	  out.println("              return " + pre("do_action_part")+ String.format("%08d", 0)+"(");
 	  out.println("                               " + pre("act_num,"));
 	  out.println("                               " + pre("parser,"));
 	  out.println("                               " + pre("stack,"));
@@ -579,7 +580,7 @@ public class emit {
 	  /* case label */
           out.println("          /*. . . . . . . . "+(instancecounter*UPPERLIMIT)+" < #action < "+((instancecounter+1)*UPPERLIMIT)+". . . . . . . . . . . .*/");
           out.println("          case " + instancecounter + ": ");
-	  out.println("              return " + pre("do_action_part")+ String.format("%08d",new Integer(instancecounter))+"(");
+	  out.println("              return " + pre("do_action_part")+ String.format("%08d", instancecounter)+"(");
 	  out.println("                               " + pre("act_num,"));
 	  out.println("                               " + pre("parser,"));
 	  out.println("                               " + pre("stack,"));
@@ -849,7 +850,7 @@ public class emit {
   }
   // output an escape sequence for the given character code.
   protected static int do_escaped(PrintWriter out, char c) {
-    StringBuffer escape = new StringBuffer();
+    StringBuilder escape = new StringBuilder();
     if (c <= 0xFF) {
       escape.append(Integer.toOctalString(c));
       while(escape.length() < 3) escape.insert(0, '0');

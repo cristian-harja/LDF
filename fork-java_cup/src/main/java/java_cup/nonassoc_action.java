@@ -18,7 +18,7 @@ public class nonassoc_action extends parse_action {
 
   /** Simple constructor. 
    */
-  public nonassoc_action() throws internal_error
+  public nonassoc_action()
     {
 	/* don't need to set anything, since it signifies error */
     }
@@ -43,10 +43,7 @@ public class nonassoc_action extends parse_action {
   /** Generic equality test. */
   public boolean equals(Object other)
     {
-      if (other instanceof parse_action)
-	return equals((parse_action)other);
-      else
-       return false;
+        return other instanceof parse_action && equals((parse_action) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

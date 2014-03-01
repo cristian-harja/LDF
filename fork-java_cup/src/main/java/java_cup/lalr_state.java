@@ -83,7 +83,8 @@ public class lalr_state {
   /*-----------------------------------------------------------*/
 
   /** Collection of all states. */
-  protected static Hashtable _all = new Hashtable();
+  protected static Hashtable<lalr_item_set, lalr_state> _all =
+          new Hashtable<lalr_item_set, lalr_state>();
 
   /** Collection of all states. */
   public static Enumeration all() {return _all.elements();}
@@ -106,7 +107,8 @@ public class lalr_state {
    *  unclosed, set of items -- which uniquely define the state).  This table 
    *  stores state objects using (a copy of) their kernel item sets as keys. 
    */
-  protected static Hashtable _all_kernels = new Hashtable();
+  protected static Hashtable<lalr_item_set, lalr_state> _all_kernels =
+          new Hashtable<lalr_item_set, lalr_state>();
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
@@ -122,7 +124,7 @@ public class lalr_state {
       if (itms == null) 
   	return null;
       else
-  	return (lalr_state)_all.get(itms);
+  	return _all.get(itms);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -283,7 +285,7 @@ public class lalr_state {
       lalr_item_set new_items;
       lalr_item_set linked_items;
       lalr_item_set kernel;
-      Stack         work_stack = new Stack();
+      Stack<lalr_state> work_stack = new Stack<lalr_state>();
       lalr_state    st, new_st;
       symbol_set    outgoing;
       lalr_item     itm, new_itm, existing, fix_itm;
@@ -320,7 +322,7 @@ public class lalr_state {
       while (!work_stack.empty())
 	{
 	  /* remove a state from the work set */
-	  st = (lalr_state)work_stack.pop();
+	  st = work_stack.pop();
 
 	  /* gather up all the symbols that appear before dots */
 	  outgoing = new symbol_set();
@@ -364,7 +366,7 @@ public class lalr_state {
 	      kernel = new lalr_item_set(new_items);
 
 	      /* have we seen this one already? */
-	      new_st = (lalr_state)_all_kernels.get(kernel);
+	      new_st = _all_kernels.get(kernel);
 
 	      /* if we haven't, build a new state out of the item set */
 	      if (new_st == null)
@@ -393,8 +395,7 @@ public class lalr_state {
 		      for (int l =0; l < fix_itm.propagate_items().size(); l++)
 			{
 			  /* pull out item linked to in the new state */
-			  new_itm = 
-			    (lalr_item)fix_itm.propagate_items().elementAt(l);
+			  new_itm = fix_itm.propagate_items().elementAt(l);
 
 			  /* find corresponding item in the existing state */
 			  existing = new_st.items().find(new_itm);
@@ -584,7 +585,7 @@ public class lalr_state {
    *
    *  @param p           the production
    *  @param term_index  the index of the lokahead terminal
-   *  @param parse_action_row  a row of the action table
+   *  @param table_row   a row of the action table
    *  @param act         the rule in conflict with the table entry
    */
 
@@ -706,7 +707,6 @@ public class lalr_state {
     throws internal_error
     {
       lalr_item    itm, compare;
-      symbol       shift_sym;
 
       boolean      after_itm;
 
@@ -847,10 +847,7 @@ public class lalr_state {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof lalr_state))
-	return false;
-      else
-	return equals((lalr_state)other);
+        return other instanceof lalr_state && equals((lalr_state) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

@@ -26,7 +26,7 @@ public class symbol_set {
   public symbol_set(symbol_set other) throws internal_error
     {
       not_null(other);
-      _all = (Hashtable)other._all.clone();
+      _all.putAll(other._all);
     }
 
   /*-----------------------------------------------------------*/
@@ -35,7 +35,8 @@ public class symbol_set {
 
   /** A hash table to hold the set. Symbols are keyed using their name string. 
    */
-  protected Hashtable _all = new Hashtable(11);
+  protected Hashtable<String, symbol> _all =
+          new Hashtable<String, symbol>(11);
 
   /** Access to all elements of the set. */
   public Enumeration all() {return _all.elements();}
@@ -178,10 +179,7 @@ public class symbol_set {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof symbol_set))
-	return false;
-      else
-	return equals((symbol_set)other);
+        return other instanceof symbol_set && equals((symbol_set) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -195,7 +193,7 @@ public class symbol_set {
 
       /* hash together codes from at most first 5 elements */
       for (e = all(), cnt=0 ; e.hasMoreElements() && cnt<5; cnt++)
-	result ^= ((symbol)e.nextElement()).hashCode();
+	result ^= e.nextElement().hashCode();
 
       return result;
     }

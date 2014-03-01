@@ -57,10 +57,7 @@ public class shift_action extends parse_action {
   /** Generic equality test. */
   public boolean equals(Object other)
     {
-      if (other instanceof shift_action)
-	return equals((shift_action)other);
-      else
-       return false;
+        return other instanceof shift_action && equals((shift_action) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

@@ -40,7 +40,7 @@ public class non_terminal extends symbol {
       _index = next_index++;
 
       /* add to by_index set */
-      _all_by_index.put(new Integer(_index), this);
+      _all_by_index.put(_index, this);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -60,7 +60,8 @@ public class non_terminal extends symbol {
   /** Table of all non-terminals -- elements are stored using name strings 
    *  as the key 
    */
-  protected static Hashtable _all = new Hashtable();
+  protected static Hashtable<String, non_terminal> _all =
+          new Hashtable<String, non_terminal>();
 
   //Hm Added clear  to clear all static fields
   public static void clear() {
@@ -79,20 +80,21 @@ public class non_terminal extends symbol {
       if (with_name == null)
         return null;
       else 
-        return (non_terminal)_all.get(with_name);
+        return _all.get(with_name);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
   /** Table of all non terminals indexed by their index number. */
-  protected static Hashtable _all_by_index = new Hashtable();
+  protected static Hashtable<Integer, non_terminal> _all_by_index =
+          new Hashtable<Integer, non_terminal>();
 
   /** Lookup a non terminal by index. */
   public static non_terminal find(int indx)
     {
-      Integer the_indx = new Integer(indx);
+      Integer the_indx = indx;
 
-      return (non_terminal)_all_by_index.get(the_indx);
+      return _all_by_index.get(the_indx);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -143,7 +145,7 @@ public class non_terminal extends symbol {
     /**
      * TUM 20060608 bugfix for embedded action codes
      */
-    static non_terminal create_new(String prefix, String type) throws internal_error{
+    static non_terminal create_new(String prefix, String type) {
         if (prefix==null) prefix = "NT$";
         return new non_terminal(prefix + next_nt++,type);
     }
@@ -237,7 +239,8 @@ public class non_terminal extends symbol {
   /*-----------------------------------------------------------*/
 
   /** Table of all productions with this non terminal on the LHS. */
-  protected Hashtable _productions = new Hashtable(11);
+  protected Hashtable<production, production> _productions =
+          new Hashtable<production, production>(11);
 
   /** Access to productions with this non terminal on the LHS. */
   public Enumeration productions() {return _productions.elements();}

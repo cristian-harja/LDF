@@ -34,7 +34,7 @@ public class virtual_parse_stack {
 
       /* set up our internals */
       real_stack = shadowing_stack;
-      vstack     = new Stack();
+      vstack     = new Stack<Integer>();
       real_next  = 0;
 
       /* get one element onto the virtual portion of the stack */
@@ -67,7 +67,7 @@ public class virtual_parse_stack {
    *  on the virtual stack).  When this portion of the stack becomes empty we 
    *  transfer elements from the underlying stack onto this stack. 
    */
-  protected Stack vstack;
+  protected Stack<Integer> vstack;
 
   /*-----------------------------------------------------------*/
   /*--- General Methods ---------------------------------------*/
@@ -90,7 +90,7 @@ public class virtual_parse_stack {
       real_next++;
 
       /* put the state number from the Symbol onto the virtual stack */
-      vstack.push(new Integer(stack_sym.parse_state));
+      vstack.push(stack_sym.parse_state);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -112,7 +112,7 @@ public class virtual_parse_stack {
 	throw new Exception(
 		  "Internal parser error: top() called on empty virtual stack");
 
-      return ((Integer)vstack.peek()).intValue();
+      return vstack.peek();
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -137,7 +137,7 @@ public class virtual_parse_stack {
   /** Push a state number onto the stack. */
   public void push(int state_num)
     {
-      vstack.push(new Integer(state_num));
+      vstack.push(state_num);
     }
 
   /*-----------------------------------------------------------*/

@@ -57,10 +57,7 @@ public class reduce_action extends parse_action {
   /** Generic equality test. */
   public boolean equals(Object other)
     {
-      if (other instanceof reduce_action)
-	return equals((reduce_action)other);
-      else
-       return false;
+        return other instanceof reduce_action && equals((reduce_action) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/

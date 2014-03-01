@@ -1,7 +1,6 @@
 package java_cup;
 
 import java.util.Stack;
-import java.util.Enumeration;
 
 /** This class represents an LALR item. Each LALR item consists of 
  *  a production, a "dot" at a position within that production, and
@@ -45,7 +44,7 @@ public class lalr_item extends lr_item_core {
     {
       super(prod, pos);
       _lookahead = look;
-      _propagate_items = new Stack();
+      _propagate_items = new Stack<lalr_item>();
       needs_propagation = true;
     }
 
@@ -83,10 +82,10 @@ public class lalr_item extends lr_item_core {
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
   /** Links to items that the lookahead needs to be propagated to. */
-  protected Stack _propagate_items; 
+  protected Stack<lalr_item> _propagate_items;
 
   /** Links to items that the lookahead needs to be propagated to */
-  public Stack propagate_items() {return _propagate_items;}
+  public Stack<lalr_item> propagate_items() {return _propagate_items;}
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
@@ -110,7 +109,7 @@ public class lalr_item extends lr_item_core {
 
   /** Propagate incoming lookaheads through this item to others need to 
    *  be changed.
-   * @params incoming symbols to potentially be added to lookahead of this item.
+   * @param incoming symbols to potentially be added to lookahead of this item.
    */
   public void propagate_lookaheads(terminal_set incoming) throws internal_error
     {
@@ -135,7 +134,7 @@ public class lalr_item extends lr_item_core {
 
 	  /* propagate our lookahead into each item we are linked to */
 	  for (int i = 0; i < propagate_items().size(); i++)
-	    ((lalr_item)propagate_items().elementAt(i))
+	    propagate_items().elementAt(i)
 					  .propagate_lookaheads(lookahead());
 	}
     }
@@ -268,8 +267,7 @@ public class lalr_item extends lr_item_core {
    */
   public boolean equals(lalr_item other)
     {
-      if (other == null) return false;
-      return super.equals(other);
+        return other != null && super.equals(other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -277,10 +275,7 @@ public class lalr_item extends lr_item_core {
   /** Generic equality comparison. */
   public boolean equals(Object other)
     {
-      if (!(other instanceof lalr_item)) 
-	return false;
-      else
-	return equals((lalr_item)other);
+        return other instanceof lalr_item && equals((lalr_item) other);
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
