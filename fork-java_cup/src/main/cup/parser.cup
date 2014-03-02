@@ -1,4 +1,3 @@
-
 /*================================================================*/
 /*
   JavaCup Specification for the JavaCup Specification Language
@@ -88,8 +87,8 @@
 */
 /*================================================================*/
 
-package java_cup;
-import java_cup.runtime.*;
+package ldf.java_cup;
+import ldf.java_cup.runtime.*;
 import java.util.Hashtable;
 import java.util.Stack;
 /*----------------------------------------------------------------*/
@@ -180,7 +179,7 @@ action code {:
       if (sp == null) {
         System.err.println("Could find terminal " + term + " while declaring precedence");
       } else {
-        java_cup.symbol sym = sp.the_symbol();
+        ldf.java_cup.symbol sym = sp.the_symbol();
         if (sym instanceof terminal)
           ((terminal)sym).set_precedence(_cur_side, _cur_prec);
         else System.err.println("Precedence declaration: Can't find terminal " + term);
@@ -589,7 +588,7 @@ rhs_list ::= rhs_list BAR rhs | rhs;
 rhs ::=
         prod_part_list PERCENT_PREC term_id:term_name
         {:
-          java_cup.symbol sym = null;
+          ldf.java_cup.symbol sym = null;
           if (lhs_nt != null)
             {
               /* Find the precedence symbol */
@@ -688,7 +687,7 @@ prod_part ::=
           if (symb == null)
             {
               if (ErrorManager.getManager().getErrorCount() == 0)
-                ErrorManager.getManager().emit_error("java_cup.runtime.Symbol \"" + symid +
+                ErrorManager.getManager().emit_error("ldf.java_cup.runtime.Symbol \"" + symid +
                                "\" has not been declared");
             }
           else
@@ -784,7 +783,7 @@ new_term_id ::=
           if (symbols.get(term_id) != null)
             {
               /* issue a message */
-              ErrorManager.getManager().emit_error("java_cup.runtime.Symbol \"" + term_id +
+              ErrorManager.getManager().emit_error("ldf.java_cup.runtime.Symbol \"" + term_id +
                            "\" has already been declared");
             }
           else
@@ -809,7 +808,7 @@ new_non_term_id ::=
           if (symbols.get(non_term_id) != null)
             {
               /* issue a message */
-              ErrorManager.getManager().emit_error( "java_cup.runtime.Symbol \"" + non_term_id +
+              ErrorManager.getManager().emit_error( "ldf.java_cup.runtime.Symbol \"" + non_term_id +
                                               "\" has already been declared");
             }
           else

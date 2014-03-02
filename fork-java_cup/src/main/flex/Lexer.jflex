@@ -1,19 +1,23 @@
-package java_cup;
-import java_cup.runtime.ComplexSymbolFactory;
-import java_cup.runtime.ComplexSymbolFactory.Location;
-import java_cup.runtime.Symbol;
+package ldf.java_cup;
+import ldf.java_cup.runtime.ComplexSymbolFactory;
+import ldf.java_cup.runtime.ComplexSymbolFactory.Location;
+import ldf.java_cup.runtime.Symbol;
+
 import java.lang.Error;
 import java.io.InputStreamReader;
+import java.io.IOException;
 
 %%
 
 %class Lexer
 %implements sym
+%implements ldf.java_cup.runtime.Scanner
 %public
 %unicode
 %line
 %column
-%cup
+%type ldf.java_cup.runtime.Symbol
+%function next_token
 %{
     public Lexer(ComplexSymbolFactory sf){
         this(new InputStreamReader(System.in));

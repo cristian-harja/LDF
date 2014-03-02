@@ -1,83 +1,93 @@
-<project name="emugen" default ="dist" basedir=".">
-  <property name="etc"       location="etc"       />
-  <property name="bin"       location="bin"       />
-  <property name="lib"       location="lib"       />
-  <property name="src"       location="src/main/java"/>
-  <property name="gen"       location="target/generated-sources"/>
-  <property name="classes"   location="target/classes"   />
-  <property name="dist"      location="dist"      />
-  <!--property name="test"      location="test"      /-->
-  <property name="flex"      location="src/main/flex"/>
-  <property name="cup"       location="src/main/cup" />
-  <property name="gen_flex"  location="${gen}/flex"/>
-  <property name="gen_cup"   location="${gen}/cup"/>
+<project name="emugen" default="dist" basedir=".">
+    <property name="bin" location="bin"/>
+    <property name="dist" location="dist"/>
+    <property name="dist_cc" location="${dist}/ldf-java_cup-cc.jar"/>
+    <property name="dist_rt" location="${dist}/ldf-java_cup-rt.jar"/>
+    <property name="src" location="src/main/java"/>
+    <property name="flex" location="src/main/flex"/>
+    <property name="cup" location="src/main/cup"/>
+    <property name="out" location="target/classes"/>
+    <property name="gen" location="target/generated-sources"/>
+    <property name="gen_flex" location="${gen}/flex"/>
+    <property name="gen_cup" location="${gen}/cup"/>
 
-  <!-- initialize the workspace -->
-  <target name="init">
-    <tstamp />
-    <delete dir="${gen_cup}" />
-    <mkdir dir="${src}" />
-    <mkdir dir="${gen_flex}" />
-    <mkdir dir="${gen_cup}" />
-    <mkdir dir="${classes}" />
-    <mkdir dir="${dist}" />
-  </target>
+    <property environment="env"/>
 
-  <property environment="env" />
+    <target name="clean">
+        <!-- Delete folders -->
+        <delete dir="${gen_cup}"/>
+        <delete dir="${gen_flex}"/>
+        <delete dir="${out}"/>
 
-  <path id="binaries">
-     <fileset dir="${bin}">
-        <include name="**/*.jar" />
-     </fileset>
-  </path>
+        <!-- (Re)create folders -->
+        <mkdir dir="${gen_cup}"/>
+        <mkdir dir="${gen_flex}"/>
+        <mkdir dir="${out}"/>
+        <mkdir dir="${dist}"/>
+    </target>
 
-  <target name="clean">
-    <delete dir="${gen_flex}" />
-    <delete dir="${gen_cup}" />
-    <delete dir="${classes}" />
-    <delete dir="${dist}" />
-  </target>
+    <!-- Step 1: Compile CUP -->
+    <target name="compile">
+        <mkdir dir="${out}"/>
+        <javac srcdir="${src}"
+               destdir="${out}"
+               classpath="${compile_classpath}"/>
+    </target>
 
-  <taskdef name="cup" classname="java_cup.anttask.CUPTask" classpath="${bin}/java-cup-11b.jar" />
-  <taskdef name="jflex" classname="JFlex.anttask.JFlexTask" classpath="${bin}/JFlex.jar" />
+    <!-- Step 2: Package CUP -->
+    <target name="dist" depends="compile">
 
-  <target name="cup" depends="init">
-    <cup srcfile="${cup}/parser.cup" interface="on" destdir="${gen_cup}"
-         parser="parser" symbols="sym" quiet="false" nonterms="true"
-         nopositions="true"/>
-  </target>
+        <!-- Runtime Library (rt) -->
+        <jar jarfile="${dist_rt}"
+             basedir="${out}"
+             includes="ldf/java_cup/runtime/*"/>
 
-  <target name="jflex" depends="cup">
-    <jflex file="${flex}/Lexer.jflex" destdir="${gen_flex}" />
-  </target>
+        <!-- Compiler Compiler (cc) -->
+        <jar jarfile="${dist_cc}" basedir="${out}">
+            <manifest>
+                <attribute name="Main-Class" value="ldf/java_cup/Main"/>
+                <attribute name="Class-Path" value="${dist_rt}"/>
+            </manifest>
+        </jar>
 
-  <target name="compile" depends="jflex">
-    <javac destdir="${classes}" classpath="${compile_classpath}">
-      <src path="${src}"/>
-      <src path="${gen_flex}"/>
-      <src path="${gen_cup}"/>
-      <compilerarg value="-Xlint"/>
-    </javac>
-  </target>
+    </target>
 
-  <target name="dist" depends="compile">
-   <jar jarfile="${dist}/java-cup-11b.jar"
-        basedir="${classes}">
-      <manifest>
-        <attribute name="Main-Class" value="java_cup/Main" />
-        <attribute name="Class-Path" value="java-cup-11b-runtime.jar" />
-      </manifest>
-    </jar>
-    <jar jarfile="${dist}/java-cup-11b-runtime.jar"
-         basedir="${classes}"
-         includes="java_cup/runtime/*"/>
-  </target>
+    <!-- Making a test compilation of CUP's grammar -->
+    <target name="test_compile" depends="clean,compile">
 
-  <target name="test" depends="dist">
-    <java jar="${dist}/java-cup-11b.jar" fork="true">
-        <arg value="-interface" />
-        <arg value="${cup}/parser.cup" />
-    </java>
+        <taskdef
+                name="cup"
+                classname="ldf.java_cup.anttask.CUPTask"
+                classpath="${out}"/>
 
-  </target>
+        <taskdef
+                name="jflex"
+                classname="JFlex.anttask.JFlexTask"
+                classpath="${bin}/JFlex.jar"/>
+
+        <!-- Run CUP on `src/main/cup/parser.cup` -->
+        <cup
+                srcfile="${cup}/parser.cup"
+                interface="on"
+                destdir="${gen_cup}"
+                parser="parser"
+                symbols="sym"
+                quiet="false"
+                nonterms="true"
+                nopositions="true"/>
+
+        <!-- Run JFlex on `src/main/flex/Lexer.jflex` -->
+        <jflex
+                file="${flex}/Lexer.jflex"
+                destdir="${gen_flex}"/>
+
+        <echo>
+            Parser files have been generated into:
+            ${gen_cup}
+            ${gen_flex}
+
+            Go check if the generated code is acceptable.
+        </echo>
+    </target>
+
 </project>

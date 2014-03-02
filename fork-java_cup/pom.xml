@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ldf</groupId>
-    <artifactId>ldf_java_cup</artifactId>
+    <artifactId>ldf-java_cup</artifactId>
     <version>0.1-SNAPSHOT</version>
 
     <description>
@@ -17,7 +17,7 @@
 
     <dependencies>
 
-        <!-- org.apache.tools.ant.Task -->
+        <!-- class: org.apache.tools.ant.Task -->
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
@@ -37,14 +37,64 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.7</version>
 
-                <configuration>
-                    <target>
-                        <property name="compile_classpath"
-                            refid="maven.compile.classpath"/>
-                        <ant antfile="${project.basedir}/build.xml"
-                             target="dist"/>
-                    </target>
-                </configuration>
+                <executions>
+
+                    <!-- Run the "dist" target in build.xml -->
+                    <execution>
+                        <id>cupPackage</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property
+                                        name="compile_classpath"
+                                        refid="maven.compile.classpath"/>
+                                <ant antfile="${project.basedir}/build.xml"
+                                     target="dist"/>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <!-- Run the "test_compile" target in build.xml -->
+                    <execution>
+                        <id>cupTestRun</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property
+                                        name="compile_classpath"
+                                        refid="maven.compile.classpath"/>
+                                <ant antfile="${project.basedir}/build.xml"
+                                     target="test_compile"/>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <!-- Run the "clean" target in build.xml -->
+                    <execution>
+                        <id>cupClean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property
+                                        name="compile_classpath"
+                                        refid="maven.compile.classpath"/>
+
+                                <ant antfile="${project.basedir}/build.xml"
+                                     target="clean"/>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                </executions>
 
                 <dependencies>
                     <dependency>
