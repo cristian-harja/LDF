@@ -314,7 +314,7 @@ public abstract class lr_parser {
   public abstract Symbol do_action(
     int       act_num,
     lr_parser parser,
-    Stack     stack,
+    Stack<Symbol>     stack,
     int       top)
     throws java.lang.Exception;
 

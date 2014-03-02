@@ -54,7 +54,7 @@ public class CUPTask extends Task
     private boolean time=false;
     private boolean debug=false;
     private boolean nopositions=false;
-    private boolean locations=true;
+    private boolean locations=false;
     private boolean noscanner=false;
     private boolean force=false;
     private boolean quiet=false;

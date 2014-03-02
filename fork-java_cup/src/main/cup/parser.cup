@@ -130,8 +130,8 @@ action code {:
     }
 
   /** string to build up multiple part names */
-  protected String multipart_name = new String();
-  protected Stack multipart_names = new Stack();
+  protected String multipart_name = "";
+  protected Stack<String> multipart_names = new Stack<String>();
   /** append a new name segment to the accumulated multipart name */
 
 //  TUM CHANGES
@@ -147,10 +147,12 @@ action code {:
 // TUM CHANGES
 
   /** table of declared symbols -- contains production parts indexed by name */
-  protected Hashtable symbols = new Hashtable();
+  protected Hashtable<String, symbol_part> symbols = new
+          Hashtable<String, symbol_part>();
 
   /** table of just non terminals -- contains non_terminals indexed by name */
-  protected Hashtable non_terms = new Hashtable();
+  protected Hashtable<String, non_terminal> non_terms = new
+          Hashtable<String, non_terminal>();
 
   /** declared start non_terminal */
   protected non_terminal start_nt = null;
@@ -174,7 +176,7 @@ action code {:
     if (term == null) {
       System.err.println("Unable to add precedence to nonexistent terminal");
     } else {
-      symbol_part sp = (symbol_part)symbols.get(term);
+      symbol_part sp = symbols.get(term);
       if (sp == null) {
         System.err.println("Could find terminal " + term + " while declaring precedence");
       } else {
@@ -291,7 +293,7 @@ package_spec ::=
           emit.package_name = multipart_name;
 
           /* reset the accumulated multipart name */
-          multipart_name = new String();
+          multipart_name = "";
         :}
         SEMI
         |
@@ -317,7 +319,7 @@ import_spec ::=
           emit.import_list.push(multipart_name);
 
           /* reset the accumulated multipart name */
-          multipart_name = new String();
+          multipart_name = "";
         :}
         SEMI
         ;
@@ -406,7 +408,7 @@ symbol ::=
         error
         {:
           /* reset the accumulated multipart name */
-          multipart_name = new String();
+          multipart_name = "";
         :}
         SEMI
         |
@@ -414,7 +416,7 @@ symbol ::=
         error
         {:
           /* reset the accumulated multipart name */
-          multipart_name = new String();
+          multipart_name = "";
         :}
         SEMI
         ;
@@ -425,7 +427,7 @@ declares_term ::=
         term_name_list
         {:
           /* reset the accumulated multipart name */
-          multipart_name = new String();
+          multipart_name = "";
         :}
         SEMI
         ;
@@ -435,7 +437,7 @@ declares_non_term ::=
         non_term_name_list
         {:
           /* reset the accumulated multipart name */
-          multipart_name = new String();
+          multipart_name = "";
         :}
         SEMI
         ;
@@ -519,7 +521,7 @@ start_spec ::=
         START WITH nt_id:start_name
         {:
           /* verify that the name has been declared as a non terminal */
-          non_terminal nt = (non_terminal)non_terms.get(start_name);
+          non_terminal nt = non_terms.get(start_name);
           if (nt == null)
             {
             ErrorManager.getManager().emit_error( "Start non terminal \"" + start_name +
@@ -555,7 +557,7 @@ production ::=
         nt_id:lhs_id
         {:
           /* lookup the lhs nt */
-          lhs_nt = (non_terminal)non_terms.get(lhs_id);
+          lhs_nt = non_terms.get(lhs_id);
 
           /* if it wasn't declared, emit a message */
           if (lhs_nt == null)
@@ -595,7 +597,7 @@ rhs ::=
                 System.err.println("No terminal for contextual precedence");
                 sym = null;
               } else {
-                sym = ((symbol_part)symbols.get(term_name)).the_symbol();
+                sym = (symbols.get(term_name)).the_symbol();
               }
               /* build the production */
               production p;
@@ -603,7 +605,7 @@ rhs ::=
                 p = new production(lhs_nt, rhs_parts, rhs_pos,
                                    ((terminal)sym).precedence_num(),
                                    ((terminal)sym).precedence_side());
-                ((symbol_part)symbols.get(term_name)).the_symbol().note_use();
+                (symbols.get(term_name)).the_symbol().note_use();
               } else {
                 System.err.println("Invalid terminal " + term_name +
                                    " for contextual precedence assignment");
@@ -680,7 +682,7 @@ prod_part ::=
         symbol_id:symid opt_label:labid
         {:
           /* try to look up the id */
-          production_part symb = (production_part)symbols.get(symid);
+          production_part symb = symbols.get(symid);
 
           /* if that fails, symbol is undeclared */
           if (symb == null)
@@ -722,7 +724,8 @@ multipart_id ::=
         {: multipart_names.push(multipart_name); multipart_name="";:}
         LT typearglist:types GT
          {: multipart_name =
-         ((String)multipart_names.pop()).concat("<"+types+">"); :}
+            multipart_names.pop().concat("<"+types+">");
+          :}
         |
         robust_id:an_id
         {: multipart_name = multipart_name.concat(an_id); :}
@@ -739,7 +742,7 @@ typearglist ::=
 
 typearguement ::=
               type_id
-              {: RESULT = multipart_name; multipart_name = new String(); :}
+              {: RESULT = multipart_name; multipart_name = ""; :}
               | wildcard:w
               {: RESULT = w; :}
               ;
@@ -748,11 +751,9 @@ wildcard ::=
          QUESTION
          {: RESULT = " ? "; :}
          | QUESTION EXTENDS type_id
-         {: RESULT = " ? extends "+multipart_name; multipart_name = new
-         String(); :}
+         {: RESULT = " ? extends "+multipart_name; multipart_name = ""; :}
          | QUESTION SUPER type_id
-         {: RESULT = " ? super "+multipart_name; multipart_name = new
-         String(); :}
+         {: RESULT = " ? super "+multipart_name; multipart_name = ""; :}
          ;
 
 /*. . . . . . . . . . .END TUM CHANGES. . . . . . . . . . . . . . */

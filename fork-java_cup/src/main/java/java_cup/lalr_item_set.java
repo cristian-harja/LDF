@@ -168,8 +168,8 @@ public class lalr_item_set {
       not_null(other);
 
       /* walk down the other set and do the adds individually */
-      for (Enumeration e = other.all(); e.hasMoreElements(); )
-        add((lalr_item)e.nextElement());
+      for (Enumeration<lalr_item> e = other.all(); e.hasMoreElements(); )
+        add(e.nextElement());
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -182,8 +182,8 @@ public class lalr_item_set {
       not_null(other);
 
       /* walk down the other set and do the removes individually */
-      for (Enumeration e = other.all(); e.hasMoreElements(); )
-        remove((lalr_item)e.nextElement());
+      for (Enumeration<lalr_item> e = other.all(); e.hasMoreElements(); )
+        remove(e.nextElement());
     }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -191,13 +191,13 @@ public class lalr_item_set {
   /** Remove and return one item from the set (done in hash order). */
   public lalr_item get_one() throws internal_error
     {
-      Enumeration the_set;
+      Enumeration<lalr_item> the_set;
       lalr_item result;
 
       the_set = all();
       if (the_set.hasMoreElements())
         {
-          result = (lalr_item)the_set.nextElement();
+          result = the_set.nextElement();
           remove(result);
           return result;
         }
@@ -243,7 +243,7 @@ public class lalr_item_set {
       lalr_item     itm, new_itm, add_itm;
       non_terminal  nt;
       terminal_set  new_lookaheads;
-      Enumeration   p;
+      Enumeration<production>   p;
       production    prod;
       boolean       need_prop;
 
@@ -274,7 +274,7 @@ public class lalr_item_set {
               /* create items for each production of that non term */
               for (p = nt.productions(); p.hasMoreElements(); )
                 {
-                  prod = (production)p.nextElement();
+                  prod = p.nextElement();
 
                   /* create new item with dot at start and that lookahead */
                   new_itm = new lalr_item(prod,

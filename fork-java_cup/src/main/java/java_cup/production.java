@@ -1,8 +1,8 @@
 
 package java_cup;
 
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
 
 /** This class represents a production in the grammar.  It contains
  *  a LHS non terminal, and an array of RHS symbols.  As various
@@ -224,7 +224,7 @@ public class production {
           new Hashtable<Integer, production>();
 
   /** Access to all productions. */
-  public static Enumeration all() {return _all.elements();}
+  public static Enumeration<production> all() {return _all.elements();}
 
     /** Lookup a production by index. */
   public static production find(int indx) {
@@ -397,16 +397,16 @@ public class production {
       /* Put in the left/right value labels */
       if (emit.lr_values()){
         if (!emit.locations())
-        ret = "\t\tint " + labelname + "left = ((java_cup.runtime.Symbol)" +
+        ret = "\t\tint " + labelname + "left = " +
           emit.pre("stack") +
              // TUM 20050917
             ((offset==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + offset + ")"))+
-            ").left;\n" +
-          "\t\tint " + labelname + "right = ((java_cup.runtime.Symbol)" +
+            ".left;\n" +
+          "\t\tint " + labelname + "right = " +
           emit.pre("stack") +
              // TUM 20050917
             ((offset==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + offset + ")"))+
-            ").right;\n";
+            ".right;\n";
         else
         ret = "\t\tLocation " + labelname + "xleft = ((java_cup.runtime.ComplexSymbolFactory.ComplexSymbol)" +
           emit.pre("stack") +
@@ -421,11 +421,15 @@ public class production {
       else ret = "";
 
       /* otherwise, just declare label. */
-        return ret + "\t\t" + stack_type + " " + labelname + " = (" + stack_type +
-          ")((" + "java_cup.runtime.Symbol) " + emit.pre("stack") +
+        String cast = "";
+        if (!stack_type.equals("Object")) {
+            cast = "(" + stack_type +")";
+        }
+        return ret + "\t\t" + stack_type + " " + labelname + " = " + cast
+          + emit.pre("stack") +
             // TUM 20050917
             ((offset==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + offset + ")"))+
-            ").value;\n";
+            ".value;\n";
 
     }
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -443,7 +447,6 @@ public class production {
       String declaration = "";
 
       symbol_part part;
-      action_part act_part;
       int         pos;
 
       /* walk down the parts and extract the labels */

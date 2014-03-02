@@ -15,6 +15,7 @@
   <!-- initialize the workspace -->
   <target name="init">
     <tstamp />
+    <delete dir="${gen_cup}" />
     <mkdir dir="${src}" />
     <mkdir dir="${gen_flex}" />
     <mkdir dir="${gen_cup}" />
@@ -37,12 +38,13 @@
     <delete dir="${dist}" />
   </target>
 
-  <taskdef name="cup" classname="java_cup.anttask.CUPTask" classpath="${bin}/java-cup-11.jar" />
+  <taskdef name="cup" classname="java_cup.anttask.CUPTask" classpath="${bin}/java-cup-11b.jar" />
   <taskdef name="jflex" classname="JFlex.anttask.JFlexTask" classpath="${bin}/JFlex.jar" />
 
   <target name="cup" depends="init">
     <cup srcfile="${cup}/parser.cup" interface="on" destdir="${gen_cup}"
-         parser="parser" symbols="sym" quiet="false" nonterms="true"/>
+         parser="parser" symbols="sym" quiet="false" nonterms="true"
+         nopositions="true"/>
   </target>
 
   <target name="jflex" depends="cup">

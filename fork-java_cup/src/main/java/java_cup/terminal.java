@@ -94,7 +94,7 @@ public class terminal extends symbol {
   }
 
   /** Access to all terminals. */
-  public static Enumeration all() {return _all.elements();}
+  public static Enumeration<terminal> all() {return _all.elements();}
 
   /** Lookup a terminal by name string. */
   public static terminal find(String with_name)

@@ -159,7 +159,7 @@ public class emit {
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
   /** List of imports (Strings containing class names) to go with actions. */
-  public static Stack import_list = new Stack();
+  public static Stack<String> import_list = new Stack<String>();
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
@@ -223,7 +223,7 @@ public class emit {
       _locations = false;
       _lr_values = true;
       action_code = null;
-      import_list = new Stack();
+      import_list = new Stack<String>();
       init_code = null;
       not_reduced = 0;
       num_conflicts = 0;
@@ -306,9 +306,9 @@ public class emit {
       out.println("  /* terminals */");
 
       /* walk over the terminals */              /* later might sort these */
-      for (Enumeration e = terminal.all(); e.hasMoreElements(); )
+      for (Enumeration<terminal> e = terminal.all(); e.hasMoreElements(); )
         {
-          term = (terminal)e.nextElement();
+          term = e.nextElement();
 
           /* output a constant decl for the terminal */
           out.println("  public static final int " + term.name() + " = " +
@@ -322,9 +322,9 @@ public class emit {
           out.println("  /* non terminals */");
 
           /* walk over the non terminals */       /* later might sort these */
-          for (Enumeration e = non_terminal.all(); e.hasMoreElements(); )
+          for (Enumeration<non_terminal> e = non_terminal.all(); e.hasMoreElements(); )
             {
-              nt = (non_terminal)e.nextElement();
+              nt = e.nextElement();
 
           // ****
           // TUM Comment: here we could add a typesafe enumeration
@@ -363,6 +363,12 @@ public class emit {
        "/** Cup generated class to encapsulate user supplied action code.*/"
       );
       /* TUM changes; proposed by Henning Niss 20050628: added type arguement */
+      out.println("@SuppressWarnings({" +
+              "\"UnusedAssignment\"," +
+              "\"UnusedDeclaration\"," +
+              "\"ConstantConditions\"," +
+              "\"UnnecessaryLocalVariable\"})"
+      );
       out.println("class " +  pre("actions") + typeArgument() + " {");
       /* user supplied code */
       if (action_code != null)
@@ -390,7 +396,7 @@ public class emit {
                      pre("do_action_part")+ String.format("%08d", instancecounter) +"(");
       out.println("    int                        " + pre("act_num,"));
       out.println("    java_cup.runtime.lr_parser " + pre("parser,"));
-      out.println("    java.util.Stack            " + pre("stack,"));
+      out.println("    java.util.Stack<Symbol>    " + pre("stack,"));
       out.println("    int                        " + pre("top)"));
       out.println("    throws java.lang.Exception");
       out.println("    {");
@@ -422,11 +428,16 @@ public class emit {
           if (prod instanceof action_production) {
               int lastResult = ((action_production)prod).getIndexOfIntermediateResult();
               if (lastResult!=-1) {
-                  result =  "(" + prod.lhs().the_symbol().stack_type() + ") " +
-                      "((java_cup.runtime.Symbol) " + emit.pre("stack") +
+                  String type = prod.lhs().the_symbol().stack_type();
+                  result = "";
+                  if (!type.equals("Object")) {
+                      result += "(" + type +") ";
+                  }
+                   result +=
+                      emit.pre("stack") +
                       // TUM 20050917
                       ((lastResult==1)?".peek()":(".elementAt(" + emit.pre("top") + "-" + (lastResult-1) + ")"))+
-                      ").value";
+                      ".value";
               }
           }
 
@@ -460,15 +471,18 @@ public class emit {
 //                        ((index==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + index + ")"))+
 //                        ").value != null )");
 
-// TUM 20060608: even when its null: who cares?
+  // TUM 20060608: even when its null: who cares?
 
             // store the intermediate result into RESULT
-            out.println("                " + "RESULT = " +
-              "(" + prod.lhs().the_symbol().stack_type() + ") " +
-              "((java_cup.runtime.Symbol) " + emit.pre("stack") +
+            out.print("                " + "RESULT = ");
+            String type = prod.lhs().the_symbol().stack_type();
+            if (!type.equals("Object")) {
+                out.print("(" + type + ") ");
+            }
+            out.println(emit.pre("stack") +
                         // TUM 20050917
                         ((index==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + index + ")"))+
-                        ").value;");
+                        ".value;");
             break;
           }
 
@@ -489,21 +503,21 @@ public class emit {
             String leftstring, rightstring;
             // TUM 20050917
             //int roffset = 0;
-            rightstring = "((java_cup.runtime.Symbol)" + emit.pre("stack") +
+            rightstring = emit.pre("stack") +
                 // TUM 20050917
                 //".elementAt(" + emit.pre("top") + "-" + roffset + "))"+
-                ".peek()"+
+                ".peek()"
                 // TUM 20060327 removed .right
-                ")";
+                ;
             if (prod.rhs_length() == 0)
               leftstring = rightstring;
             else {
               loffset = prod.rhs_length() - 1;
-              leftstring = "((java_cup.runtime.Symbol)" + emit.pre("stack") +
+              leftstring = emit.pre("stack") +
                   // TUM 20050917
-                  ((loffset==0)?(".peek()"):(".elementAt(" + emit.pre("top") + "-" + loffset + ")")) +
+                  ((loffset==0)?(".peek()"):(".elementAt(" + emit.pre("top") + "-" + loffset + ")"));
                   // TUM 20060327 removed .left
-                  ")";
+
             }
             out.println("              " + pre("result") + " = parser.getSymbolFactory().newSymbol(" +
                         "\""+         prod.lhs().the_symbol().name() +"\","+
@@ -549,7 +563,8 @@ public class emit {
                      pre("do_action") + "(");
       out.println("    int                        " + pre("act_num,"));
       out.println("    java_cup.runtime.lr_parser " + pre("parser,"));
-      out.println("    java.util.Stack            " + pre("stack,"));
+      out.println("    java.util.Stack<Symbol>    " + pre("stack," +
+              ""));
       out.println("    int                        " + pre("top)"));
       out.println("    throws java.lang.Exception");
       out.println("    {");
@@ -603,7 +618,7 @@ public class emit {
       action_code_time = System.currentTimeMillis() - start_time;
     }
 
-  /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
+   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
   /** Emit the production table.
    * @param out stream to produce output on.
@@ -617,9 +632,9 @@ public class emit {
 
       /* collect up the productions in order */
       all_prods = new production[production.number()];
-      for (Enumeration p = production.all(); p.hasMoreElements(); )
+      for (Enumeration<production> p = production.all(); p.hasMoreElements(); )
         {
-          prod = (production)p.nextElement();
+          prod = p.nextElement();
           all_prods[prod.index()] = prod;
         }
 
@@ -718,7 +733,7 @@ public class emit {
                       }
                     } else if (act.kind() == parse_action.NONASSOC)
                       {
-                        /* do nothing, since we just want a syntax error */
+                        // do nothing, since we just want a syntax error
                       }
                   /* shouldn't be anything else */
                   else
@@ -734,9 +749,9 @@ public class emit {
           /* finish off the row with a default entry */
           action_table[i][nentries++] = -1;
           if (row.default_reduce != -1)
-            action_table[i][nentries++] = (short) (-(row.default_reduce+1));
+            action_table[i][nentries] = (short) (-(row.default_reduce+1));
           else
-            action_table[i][nentries++] = 0;
+            action_table[i][nentries] = 0;
         }
 
       /* finish off the init of the table */
@@ -766,7 +781,6 @@ public class emit {
     parse_reduce_table red_tab)
     {
       lalr_state       goto_st;
-      parse_action     act;
 
       long start_time = System.currentTimeMillis();
 
@@ -798,7 +812,7 @@ public class emit {
 
           /* end row with default value */
           reduce_goto_table[i][nentries++] = -1;
-          reduce_goto_table[i][nentries++] = -1;
+          reduce_goto_table[i][nentries] = -1;
         }
 
       /* emit the table. */
@@ -827,17 +841,17 @@ public class emit {
     nchar  =do_newline(out, nchar, nbytes);
     nbytes+=do_escaped(out, (char)(sa.length&0xFFFF));
     nchar  =do_newline(out, nchar, nbytes);
-    for (int i=0; i<sa.length; i++) {
-        nbytes+=do_escaped(out, (char)(sa[i].length>>16));
-        nchar  =do_newline(out, nchar, nbytes);
-        nbytes+=do_escaped(out, (char)(sa[i].length&0xFFFF));
-        nchar  =do_newline(out, nchar, nbytes);
-        for (int j=0; j<sa[i].length; j++) {
-          // contents of string are (value+2) to allow for common -1, 0 cases
-          // (UTF-8 encoding is most efficient for 0<c<0x80)
-          nbytes+=do_escaped(out, (char)(2+sa[i][j]));
-          nchar  =do_newline(out, nchar, nbytes);
-        }
+    for (short[] sa_ : sa) {
+      nbytes += do_escaped(out, (char) (sa_.length >> 16));
+      nchar = do_newline(out, nchar, nbytes);
+      nbytes += do_escaped(out, (char) (sa_.length & 0xFFFF));
+      nchar = do_newline(out, nchar, nbytes);
+      for (short sa__ : sa_) {
+        // contents of string are (value+2) to allow for common -1, 0 cases
+        // (UTF-8 encoding is most efficient for 0<c<0x80)
+        nbytes += do_escaped(out, (char) (2 + sa__));
+        nchar = do_newline(out, nchar, nbytes);
+      }
     }
     out.print("\" }");
   }
@@ -957,7 +971,7 @@ public class emit {
       out.println("  public java_cup.runtime.Symbol do_action(");
       out.println("    int                        act_num,");
       out.println("    java_cup.runtime.lr_parser parser,");
-      out.println("    java.util.Stack            stack,");
+      out.println("    java.util.Stack<Symbol>    stack,");
       out.println("    int                        top)");
       out.println("    throws java.lang.Exception");
       out.println("  {");

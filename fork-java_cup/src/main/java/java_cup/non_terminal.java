@@ -72,7 +72,7 @@ public class non_terminal extends symbol {
   }
 
   /** Access to all non-terminals. */
-  public static Enumeration all() {return _all.elements();}
+  public static Enumeration<non_terminal> all() {return _all.elements();}
 
   /** lookup a non terminal by name string */
   public static non_terminal find(String with_name)
@@ -156,7 +156,6 @@ public class non_terminal extends symbol {
     {
       boolean      change = true;
       non_terminal nt;
-      Enumeration  e;
       production   prod;
 
       /* repeat this process until there is no change */
@@ -166,9 +165,9 @@ public class non_terminal extends symbol {
           change = false;
 
           /* consider each non-terminal */
-          for (e=all(); e.hasMoreElements(); )
+          for (Enumeration<non_terminal> e=all(); e.hasMoreElements(); )
             {
-              nt = (non_terminal)e.nextElement();
+              nt = e.nextElement();
 
               /* only look at things that aren't already marked nullable */
               if (!nt.nullable())
@@ -183,9 +182,9 @@ public class non_terminal extends symbol {
         }
 
       /* do one last pass over the productions to finalize all of them */
-      for (e=production.all(); e.hasMoreElements(); )
+      for (Enumeration<production> e=production.all(); e.hasMoreElements(); )
         {
-          prod = (production)e.nextElement();
+          prod = e.nextElement();
           prod.set_nullable(prod.check_nullable());
         }
     }
@@ -198,8 +197,8 @@ public class non_terminal extends symbol {
   public static void compute_first_sets() throws internal_error
     {
       boolean      change = true;
-      Enumeration  n;
-      Enumeration  p;
+      Enumeration<non_terminal>  n;
+      Enumeration<production>    p;
       non_terminal nt;
       production   prod;
       terminal_set prod_first;
@@ -213,12 +212,12 @@ public class non_terminal extends symbol {
           /* consider each non-terminal */
           for (n = all(); n.hasMoreElements(); )
             {
-              nt = (non_terminal)n.nextElement();
+              nt = n.nextElement();
 
               /* consider every production of that non terminal */
               for (p = nt.productions(); p.hasMoreElements(); )
                 {
-                  prod = (production)p.nextElement();
+                  prod = p.nextElement();
 
                   /* get the updated first of that production */
                   prod_first = prod.check_first_set();
@@ -243,7 +242,7 @@ public class non_terminal extends symbol {
           new Hashtable<production, production>(11);
 
   /** Access to productions with this non terminal on the LHS. */
-  public Enumeration productions() {return _productions.elements();}
+  public Enumeration<production> productions() {return _productions.elements();}
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
@@ -296,9 +295,10 @@ public class non_terminal extends symbol {
   protected boolean looks_nullable() throws internal_error
     {
       /* look and see if any of the productions now look nullable */
-      for (Enumeration e = productions(); e.hasMoreElements(); )
+      for (Enumeration<production> e = productions(); e.hasMoreElements()
+              ; )
         /* if the production can go to empty, we are nullable */
-        if (((production)e.nextElement()).check_nullable())
+        if (e.nextElement().check_nullable())
           return true;
 
       /* none of the productions can go to empty, so we are not nullable */
