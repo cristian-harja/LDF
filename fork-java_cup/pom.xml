@@ -30,8 +30,8 @@
         <!-- Source Directories -->
         <sourceDirectory>src/main/java</sourceDirectory>
 
-        <!-- Ant Build -->
         <plugins>
+            <!-- Ant Build -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -41,8 +41,8 @@
 
                     <!-- Run the "dist" target in build.xml -->
                     <execution>
-                        <id>cupPackage</id>
-                        <phase>compile</phase>
+                        <id>default-cli</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
@@ -57,10 +57,10 @@
                         </configuration>
                     </execution>
 
-                    <!-- Run the "test_compile" target in build.xml -->
+                    <!-- Run the "generate" target in build.xml -->
                     <execution>
-                        <id>cupTestRun</id>
-                        <phase>test</phase>
+                        <id>cupGenerateSrc</id>
+                        <phase>generate-sources</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
@@ -70,7 +70,7 @@
                                         name="compile_classpath"
                                         refid="maven.compile.classpath"/>
                                 <ant antfile="${project.basedir}/build.xml"
-                                     target="test_compile"/>
+                                     target="generate"/>
                             </target>
                         </configuration>
                     </execution>
@@ -105,6 +105,26 @@
                         <systemPath>${java.home}/../lib/tools.jar</systemPath>
                     </dependency>
                 </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/cup</source>
+                                <source>${project.build.directory}/generated-sources/flex</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

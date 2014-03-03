@@ -1,7 +1,5 @@
 package ldf.java_cup;
 
-import ldf.java_cup.gen.Lexer;
-import ldf.java_cup.gen.parser;
 import ldf.java_cup.runtime.ComplexSymbolFactory;
 
 import java.io.*;

@@ -1,6 +1,8 @@
 <project name="emugen" default="dist" basedir=".">
     <property name="bin" location="bin"/>
     <property name="dist" location="dist"/>
+    <property name="bin_cc" location="${bin}/ldf-java_cup-cc.jar"/>
+    <property name="bin_rt" location="${bin}/ldf-java_cup-rt.jar"/>
     <property name="dist_cc" location="${dist}/ldf-java_cup-cc.jar"/>
     <property name="dist_rt" location="${dist}/ldf-java_cup-rt.jar"/>
     <property name="src" location="src/main/java"/>
@@ -12,6 +14,16 @@
     <property name="gen_cup" location="${gen}/cup"/>
 
     <property environment="env"/>
+
+    <taskdef
+            name="cup"
+            classname="ldf.java_cup.anttask.CUPTask"
+            classpath="${bin_cc}"/>
+
+    <taskdef
+            name="jflex"
+            classname="JFlex.anttask.JFlexTask"
+            classpath="${bin}/JFlex.jar"/>
 
     <target name="clean">
         <!-- Delete folders -->
@@ -26,15 +38,37 @@
         <mkdir dir="${dist}"/>
     </target>
 
-    <!-- Step 1: Compile CUP -->
-    <target name="compile">
-        <mkdir dir="${out}"/>
-        <javac srcdir="${src}"
-               destdir="${out}"
-               classpath="${compile_classpath}"/>
+    <!-- Step 1: Run CUP on `src/main/cup/parser.cup` -->
+    <target name="cup" depends="clean">
+        <cup
+                srcfile="${cup}/parser.cup"
+                interface="on"
+                destdir="${gen_cup}"
+                parser="parser"
+                symbols="sym"
+                quiet="false"
+                nonterms="true"
+                nopositions="true"/>
     </target>
 
-    <!-- Step 2: Package CUP -->
+    <!-- Step 2: Run JFlex on `src/main/flex/Lexer.jflex` -->
+    <target name="jflex" depends="clean">
+        <jflex
+                file="${flex}/Lexer.jflex"
+                destdir="${gen_flex}"/>
+    </target>
+
+    <target name="generate" depends="cup,jflex"/>
+
+    <!-- Step 3: Compile everything -->
+    <target name="compile" depends="generate">
+        <javac srcdir="${src};${gen_cup};${gen_flex}"
+               destdir="${out}"
+               classpath="${out};${compile_classpath}"/>
+
+    </target>
+
+    <!-- Step 4: Package CUP -->
     <target name="dist" depends="compile">
 
         <!-- Runtime Library (rt) -->
@@ -50,44 +84,6 @@
             </manifest>
         </jar>
 
-    </target>
-
-    <!-- Making a test compilation of CUP's grammar -->
-    <target name="test_compile" depends="clean,compile">
-
-        <taskdef
-                name="cup"
-                classname="ldf.java_cup.anttask.CUPTask"
-                classpath="${out}"/>
-
-        <taskdef
-                name="jflex"
-                classname="JFlex.anttask.JFlexTask"
-                classpath="${bin}/JFlex.jar"/>
-
-        <!-- Run CUP on `src/main/cup/parser.cup` -->
-        <cup
-                srcfile="${cup}/parser.cup"
-                interface="on"
-                destdir="${gen_cup}"
-                parser="parser"
-                symbols="sym"
-                quiet="false"
-                nonterms="true"
-                nopositions="true"/>
-
-        <!-- Run JFlex on `src/main/flex/Lexer.jflex` -->
-        <jflex
-                file="${flex}/Lexer.jflex"
-                destdir="${gen_flex}"/>
-
-        <echo>
-            Parser files have been generated into:
-            ${gen_cup}
-            ${gen_flex}
-
-            Go check if the generated code is acceptable.
-        </echo>
     </target>
 
 </project>

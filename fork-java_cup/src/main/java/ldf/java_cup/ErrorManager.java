@@ -1,6 +1,5 @@
 package ldf.java_cup;
 
-import ldf.java_cup.gen.sym;
 import ldf.java_cup.runtime.Symbol;
 
 import java.lang.reflect.Field;
