@@ -1,0 +1,89 @@
+<project name="emugen" default="dist" basedir=".">
+    <property name="bin" location="bin"/>
+    <property name="dist" location="dist"/>
+    <property name="bin_cc" location="${bin}/ldf-java_cup-cc.jar"/>
+    <property name="bin_rt" location="${bin}/ldf-java_cup-rt.jar"/>
+    <property name="dist_cc" location="${dist}/ldf-java_cup-cc.jar"/>
+    <property name="dist_rt" location="${dist}/ldf-java_cup-rt.jar"/>
+    <property name="src" location="src/main/java"/>
+    <property name="flex" location="src/main/flex"/>
+    <property name="cup" location="src/main/cup"/>
+    <property name="out" location="target/classes"/>
+    <property name="gen" location="target/generated-sources"/>
+    <property name="gen_flex" location="${gen}/flex"/>
+    <property name="gen_cup" location="${gen}/cup"/>
+
+    <property environment="env"/>
+
+    <taskdef
+            name="cup"
+            classname="ldf.java_cup.anttask.CUPTask"
+            classpath="${bin_cc}"/>
+
+    <taskdef
+            name="jflex"
+            classname="JFlex.anttask.JFlexTask"
+            classpath="${bin}/JFlex.jar"/>
+
+    <target name="clean">
+        <!-- Delete folders -->
+        <delete dir="${gen_cup}"/>
+        <delete dir="${gen_flex}"/>
+        <delete dir="${out}"/>
+
+        <!-- (Re)create folders -->
+        <mkdir dir="${gen_cup}"/>
+        <mkdir dir="${gen_flex}"/>
+        <mkdir dir="${out}"/>
+        <mkdir dir="${dist}"/>
+    </target>
+
+    <!-- Step 1: Run CUP on `src/main/cup/parser.cup` -->
+    <target name="cup" depends="clean">
+        <cup
+                srcfile="${cup}/parser.cup"
+                interface="on"
+                destdir="${gen_cup}"
+                parser="parser"
+                symbols="sym"
+                quiet="false"
+                nonterms="true"
+                nopositions="true"/>
+    </target>
+
+    <!-- Step 2: Run JFlex on `src/main/flex/Lexer.jflex` -->
+    <target name="jflex" depends="clean">
+        <jflex
+                file="${flex}/Lexer.jflex"
+                destdir="${gen_flex}"/>
+    </target>
+
+    <target name="generate" depends="cup,jflex"/>
+
+    <!-- Step 3: Compile everything -->
+    <target name="compile" depends="generate">
+        <javac srcdir="${src};${gen_cup};${gen_flex}"
+               destdir="${out}"
+               classpath="${out};${compile_classpath}"/>
+
+    </target>
+
+    <!-- Step 4: Package CUP -->
+    <target name="dist" depends="compile">
+
+        <!-- Runtime Library (rt) -->
+        <jar jarfile="${dist_rt}"
+             basedir="${out}"
+             includes="ldf/java_cup/runtime/*"/>
+
+        <!-- Compiler Compiler (cc) -->
+        <jar jarfile="${dist_cc}" basedir="${out}">
+            <manifest>
+                <attribute name="Main-Class" value="ldf/java_cup/Main"/>
+                <attribute name="Class-Path" value="${dist_rt}"/>
+            </manifest>
+        </jar>
+
+    </target>
+
+</project>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>ldf</groupId>
+    <artifactId>ldf-java_cup</artifactId>
+    <version>0.1-SNAPSHOT</version>
+
+    <description>
+        This is a fork from the original SVN repository:
+        https://www2.in.tum.de/repos/cup/develop (version 0.11b).
+
+        Added Maven support. Code will be undergoing some changes.
+    </description>
+
+    <dependencies>
+
+        <!-- class: org.apache.tools.ant.Task -->
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.9.3</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <!-- Source Directories -->
+        <sourceDirectory>src/main/java</sourceDirectory>
+
+        <plugins>
+            <!-- Ant Build -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+
+                <executions>
+
+                    <!-- Run the "dist" target in build.xml -->
+                    <execution>
+                        <id>default-cli</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property
+                                        name="compile_classpath"
+                                        refid="maven.compile.classpath"/>
+                                <ant antfile="${project.basedir}/build.xml"
+                                     target="dist"/>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <!-- Run the "generate" target in build.xml -->
+                    <execution>
+                        <id>cupGenerateSrc</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property
+                                        name="compile_classpath"
+                                        refid="maven.compile.classpath"/>
+                                <ant antfile="${project.basedir}/build.xml"
+                                     target="generate"/>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <!-- Run the "clean" target in build.xml -->
+                    <execution>
+                        <id>cupClean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property
+                                        name="compile_classpath"
+                                        refid="maven.compile.classpath"/>
+
+                                <ant antfile="${project.basedir}/build.xml"
+                                     target="clean"/>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                </executions>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>com.sun</groupId>
+                        <artifactId>tools</artifactId>
+                        <version>1.7.0</version>
+                        <scope>system</scope>
+                        <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/cup</source>
+                                <source>${project.build.directory}/generated-sources/flex</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
