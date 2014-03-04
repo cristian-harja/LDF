@@ -1,6 +1,5 @@
 package ldf.java_cup;
-import ldf.java_cup.runtime.ComplexSymbolFactory;
-import ldf.java_cup.runtime.ComplexSymbolFactory.Location;
+import ldf.java_cup.runtime.TokenFactory;
 import ldf.java_cup.runtime.Symbol;
 
 import java.lang.Error;
@@ -19,26 +18,69 @@ import java.io.IOException;
 %type ldf.java_cup.runtime.Symbol
 %function next_token
 %{
-    public Lexer(ComplexSymbolFactory sf){
+    public Lexer(TokenFactory tf){
         this(new InputStreamReader(System.in));
-        symbolFactory = sf;
+        tokenFactory = tf;
     }
+
     private StringBuffer sb;
-    private ComplexSymbolFactory symbolFactory;
-    private int csline,cscolumn;
+    private TokenFactory tokenFactory;
+    private int csline,cscolumn,csoffset;
+
     public Symbol symbol(String name, int code){
-//        System.out.println("code:"+code+" "+yytext());
-        return symbolFactory.newSymbol(name, code,new Location(yyline+1,yycolumn+1-yylength()),new Location(yyline+1,yycolumn+1));
+        return symbol(name, code, null);
     }
     public Symbol symbol(String name, int code, String lexem){
-//        System.out.println("code:"+code+", lexem :"+lexem);
-        return symbolFactory.newSymbol(name, code, new Location(yyline+1, yycolumn +1), new Location(yyline+1,yycolumn+yylength()), lexem);
+
+        Symbol tok = tokenFactory.newToken(
+            name, code,
+            yyline + 1,
+            yycolumn + 1,
+            yychar
+        );
+
+        tok.value = lexem;
+        return tok;
+
     }
+
+    public Symbol eof() {
+        return tokenFactory.newEOF(
+            "EOF",sym.EOF,
+            yyline + 1,
+            yycolumn + 1,
+            yychar
+        );
+    }
+
+    public void comment() {
+        tokenFactory.newComment(
+            yyline + 1,
+            yycolumn + 1,
+            yychar
+        );
+    }
+    public void whitespace() {
+        tokenFactory.signalWhitespace(
+            yyline + 1,
+            yycolumn + 1,
+            yychar
+        );
+    }
+
     protected void emit_warning(String message){
-        ErrorManager.getManager().emit_warning("Scanner at " + (yyline+1) + "(" + (yycolumn+1) + "): " + message);
+        ErrorManager.getManager().emit_warning(
+                "Scanner at " + (yyline+1) +
+                "(" + (yycolumn+1) + "): " +
+                message
+        );
     }
     protected void emit_error(String message){
-        ErrorManager.getManager().emit_error("Scanner at " + (yyline+1) + "(" + (yycolumn+1) +  "): " + message);
+        ErrorManager.getManager().emit_error(
+                "Scanner at " + (yyline+1) +
+                "(" + (yycolumn+1) + "): " +
+                message
+        );
     }
 %}
 
@@ -55,7 +97,7 @@ ident = ([:jletter:] | "_" ) ([:jletterdigit:] | [:jletter:] | "_" )*
 
 
 %eofval{
-    return symbolFactory.newSymbol("EOF",sym.EOF);
+    return eof();
 %eofval}
 
 %state CODESEG
@@ -64,7 +106,7 @@ ident = ([:jletter:] | "_" ) ([:jletterdigit:] | [:jletter:] | "_" )*
 
 <YYINITIAL> {
 
-  {Whitespace}  {                                              }
+  {Whitespace}* { whitespace();                                }
   "?"           { return symbol("QESTION",QUESTION);           }
   ";"           { return symbol("SEMI",SEMI);                  }
   ","           { return symbol("COMMA",COMMA);                }
@@ -78,23 +120,29 @@ ident = ([:jletter:] | "_" ) ([:jletterdigit:] | [:jletter:] | "_" )*
   "%prec"       { return symbol("PERCENT_PREC",PERCENT_PREC);  }
   ">"           { return symbol("GT",GT);                      }
   "<"           { return symbol("LT",LT);                      }
-  {Comment}     {                                              }
-  "{:"          { sb = new StringBuffer(); csline=yyline+1; cscolumn=yycolumn+1; yybegin(CODESEG);    }
+  {Comment}     { comment();                                   }
+  "{:"          {
+                    sb = new StringBuffer();
+                    csline   = yyline + 1;
+                    cscolumn = yycolumn + 1;
+                    csoffset = yychar;
+                    yybegin(CODESEG);
+                }
   "package"     { return symbol("PACKAGE",PACKAGE);            }
-  "import"      { return symbol("IMPORT",IMPORT);               }
-  "code"        { return symbol("CODE",CODE);                       }
-  "action"      { return symbol("ACTION",ACTION);               }
-  "parser"      { return symbol("PARSER",PARSER);               }
-  "terminal"    { return symbol("PARSER",TERMINAL);               }
-  "non"         { return symbol("NON",NON);                       }
+  "import"      { return symbol("IMPORT",IMPORT);              }
+  "code"        { return symbol("CODE",CODE);                  }
+  "action"      { return symbol("ACTION",ACTION);              }
+  "parser"      { return symbol("PARSER",PARSER);              }
+  "terminal"    { return symbol("PARSER",TERMINAL);            }
+  "non"         { return symbol("NON",NON);                    }
   "nonterminal" { return symbol("NONTERMINAL",NONTERMINAL);    }
-  "init"        { return symbol("INIT",INIT);                       }
-  "scan"        { return symbol("SCAN",SCAN);                       }
-  "with"        { return symbol("WITH",WITH);                       }
-  "start"       { return symbol("START",START);                       }
+  "init"        { return symbol("INIT",INIT);                  }
+  "scan"        { return symbol("SCAN",SCAN);                  }
+  "with"        { return symbol("WITH",WITH);                  }
+  "start"       { return symbol("START",START);                }
   "precedence"  { return symbol("PRECEDENCE",PRECEDENCE);      }
-  "left"        { return symbol("LEFT",LEFT);                       }
-  "right"       { return symbol("RIGHT",RIGHT);                       }
+  "left"        { return symbol("LEFT",LEFT);                  }
+  "right"       { return symbol("RIGHT",RIGHT);                }
   "nonassoc"    { return symbol("NONASSOC",NONASSOC);          }
   "extends"     { return symbol("EXTENDS",EXTENDS);            }
   "super"       { return symbol("SUPER",SUPER);                }
@@ -103,8 +151,17 @@ ident = ([:jletter:] | "_" ) ([:jletterdigit:] | [:jletter:] | "_" )*
 }
 
 <CODESEG> {
-  ":}"         { yybegin(YYINITIAL); return symbolFactory.newSymbol("CODE_STRING",CODE_STRING, new Location(csline, cscolumn),new Location(yyline+1,yycolumn+1+yylength()), sb.toString()); }
-  .|\n            { sb.append(yytext()); }
+  ":}"         {
+                    yybegin(YYINITIAL);
+                    Symbol tok = tokenFactory.newToken(
+                        "CODE_STRING", CODE_STRING,
+                        csline,  cscolumn, csoffset,
+                        yyline+1, yycolumn+1+yylength(), yychar
+                    );
+                    tok.value = sb.toString();
+                    return tok;
+               }
+  .|\n         { sb.append(yytext()); }
 }
 
 // error fallback

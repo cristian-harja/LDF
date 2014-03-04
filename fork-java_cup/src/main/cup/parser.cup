@@ -216,9 +216,7 @@ parser code {:
 /*---------------------------------------------------------------- */
 
 init with {:
-    ComplexSymbolFactory f = new ComplexSymbolFactory();
-    symbolFactory = f;
-    lexer = new Lexer(f);
+    lexer = new Lexer(new TokenFactoryImpl());
 :}
 /*lexer.init(); :};*/
 scan with {:

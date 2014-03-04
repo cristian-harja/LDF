@@ -57,7 +57,7 @@ public class ErrorManager{
         for (Field field : fields) {
             if (!Modifier.isPublic(field.getModifiers())) continue;
             try {
-                if (field.getInt(null) == symbol.sym)
+                if (field.getInt(null) == symbol.getSymbolCode())
                     return field.getName() + result;
             } catch (Exception ignored) {
             }

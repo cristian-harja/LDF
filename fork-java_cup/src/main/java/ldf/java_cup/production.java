@@ -395,7 +395,6 @@ public class production {
 
       /* Put in the left/right value labels */
       if (emit.lr_values()){
-        if (!emit.locations())
         ret = "\t\tint " + labelname + "left = " +
           emit.pre("stack") +
              // TUM 20050917
@@ -406,17 +405,7 @@ public class production {
              // TUM 20050917
             ((offset==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + offset + ")"))+
             ".right;\n";
-        else
-        ret = "\t\tLocation " + labelname + "xleft = ((ldf.java_cup.runtime.ComplexSymbolFactory.ComplexSymbol)" +
-          emit.pre("stack") +
-             // TUM 20050917
-            ((offset==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + offset + ")"))+
-            ").xleft;\n" +
-          "\t\tLocation " + labelname + "xright = ((ldf.java_cup.runtime.ComplexSymbolFactory.ComplexSymbol)" +
-          emit.pre("stack") +
-             // TUM 20050917
-            ((offset==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + offset + ")"))+
-            ").xright;\n";}
+      }
       else ret = "";
 
       /* otherwise, just declare label. */

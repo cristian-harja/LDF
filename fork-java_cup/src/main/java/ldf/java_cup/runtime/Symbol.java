@@ -5,108 +5,114 @@ package ldf.java_cup.runtime;
  * and nonterminals while parsing.  The lexer should pass CUP Symbols
  * and CUP returns a Symbol.
  *
- * @version last updated: 7/3/96
- * @author  Frank Flannery
+ * @author Frank Flannery
+ * @author Cristian Harja
  */
 
-/* ****************************************************************
-  Class Symbol
-  what the parser expects to receive from the lexer.
-  the token is identified as follows:
-  sym:    the symbol type
-  parse_state: the parse state.
-  value:  is the lexical value of type Object
-  left :  is the left position in the original input file
-  right:  is the right position in the original input file
-  xleft:  is the left position Object in the original input file
-  xright:  is the left position Object in the original input file
-******************************************************************/
+@SuppressWarnings("unused")
+public class Symbol extends LocationAwareEntity {
 
-public class Symbol {
+    /**
+     * Name of this symbol (token name or non-terminal name).
+     * For debugging purposes.
+     */
+    protected String symName;
 
-//  TUM 20060327: Added new Constructor to provide more flexible way
-//   for location handling
-/*******************************
- *******************************/
-    public Symbol(int id, Symbol left, Symbol right, Object o){
-        this(id,left.left,right.right,o);
-    }
-    public Symbol(int id, Symbol left, Symbol right){
-        this(id,left.left,right.right);
-    }
-/*******************************
-  Constructor for l,r values
- *******************************/
+    /**
+     * Identification code for this symbol (assigned by CUP).
+     */
+    protected int symCode;
 
-  public Symbol(int id, int l, int r, Object o) {
-    this(id);
-    left = l;
-    right = r;
-    value = o;
-  }
+    /**
+     * Semantic value of this symbol.
+     */
+    public Object  value;
 
-/*******************************
-  Constructor for no l,r values
-********************************/
+    /**
+     * <p>If the {@code Symbol} object is a token, this field may point
+     * to a {@link ldf.java_cup.runtime.Comment} object.
+     * </p>
+     * <p>If used, this field should be populated by the lexer (see {@link
+     * TokenFactory#newComment TokenFactory.newComment}) and points
+     * to the comment (if any) that's located right before this token.
+     * </p>
+     * <p>If there is no such comment, the field should be {@code null}.
+     * If there are multiple ones though, this field should point to the
+     * <em>last one</em> only. The comment object would then point to the
+     * one before it (linked list).
+     * </p>
+     */
+    protected Comment prevComment;
 
-  public Symbol(int id, Object o) {
-    this(id, -1, -1, o);
-  }
+    /**
+     * The parse state to be recorded on the parse stack with this symbol.
+     * This field is for the convenience of the parser and shouldn't be
+     * modified except by the parser.
+     */
+    protected int parse_state;
 
-/*****************************
-  Constructor for no value
-  ***************************/
+    /**
+     * This allows us to catch some errors caused by scanners recycling
+     * symbols.  For the use of the parser only. [CSA, 23-Jul-1999]
+     */
+    boolean used_by_parser;
 
-  public Symbol(int id, int l, int r) {
-    this(id, l, r, null);
-  }
-
-/***********************************
-  Constructor for no value or l,r
-***********************************/
-
-  public Symbol(int sym_num) {
-    this(sym_num, -1);
-    left = -1;
-    right = -1;
-  }
-
-/***********************************
-  Constructor to give a start state
-***********************************/
-  Symbol(int sym_num, int state)
-    {
-      sym = sym_num;
-      parse_state = state;
+    public Symbol() {
     }
 
-/*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
+    public Symbol(String symbolName, int symbolCode) {
+        symName = symbolName;
+        symCode = symbolCode;
+    }
 
-  /** The symbol number of the terminal or non terminal being represented */
-  public int sym;
+    public Symbol(String symbolName, int symbolCode, int parseState) {
+        this(symbolName, symbolCode);
+        parse_state = parseState;
+    }
 
-  /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
+    /**
+     * TODO: explain this well
+     */
+    public void setLeftRightSymbols(Symbol l, Symbol r) {
+        setLeftPos(l.lineL, l.columnL, l.offsetL);
+        setRightPos(r.lineR, r.columnR, r.offsetR);
+        prevComment = l.prevComment;
+    }
 
-  /** The parse state to be recorded on the parse stack with this symbol.
-   *  This field is for the convenience of the parser and shouldn't be
-   *  modified except by the parser.
-   */
-  public int parse_state;
-  /** This allows us to catch some errors caused by scanners recycling
-   *  symbols.  For the use of the parser only. [CSA, 23-Jul-1999] */
-  boolean used_by_parser = false;
+    public String getSymbolName() {
+        return symName;
+    }
 
-/*******************************
-  The data passed to parser
- *******************************/
+    public int getSymbolCode() {
+        return symCode;
+    }
 
-  public int left, right;
-  public Object value;
+    /**
+     * Sets the {@code prevComment} parameter as the {@code Comment}
+     * before this symbol. In turn, that will point to the one before
+     * and so on (linked list).
+     */
+    public void setPrevComment(Comment prevComment) {
+        this.prevComment = prevComment;
+    }
 
-  /*****************************
-    Printing this token out. (Override for pretty-print).
-    ****************************/
-  public String toString() { return "#"+sym; }
+    public boolean hasComments() {
+        return prevComment != null;
+    }
+
+    /**
+     * An enumeration (in reversed order) of the comments located before
+     * this symbol.
+     */
+    public CommentEnumeration getCommentsReverse() {
+        return new CommentEnumeration(prevComment);
+    }
+
+    @Override
+    public String toString() {
+        return symName;
+    }
+
 }
 
 

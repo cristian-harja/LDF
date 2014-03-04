@@ -121,14 +121,14 @@ public abstract class lr_parser {
      * Simple constructor.
      */
     public lr_parser() {
-        symbolFactory = new DefaultSymbolFactory();
+        symbolFactory = new SymbolFactoryImpl();
     }
 
     /**
      * Constructor that sets the default scanner. [CSA/davidm]
      */
     public lr_parser(Scanner s) {
-        this(s,new DefaultSymbolFactory()); // TUM 20060327 old cup v10 Symbols as default
+        this(s,new SymbolFactoryImpl()); // TUM 20060327 old cup v10 Symbols as default
     }
     /**
      * Constructor that sets the default scanner and a SymbolFactory
@@ -138,7 +138,7 @@ public abstract class lr_parser {
         symbolFactory = symfac;
         setScanner(s);
     }
-    public SymbolFactory symbolFactory;// = new DefaultSymbolFactory();
+    public SymbolFactory symbolFactory;
     /**
      * Whenever creation of a new Symbol is necessary, one should use this factory.
      */
@@ -392,8 +392,8 @@ public abstract class lr_parser {
       System.err.print(message);
       System.err.flush();
       if (info instanceof Symbol)
-        if (((Symbol)info).left != -1)
-        System.err.println(" at character " + ((Symbol)info).left +
+        if (((Symbol)info).offsetL != -1)
+        System.err.println(" at character " + ((Symbol)info).offsetL +
                            " of input");
         else System.err.println("");
       else System.err.println("");
@@ -564,7 +564,7 @@ public abstract class lr_parser {
           /* current state is always on the top of the stack */
 
           /* look up action out of the current state with the current input */
-          act = get_action(stack.peek().parse_state, cur_token.sym);
+          act = get_action(stack.peek().parse_state, cur_token.symCode);
 
           /* decode the action -- > 0 encodes shift */
           if (act > 0)
@@ -654,7 +654,7 @@ public abstract class lr_parser {
       /* dump the stack */
       for (int i=0; i<stack.size(); i++)
         {
-          debug_message("Symbol: " + stack.elementAt(i).sym +
+          debug_message("Symbol: " + stack.elementAt(i).symCode +
                         " State: " + stack.elementAt(i).parse_state);
         }
       debug_message("==========================================");
@@ -682,7 +682,7 @@ public abstract class lr_parser {
    */
   public void debug_shift(Symbol shift_tkn)
     {
-      debug_message("# Shift under term #" + shift_tkn.sym +
+      debug_message("# Shift under term #" + shift_tkn.symCode +
                     " to state #" + shift_tkn.parse_state);
     }
 
@@ -697,7 +697,7 @@ public abstract class lr_parser {
           sb.append(" <state ")
         .append(s.parse_state)
         .append(", sym ")
-        .append(s.sym)
+        .append(s.symCode)
         .append(">");
           if ((i%3)==2 || (i==(stack.size()-1))) {
               debug_message(sb.toString());
@@ -741,7 +741,7 @@ public abstract class lr_parser {
       /* the current Symbol */
       cur_token = scan();
 
-      debug_message("# Current Symbol is #" + cur_token.sym);
+      debug_message("# Current Symbol is #" + cur_token.symCode);
 
       /* push dummy Symbol with start state to get us underway */
       stack.removeAllElements();
@@ -759,7 +759,7 @@ public abstract class lr_parser {
           //debug_stack();
 
           /* look up action out of the current state with the current input */
-          act = get_action(stack.peek().parse_state, cur_token.sym);
+          act = get_action(stack.peek().parse_state, cur_token.symCode);
 
           /* decode the action -- > 0 encodes shift */
           if (act > 0)
@@ -883,7 +883,7 @@ public abstract class lr_parser {
             }
 
           /* if we are now at EOF, we have failed */
-          if (lookahead[0].sym == EOF_sym())
+          if (lookahead[0].symCode == EOF_sym())
             {
               if (debug) debug_message("# Error recovery fails at EOF");
               return false;
@@ -896,7 +896,7 @@ public abstract class lr_parser {
           // It is the first token that is being consumed, not the one
           // we were up to parsing
           if (debug)
-              debug_message("# Consuming Symbol #" + lookahead[ 0 ].sym);
+              debug_message("# Consuming Symbol #" + lookahead[ 0 ].symCode);
           restart_lookahead();
         }
 
@@ -1072,7 +1072,7 @@ public abstract class lr_parser {
       for (;;)
         {
           /* look up the action from the current state (on top of stack) */
-          act = get_action(vstack.top(), cur_err_token().sym);
+          act = get_action(vstack.top(), cur_err_token().symCode);
 
           /* if its an error, we fail */
           if (act == 0) return false;
@@ -1084,7 +1084,7 @@ public abstract class lr_parser {
               vstack.push(act-1);
 
               if (debug) debug_message("# Parse-ahead shifts Symbol #" +
-                       cur_err_token().sym + " into state #" + (act-1));
+                       cur_err_token().symCode + " into state #" + (act-1));
 
               /* advance simulated input, if we run off the end, we are done */
               if (!advance_lookahead()) return true;
@@ -1148,7 +1148,7 @@ public abstract class lr_parser {
       if (debug)
         {
           debug_message("# Reparsing saved input with actions");
-          debug_message("# Current Symbol is #" + cur_err_token().sym);
+          debug_message("# Current Symbol is #" + cur_err_token().symCode);
           debug_message("# Current state is #" +
                         stack.peek().parse_state);
         }
@@ -1160,7 +1160,7 @@ public abstract class lr_parser {
 
           /* look up action out of the current state with the current input */
           act =
-            get_action(stack.peek().parse_state, cur_err_token().sym);
+            get_action(stack.peek().parse_state, cur_err_token().symCode);
 
           /* decode the action -- > 0 encodes shift */
           if (act > 0)
@@ -1188,7 +1188,7 @@ public abstract class lr_parser {
                 }
 
               if (debug)
-                debug_message("# Current Symbol is #" + cur_err_token().sym);
+                debug_message("# Current Symbol is #" + cur_err_token().symCode);
             }
           /* if its less than zero, then it encodes a reduce action */
           else if (act < 0)

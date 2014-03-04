@@ -210,17 +210,13 @@ public class emit {
 
   /* frankf 6/18/96 */
   protected static boolean _lr_values;
-  protected static boolean _locations;
 
   /** whether or not to emit code for left and right values */
   public static boolean lr_values() {return _lr_values;}
-  public static boolean locations() { return _locations; }
   protected static void set_lr_values(boolean b) { _lr_values = b;}
-  protected static void set_locations(boolean b) { _locations = b; }
 
   //Hm Added clear  to clear all static fields
   public static void clear () {
-      _locations = false;
       _lr_values = true;
       action_code = null;
       import_list = new Stack<String>();
@@ -919,8 +915,6 @@ public class emit {
       /* user supplied imports */
       for (int i = 0; i < import_list.size(); i++)
         out.println("import " + import_list.elementAt(i) + ";");
-      if (locations())
-        out.println("import ldf.java_cup.runtime.ComplexSymbolFactory.Location;");
 
       /* class header */
       out.println();

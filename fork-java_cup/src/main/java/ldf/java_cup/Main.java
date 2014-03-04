@@ -1,6 +1,7 @@
 package ldf.java_cup;
 
-import ldf.java_cup.runtime.ComplexSymbolFactory;
+import ldf.java_cup.runtime.TokenFactory;
+import ldf.java_cup.runtime.TokenFactoryImpl;
 
 import java.io.*;
 import java.util.Enumeration;
@@ -54,8 +55,6 @@ import java.util.Enumeration;
  *   <dd> turn on debugging messages within JavaCup
  *   <dt> -nopositions
  *   <dd> don't generate the positions code
- *   <dt> -locations
- *   <dd> generate handles xleft/xright for symbol positions in actions
  *   <dt> -noscanner
  *   <dd> don't refer to ldf.java_cup.runtime.Scanner in the parser
  *        (for compatibility with old runtimes)
@@ -105,7 +104,6 @@ public class Main {
   /* frankf added this 6/18/96 */
   /** User option -- should generator generate code for left/right values? */
   protected static boolean lr_values = true;
-  protected static boolean locations = false;
   /** User option -- should symbols be put in a class or an interface? [CSA]*/
   protected static boolean sym_interface = false;
 
@@ -174,7 +172,6 @@ public class Main {
       /* frankf 6/18/96
          hackish, yes, but works */
       emit.set_lr_values(lr_values);
-      emit.set_locations(locations);
       /* open output files */
       if (print_progress) System.err.println("Opening files...");
       /* use a buffered version of standard input */
@@ -265,7 +262,6 @@ public class Main {
 "    -nowarn        don't warn about useless productions, etc.\n" +
 "    -nosummary     don't print the usual summary of parse states, etc.\n" +
 "    -nopositions   don't propagate the left and right token position values\n" +
-"    -locations      generate handles xleft/xright for symbol positions in actions\n" +
 "    -noscanner     don't refer to ldf.java_cup.runtime.Scanner\n" +
 "    -progress      print messages to indicate progress of the system\n" +
 "    -time          print time usage summary\n" +
@@ -363,7 +359,6 @@ public class Main {
           else if (argv[i].equals("-debug"))        opt_do_debug = true;
           /* frankf 6/18/96 */
           else if (argv[i].equals("-nopositions"))  lr_values = false;
-          else if (argv[i].equals("-locations"))    locations = true;
           /* CSA 12/21/97 */
           else if (argv[i].equals("-interface"))    sym_interface = true;
           /* CSA 23-Jul-1999 */
@@ -472,7 +467,7 @@ public class Main {
       parser parser_obj;
 
       /* create a parser and parse with it */
-      ComplexSymbolFactory csf = new ComplexSymbolFactory();
+      TokenFactory csf = new TokenFactoryImpl();
       parser_obj = new parser(new Lexer(csf),csf);
       try {
         if (opt_do_debug)
