@@ -9,6 +9,29 @@
     <artifactId>ldf-core</artifactId>
     <version>0.1-SNAPSHOT</version>
 
+    <dependencies>
+
+        <!-- ldf.java_cup package-->
+        <dependency>
+            <groupId>ldf</groupId>
+            <artifactId>ldf-java_cup</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+
+        <!-- @Nonnull, @Nullable ...-->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <build>
 
