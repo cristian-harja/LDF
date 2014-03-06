@@ -1,0 +1,25 @@
+package ldf.tests.core.test2;
+import ldf.java_cup.runtime.*;
+
+terminal INT, ADD, SUB, MUL, DIV, MOD, LPAREN, RPAREN;
+
+non terminal expr, additive, multiplicative, primary;
+
+start with expr;
+
+expr ::= additive;
+
+primary ::= INT |  LPAREN additive RPAREN | SUB primary;
+
+additive ::= additive ADD multiplicative
+          |  additive SUB multiplicative
+          |  multiplicative
+          ;
+
+multiplicative ::= multiplicative MUL primary
+                |  multiplicative DIV primary
+                |  multiplicative MOD primary
+                |  primary
+                ;
+
+

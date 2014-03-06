@@ -330,12 +330,12 @@ public class StNode extends Symbol implements Collection<StNode> {
 
     @Nonnull
     public ListIterator<StNode> iterator() {
-        return new StIterator();
+        return new StIterator(childL);
     }
 
     @Nonnull
     public ListIterator<StNode> iteratorReverse() {
-        return new StIteratorRev();
+        return new StIteratorRev(childR);
     }
 
 
@@ -432,9 +432,13 @@ public class StNode extends Symbol implements Collection<StNode> {
 
     private class StIterator implements ListIterator<StNode> {
 
-        int index, prevIndex;
+        int index, prevIndex = - 1;
         StNode parent;
         StNode prev, next;
+
+        public StIterator(StNode start) {
+            next = start;
+        }
 
         @Override
         public boolean hasNext() {
@@ -490,9 +494,13 @@ public class StNode extends Symbol implements Collection<StNode> {
 
     private class StIteratorRev implements ListIterator<StNode> {
 
-        int index, prevIndex;
+        int index, prevIndex = -1;
         StNode parent;
         StNode prev, next;
+
+        public StIteratorRev(StNode node) {
+            next = node;
+        }
 
         @Override
         public boolean hasPrevious() {

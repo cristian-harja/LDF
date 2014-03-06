@@ -1,0 +1,48 @@
+<project default="test1" basedir=".">
+    <property name="flex" location="src/test/flex"/>
+    <property name="cup" location="src/test/cup"/>
+    <property name="out" location="target/classes"/>
+    <property name="gen" location="target/generated-test-sources"/>
+    <property name="gen_flex" location="${gen}/flex"/>
+    <property name="gen_cup" location="${gen}/cup"/>
+
+    <taskdef
+            name="cup"
+            classname="ldf.java_cup.anttask.CUPTask"
+            classpath="../fork-java_cup/dist/ldf-java_cup-cc.jar"/>
+
+    <taskdef
+            name="jflex"
+            classname="JFlex.anttask.JFlexTask"
+            classpath="../fork-java_cup/bin/JFlex.jar"/>
+
+    <target name="clean">
+        <!-- Delete folders -->
+        <delete dir="${gen_cup}"/>
+        <delete dir="${gen_flex}"/>
+
+        <!-- (Re)create folders -->
+        <mkdir dir="${gen_cup}"/>
+        <mkdir dir="${gen_flex}"/>
+    </target>
+
+
+    <target name="test2" depends="clean">
+        <cup
+                srcfile="src/test/cup/test2.cup"
+                interface="on"
+                destdir="${gen_cup}"
+                parser="parser"
+                symbols="sym"
+                quiet="false"
+                nonterms="true"
+                nopositions="false"/>
+
+
+        <jflex
+                file="src/test/flex/test2.jflex"
+                destdir="${gen_flex}"/>
+
+    </target>
+
+</project>

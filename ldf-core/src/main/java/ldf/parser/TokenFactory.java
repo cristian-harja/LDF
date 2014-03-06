@@ -6,7 +6,7 @@ import ldf.java_cup.runtime.TokenFactoryImpl;
 /**
  * @author Cristian Harja
  */
-public final class TokenFactory extends TokenFactoryImpl {
+public class TokenFactory extends TokenFactoryImpl {
 
     private StNode lastToken;
 
