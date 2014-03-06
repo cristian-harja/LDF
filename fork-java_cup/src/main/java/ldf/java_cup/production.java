@@ -391,24 +391,8 @@ public class production {
                                     String  stack_type,
                                     int     offset)
     {
-      String ret;
+      String ret = "";
 
-      /* Put in the left/right value labels */
-      if (emit.lr_values()){
-        ret = "\t\tint " + labelname + "left = " +
-          emit.pre("stack") +
-             // TUM 20050917
-            ((offset==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + offset + ")"))+
-            ".left;\n" +
-          "\t\tint " + labelname + "right = " +
-          emit.pre("stack") +
-             // TUM 20050917
-            ((offset==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + offset + ")"))+
-            ".right;\n";
-      }
-      else ret = "";
-
-      /* otherwise, just declare label. */
         String cast = "";
         if (!stack_type.equals("Object")) {
             cast = "(" + stack_type +")";
