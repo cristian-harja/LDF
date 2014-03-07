@@ -1,0 +1,16 @@
+package ldf.tests.core.test3;
+import ldf.java_cup.runtime.*;
+
+// The goal of this test is NOT TO CRASH when parsing:
+// list ::= /* empty */
+
+terminal LPAREN, RPAREN, COMMA, INT;
+
+non terminal item, list, list_;
+
+start with item;
+
+item ::= INT | LPAREN list RPAREN ;
+
+list ::= list_ | /* empty */ ;
+list_ ::= item | list_ COMMA item;

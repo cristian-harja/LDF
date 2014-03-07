@@ -18,6 +18,15 @@ public class TokenFactory extends TokenFactoryImpl {
     }
 
     @Override
+    public Symbol newEmptySymbol(
+            String name, int id, Symbol prevSymbol
+    ) {
+        StNode s = (StNode) super.newEmptySymbol(name, id, prevSymbol);
+        StNode.insertEmptySymbol((StNode) prevSymbol, s);
+        return s;
+    }
+
+    @Override
     public Symbol newToken(
             String symName, int symCode,
             int lineL, int columnL, int offsetL

@@ -27,7 +27,7 @@
     </target>
 
 
-    <target name="test2" depends="clean">
+    <target name="test2">
         <cup
                 srcfile="src/test/cup/test2.cup"
                 interface="on"
@@ -44,5 +44,25 @@
                 destdir="${gen_flex}"/>
 
     </target>
+
+    <target name="test3">
+        <cup
+                srcfile="src/test/cup/test3.cup"
+                interface="on"
+                destdir="${gen_cup}"
+                parser="parser"
+                symbols="sym"
+                quiet="false"
+                nonterms="true"
+                nopositions="false"/>
+
+
+        <jflex
+                file="src/test/flex/test3.jflex"
+                destdir="${gen_flex}"/>
+
+    </target>
+
+    <target name="tests" depends="test2,test3"/>
 
 </project>

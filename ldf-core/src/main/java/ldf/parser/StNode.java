@@ -100,6 +100,13 @@ public class StNode extends Symbol implements Collection<StNode> {
         t2.tokenL = t1;
     }
 
+    protected static void insertEmptySymbol(StNode prev, StNode s) {
+        StNode next = prev.tokenR;
+        prev.tokenR = s;
+        next.tokenL = s;
+        s.tokenL = prev;
+        s.tokenR = next;
+    }
     /**
      * Give the root of two sub-trees (they mustn't have a parent node),
      * this method joins them (and any unused roots in between) into
