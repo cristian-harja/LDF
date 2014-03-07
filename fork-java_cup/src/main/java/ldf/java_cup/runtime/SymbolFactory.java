@@ -3,8 +3,8 @@ package ldf.java_cup.runtime;
 /**
  * Creates the Symbols interface, which CUP uses as default
  *
- * @version last updated 27-03-2006
  * @author Michael Petter
+ * @author Cristian Harja
  */
 
 /* *************************************************
@@ -28,6 +28,21 @@ public interface SymbolFactory {
     Symbol newSymbol(
             String name, int id,
             Symbol left, Symbol right
+    );
+
+    /**
+     * Construction with left/right propagation switched on,
+     * but this is for treating empty symbols differently.
+     */
+    Symbol newEmptySymbol(
+            String name, int id,
+            Symbol previousSymbol
+    );
+
+    Symbol newEmptySymbol(
+            String name, int id,
+            Symbol previousSymbol,
+            Object value
     );
 
     /**

@@ -505,20 +505,25 @@ public class emit {
                 ".peek()"
                 // TUM 20060327 removed .right
                 ;
-            if (prod.rhs_length() == 0)
+            if (prod.rhs_length() == 0) {
               leftstring = rightstring;
+              out.println("              " + pre("result") +
+                      " = parser.getSymbolFactory().newEmptySymbol(" +
+                      "\""+         prod.lhs().the_symbol().name() +"\","+
+                      prod.lhs().the_symbol().index()  +
+                      ", " + leftstring + ", RESULT);");
+            }
             else {
               loffset = prod.rhs_length() - 1;
               leftstring = emit.pre("stack") +
                   // TUM 20050917
                   ((loffset==0)?(".peek()"):(".elementAt(" + emit.pre("top") + "-" + loffset + ")"));
                   // TUM 20060327 removed .left
-
+              out.println("              " + pre("result") + " = parser.getSymbolFactory().newSymbol(" +
+                      "\""+         prod.lhs().the_symbol().name() +"\","+
+                      prod.lhs().the_symbol().index()  +
+                      ", " + leftstring + ", " + rightstring + ", RESULT);");
             }
-            out.println("              " + pre("result") + " = parser.getSymbolFactory().newSymbol(" +
-                        "\""+         prod.lhs().the_symbol().name() +"\","+
-                        prod.lhs().the_symbol().index()  +
-                        ", " + leftstring + ", " + rightstring + ", RESULT);");
           } else {
             out.println("              " + pre("result") + " = parser.getSymbolFactory().newSymbol(" +
                 "\""+         prod.lhs().the_symbol().name() +  "\","+
