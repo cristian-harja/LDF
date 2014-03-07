@@ -55,6 +55,31 @@ public class SymbolFactoryImpl implements SymbolFactory {
     }
 
     @Override
+    public Symbol newEmptySymbol(
+            String name, int id,
+            Symbol previousSymbol
+    ) {
+        Symbol s = newSymbol(name, id);
+        int line = previousSymbol.lineR;
+        int column = previousSymbol.columnR;
+        int offset = previousSymbol.offsetR;
+        s.setLeftPos(line, column, offset);
+        s.setRightPos(line, column, offset);
+        return s;
+    }
+
+    @Override
+    public Symbol newEmptySymbol(
+            String name, int id,
+            Symbol previousSymbol,
+            Object value
+    ) {
+        Symbol s = newEmptySymbol(name, id, previousSymbol);
+        s.value = value;
+        return s;
+    }
+
+    @Override
     public Symbol newSymbol(
             String name, int id,
             Symbol left, Symbol right,
