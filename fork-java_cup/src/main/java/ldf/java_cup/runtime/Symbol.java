@@ -110,7 +110,7 @@ public class Symbol extends LocationAwareEntity {
 
     @Override
     public String toString() {
-        return symName;
+        return symName + " (" + lineL + ":" + columnL + ")";
     }
 
 }

@@ -393,8 +393,10 @@ public abstract class lr_parser {
       System.err.flush();
       if (info instanceof Symbol)
         if (((Symbol)info).offsetL != -1)
-        System.err.println(" at character " + ((Symbol)info).offsetL +
-                           " of input");
+        System.err.println(
+                " at " + ((Symbol)info).lineL +
+                ":"    + ((Symbol)info).columnL
+        );
         else System.err.println("");
       else System.err.println("");
     }
