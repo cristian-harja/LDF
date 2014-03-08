@@ -2,9 +2,12 @@
     <property name="flex" location="src/test/flex"/>
     <property name="cup" location="src/test/cup"/>
     <property name="out" location="target/classes"/>
-    <property name="gen" location="target/generated-test-sources"/>
+    <property name="gen" location="target/generated-sources"/>
     <property name="gen_flex" location="${gen}/flex"/>
     <property name="gen_cup" location="${gen}/cup"/>
+    <property name="test_gen" location="target/generated-test-sources"/>
+    <property name="test_gen_flex" location="${test_gen}/flex"/>
+    <property name="test_gen_cup" location="${test_gen}/cup"/>
 
     <taskdef
             name="cup"
@@ -26,10 +29,9 @@
         <mkdir dir="${gen_flex}"/>
     </target>
 
-
-    <target name="test2">
+    <target name="ldf_parser">
         <cup
-                srcfile="src/test/cup/test2.cup"
+                srcfile="src/main/cup/parser.cup"
                 interface="on"
                 destdir="${gen_cup}"
                 parser="parser"
@@ -40,8 +42,26 @@
 
 
         <jflex
-                file="src/test/flex/test2.jflex"
+                file="src/main/flex/lexer.jflex"
                 destdir="${gen_flex}"/>
+
+    </target>
+
+    <target name="test2">
+        <cup
+                srcfile="src/test/cup/test2.cup"
+                interface="on"
+                destdir="${test_gen_cup}"
+                parser="parser"
+                symbols="sym"
+                quiet="false"
+                nonterms="true"
+                nopositions="false"/>
+
+
+        <jflex
+                file="src/test/flex/test2.jflex"
+                destdir="${test_gen_flex}"/>
 
     </target>
 

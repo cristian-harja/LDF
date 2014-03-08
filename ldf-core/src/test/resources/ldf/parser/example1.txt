@@ -1,0 +1,137 @@
+/*
+    This is an example of basic BNF syntax.
+*/
+
+nterm stmt ::= expr_bool_meet | stmt_if | stmt_forever | decl_var; // union
+
+
+/*
+    This example shows that you can use character literals as terminals.
+    They are recognised automatically, generating the corresponding rules
+    in the lexer.
+*/
+
+nterm expr
+    ::= expr '+' expr
+    |   expr '-' expr
+    |   expr '*' expr
+    |   expr '/' expr
+    |   '(' expr ')'
+    |   '-' expr
+    |   '+' expr
+    |   IDENTIFIER
+    |   NUMBER
+    |   STRING
+    ;
+
+
+/*
+    The following examples introduce a new syntactic feature:
+            [ e1, e2 ] +
+        or  [ e1, e2 ] *
+        or  [ e1, e2 ] {n}
+        or  [ e1, e2 ] {n,}
+        or  [ e1, e2 ] {n,m}
+        or  [ e1, e2 ] {,m}
+
+    The syntax expresses repetitions of "e1", with "e2" in between every
+    two occurrences of "e1". The "+", "*" or "{...}" are quantifiers that
+    indicate how many occurrences of "e1" are expected:
+
+        *     = 0 or more
+        +     = 1 or more
+        {n}   = exactly n (with n > 1)
+        {n,}  = n or more (with n > 1)
+        {,m}  = m or less (with m > 2)
+        {n,m} = no less than n, no more than m (with 0 < n < m)
+*/
+
+nterm expr_function_call
+    ::= IDENTIFIER '(' [expr, ',']* ')' ;   // someFunction(expr,expr,...)
+
+// Note: just like with regular expressions, the "|" operator can be nested
+nterm expr_additive       ::= [expr_multiplicative, ('+'|'-')]+ ;
+nterm expr_multiplicative ::= [expr_exponential, ('*'|'/'|'%')]+ ;
+nterm expr_exponential    ::= [expr_primary, '^']+ ;
+
+
+/*
+    Just like character literals, you can embed string literals directly
+    into the BNF syntax; the appropriate rules are generated automatically
+    in the lexer. You can thus define keywords on-the-fly.
+*/
+
+nterm expr_bool_meet ::= [expr_bool_join, "||"]+ ;
+nterm expr_bool_join ::= [expr_bool_atom, "&&"]+ ;
+nterm expr_bool_atom
+    ::= expr_additive ("=="|"!="|"<="|">="|"<"|">") expr_additive
+    |   expr_additive
+    ;
+
+
+/*
+    Similarly to regular expressions, you can append "?" to an item in your
+    grammar to indicate that its occurrence is optional. The "?" operator
+    has high precedence.
+*/
+
+nterm stmt_if ::= "if" '(' expr ')' stmt ("else" stmt)? ;
+
+
+/*
+    You can label certain items in a BNF expression, in order to reference
+    them inside grammar actions. You do so by pre-pending the desired item
+    with an identifier and an "@" sign ( myLabel@item ).
+
+    Grammar actions are written inside a {: ... :} block and they contain
+    (imperative )code to be executed after a rule has been matched.
+
+    A special type of grammar actions are guards, which are written inside
+    {? ... ?} blocks, and they contain a boolean expression to be evaluated
+    while parsing. If the expression is false, the parser should discard the
+    rule currently being matched (possibly backtracking to another rule).
+
+*/
+
+nterm stmt_forever
+    ::= ( "forever" '{' myLabel@stmt_list '}'
+        |      "do" '{' myLabel@stmt_list '}' "forever" ';'
+        )
+
+        {: new ForeverLoop(myLabel); :}
+     ;
+
+
+/*
+    In order to improve the readability of a rule which contains grammar
+    actions, you can use placeholders in your BNF syntax, and expand their
+    contents in a separate "where" clause.
+
+    The placeholders have the following structure: {@placeholderName}.
+    The "where" clause follows the BNF syntax and is a list of statements:
+        @placeholderName = {: grammar action :}
+    or  @placeholderName = {? guard ?}
+
+    The following example demonstrates the use of placeholders, in an
+    attempt to define a statement for declaring a maximum of 10 variables
+    simultaneously:
+
+        var a, b, c, ..., j;
+
+*/
+nterm decl_var ::=
+    {@init} "var" [vars@IDENTIFIER {@guard}, ',']+ ';' {@action}
+where
+    @init   = {: var n; :}
+    @guard  = {? n++ < 10 ?}
+    @action = {: new StmtVarDecl(vars); :}
+;
+
+
+/*
+    The above example could also have been written like this:
+*/
+nterm decl_var
+    ::= "var" [vars@IDENTIFIER, ',']{,10} ';'
+        {: new StmtVarDecl(vars); :}
+     ;

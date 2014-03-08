@@ -62,9 +62,27 @@
 
                 <executions>
 
-                    <!-- Run the "tests" target in build.xml -->
+                    <!-- Run the "ldf_parser" target in build.xml -->
                     <execution>
                         <id>default-cli</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property
+                                        name="compile_classpath"
+                                        refid="maven.compile.classpath"/>
+                                <ant antfile="${project.basedir}/build.xml"
+                                     target="ldf_parser"/>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <!-- Run the "tests" target in build.xml -->
+                    <execution>
+                        <id>test-sources</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>run</goal>
@@ -100,9 +118,23 @@
                 <version>1.8</version>
                 <executions>
                     <execution>
+                        <id>add-sources</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/cup</source>
+                                <source>${project.build.directory}/generated-sources/flex</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-test-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
                         </goals>
                         <configuration>
                             <sources>

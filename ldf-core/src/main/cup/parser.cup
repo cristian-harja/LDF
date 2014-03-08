@@ -1,0 +1,425 @@
+package ldf.parser.gen;
+import ldf.java_cup.runtime.*;
+
+/* -------------- Terminals ---------------- */
+
+terminal String  IDENTIFIER;
+terminal Number  NUMBER;
+
+terminal
+    STRING_BEGIN, STRING_END, CHAR_BEGIN, CHAR_END;
+
+terminal String
+    STRING_FRAGMENT,
+    INVALID_ESCAPE_SEQ;
+
+/* Keywords: */
+
+terminal
+    NTERM, WHERE, VAR, DEF,                // declarations
+    IF, ELSE, SWITCH, CASE, DEFAULT,       // branching
+    FOR, DO, WHILE, BREAK, CONTINUE,       // looping
+    RETURN, TRY, CATCH, FINALLY,           // jumps
+    NEW, TRUE, FALSE;                      // other
+
+/* Punctuation */
+
+terminal
+    COLON, SEMICOLON, COMMA, DOT, AT_SIGN, Q_MARK,    // : ; , . @ ?
+    PIPE, HAT, PLUS, MINUS, TIMES, SLASH, MOD,        // | ^ ~ + - * / %
+    PLUS_PLUS, MINUS_MINUS, EXCL, PIPE_PIPE, AMP_AMP, // ++ -- ! || &&
+    EQ, EQEQ, NEQ, LT, LTE, GT, GTE,                  // = == != < <= > >=
+    COLON_COLON_EQ, ELLIPSIS, EQ_GT;                  // ::=  ... =>
+
+/* Different kinds of parentheses and brackets: */
+
+terminal
+    LPAREN, RPAREN,   // ( ... )
+    LSQUARE, RSQUARE, // [ ... ]
+    LCURLY, RCURLY,   // { ... }
+    LCURLY_AT_SIGN,   // {@ ...
+    LACTION, RACTION, // {: ... :}
+    LGUARD, RGUARD;   // {? ... ?}
+
+/* ------------- Non-terminals ------------- */
+
+non terminal
+    literal_char,
+    literal_str,
+    string_contents_,
+    string_contents__;
+
+non terminal
+    bnf_syntax,
+    bnf_join,
+    bnf_meet,
+    bnf_action,
+    bnf_item,
+    bnf_atom,
+    bnf_multiplicity;
+
+non terminal
+    decl,
+    decl_vars,
+    decl_vars_,
+    decl_var__,
+    decl_function;
+
+non terminal
+    decl_nterm,
+    decl_nterm_where_,
+    decl_nterm_where_entries_,
+    decl_nterm_where_entry_;
+
+non terminal
+    stmt, stmt_list, stmt_block, stmt_empty, stmt_expr,
+    stmt_switch,
+    switch_body_,
+    stmt_decl,
+    stmt_label,
+    stmt_try,
+    stmt_catch_,
+    stmt_catch__;
+
+non terminal
+    type_expr;
+
+non terminal
+    matched, unmatched; //for solving the dangling else problem
+
+non terminal
+    expr, expr_join, expr_meet, expr_bool, expr_additive,
+    expr_multiplicative, expr_exponential, expr_primary,
+    expr_secondary, expr_assign, expr_reference;
+
+non terminal
+    list, list_, list_item;
+
+non terminal  main;
+
+/* -------------- Productions -------------- */
+
+start with main;
+
+main ::= main decl | /* empty */;
+
+/* literals */
+literal_char        // '...'
+    ::= CHAR_BEGIN string_contents_ CHAR_END;
+
+literal_str         // "..."
+    ::= STRING_BEGIN string_contents_ STRING_END;
+
+string_contents_    // sequence of valid (and invalid) bits of a string
+    ::= string_contents__ string_contents_
+    |   /* empty */
+    ;
+
+string_contents__   // the invalid bits will get flagged
+    ::= STRING_FRAGMENT
+    |   INVALID_ESCAPE_SEQ
+    ;
+
+/* Declarations */
+
+decl
+    ::= decl_vars
+    |   decl_function
+    |   decl_nterm
+    ;
+decl_vars   // var ...;
+    ::= VAR decl_vars_ SEMICOLON
+    ;
+
+decl_vars_
+    ::= decl_vars_ COMMA
+        decl_var__
+    |   decl_var__
+    ;
+
+decl_var__     // identifier [ : type ] [ = expr ]
+    ::= IDENTIFIER
+    |   IDENTIFIER COLON type_expr
+    |   IDENTIFIER                 EQ expr
+    |   IDENTIFIER COLON type_expr EQ expr
+    ;
+
+decl_function
+    ::= DEF IDENTIFIER list stmt_block
+    ;
+
+/* Declarative statements (grammar definition) */
+
+decl_nterm          // nterm ID ::= ... [where ...] ;
+    ::= NTERM IDENTIFIER
+        COLON_COLON_EQ bnf_syntax
+        decl_nterm_where_
+        SEMICOLON
+    ;
+
+decl_nterm_where_   // where @id = {: action code :} ...
+    ::= WHERE decl_nterm_where_entries_
+    | /* empty */
+    ;
+
+decl_nterm_where_entries_
+    ::= decl_nterm_where_entries_  // iteration
+        decl_nterm_where_entry_    // item
+    |   /* empty */
+    ;
+
+decl_nterm_where_entry_ // @identifier = {: action code :}
+    ::= AT_SIGN IDENTIFIER EQ bnf_action
+    ;
+
+/* BNF syntax */
+
+bnf_syntax
+    ::= bnf_join
+    ;
+
+bnf_join        // a|b|c|... (precedence: 0)
+    ::= bnf_join PIPE bnf_meet
+    |   bnf_meet
+    ;
+
+bnf_meet        // a b c ... (precedence: 1)
+    ::= bnf_meet bnf_item
+    |   bnf_meet bnf_action
+    |   /* empty */
+    ;
+
+bnf_action
+   ::= LACTION stmt_list RACTION        // {: ... :} -- action to perform
+    |  LGUARD     expr   RGUARD         // {? ... ?} -- condition to check
+    |  LCURLY_AT_SIGN IDENTIFIER RCURLY // {@label}  -- expanded in "where"
+    ;
+
+bnf_item        // [label@] something [multiplicity]
+    ::=                    bnf_atom
+    |   IDENTIFIER AT_SIGN bnf_atom
+    |   IDENTIFIER AT_SIGN bnf_atom bnf_multiplicity
+    |                      bnf_atom bnf_multiplicity
+    ;
+
+bnf_atom
+    ::= IDENTIFIER
+    |   literal_char
+    |   literal_str
+    |   LPAREN  bnf_join RPAREN
+    |   LSQUARE bnf_join COMMA bnf_join RSQUARE
+    ;
+
+bnf_multiplicity        // used after a bnf_atom to indicate repetition
+    ::= TIMES                               // * = 0 or more
+    |   PLUS                                // + = 1 or more
+    |   Q_MARK                              // ? = 0 or 1
+    |   LCURLY NUMBER              RCURLY   // {n}   = exactly n
+    |   LCURLY NUMBER COMMA        RCURLY   // {n,}  = n or more
+    |   LCURLY NUMBER COMMA NUMBER RCURLY   // {,n}  = n or less
+    |   LCURLY        COMMA NUMBER RCURLY   // {n,m} = between n and m
+    ;
+
+/* Imperative statements (action body) */
+
+stmt_list
+    ::= stmt_list stmt
+    |   /* empty */
+    ;
+
+stmt
+    ::= matched   // these two solve the dangling else problem
+    |   unmatched // http://www.cs.man.ac.uk/~pjj/complang/g2lr.html#5
+    ;
+
+unmatched
+    ::= IF LPAREN expr RPAREN stmt
+    |   IF LPAREN expr RPAREN matched ELSE unmatched
+
+    /* for-else (syntactic sugar) */
+    |   FOR LPAREN expr SEMICOLON expr SEMICOLON expr RPAREN stmt
+    |   FOR LPAREN expr SEMICOLON expr SEMICOLON expr RPAREN matched
+        ELSE unmatched
+
+    /* while-else (syntactic sugar) */
+    |   WHILE LPAREN expr RPAREN stmt
+    |   WHILE LPAREN expr RPAREN matched ELSE unmatched
+
+    |   stmt_label unmatched
+    |   ELLIPSIS // dummy statement
+    ;
+
+matched
+    ::= IF LPAREN expr RPAREN matched ELSE matched
+
+    /* for-else (syntactic sugar) */
+    |   FOR LPAREN expr SEMICOLON expr SEMICOLON expr RPAREN matched
+        ELSE matched
+
+    /* while-else (syntactic sugar) */
+    |   WHILE LPAREN expr RPAREN matched
+        ELSE matched
+
+    |   DO stmt WHILE LPAREN expr RPAREN SEMICOLON
+    |   BREAK    SEMICOLON
+    |   CONTINUE SEMICOLON
+    |   BREAK    IDENTIFIER SEMICOLON
+    |   CONTINUE IDENTIFIER SEMICOLON
+    |   RETURN expr SEMICOLON
+    |   stmt_block
+    |   stmt_empty
+    |   stmt_expr
+    |   stmt_switch
+    |   stmt_decl
+    |   stmt_label matched
+    |   stmt_try
+    ;
+
+stmt_decl
+    ::= decl_vars
+    ;
+
+stmt_label
+    ::= IDENTIFIER COLON
+    ;
+
+stmt_block      // { ... code ... }
+    ::= LCURLY stmt_list RCURLY
+    ;
+
+stmt_empty      // ;
+    ::= SEMICOLON
+    ;
+
+stmt_expr       // expr;
+    ::= expr SEMICOLON
+    ;
+
+stmt_switch     // switch(expr) { ... }
+    ::= SWITCH LPAREN expr RPAREN LCURLY
+            switch_body_
+        RCURLY
+    ;
+
+switch_body_
+    ::= CASE expr COLON switch_body_
+    |   DEFAULT COLON   switch_body_
+    |   stmt            switch_body_
+    |   /* empty */
+    ;
+
+stmt_try
+    ::= TRY LCURLY stmt_list RCURLY stmt_catch_
+    |   TRY LCURLY stmt_list RCURLY stmt_catch_
+        FINALLY LCURLY stmt_list RCURLY
+    ;
+
+stmt_catch_
+    ::= stmt_catch_ stmt_catch__
+    |   stmt_catch__
+    ;
+
+stmt_catch__
+    ::= CATCH LPAREN type_expr IDENTIFIER RPAREN
+        LCURLY stmt_list RCURLY
+    ;
+
+/* Type expressions (needs expanding) */
+
+type_expr
+    ::= IDENTIFIER;
+
+/* Lists: (a, b, c) or (a: int, b: char, c: T) */
+
+list
+    ::= LPAREN list_ RPAREN
+    ;
+
+list_
+    ::= list_ COMMA list_item
+    |   list_item
+    |   /* empty */
+    ;
+
+list_item
+    ::= IDENTIFIER COLON type_expr
+    |   expr
+    ;
+
+/* Expression statements */
+
+expr
+    ::= expr_assign;
+
+expr_assign
+    ::= expr_join EQ expr_assign
+    |   expr_join
+    ;
+
+expr_join
+    ::= expr_join PIPE_PIPE  expr_meet
+    |   expr_meet
+    ;
+
+expr_meet
+    ::= expr_meet AMP_AMP    expr_bool
+    |   expr_bool
+    ;
+expr_bool
+    ::= expr_bool EQEQ expr_additive
+    |   expr_bool NEQ  expr_additive
+    |   expr_bool LT   expr_additive
+    |   expr_bool LTE  expr_additive
+    |   expr_bool GT   expr_additive
+    |   expr_bool GTE  expr_additive
+    |   expr_additive
+    ;
+
+expr_additive
+    ::= expr_additive PLUS  expr_multiplicative
+    |   expr_additive MINUS expr_multiplicative
+    |   expr_multiplicative
+    ;
+
+expr_multiplicative
+    ::= expr_multiplicative TIMES  expr_exponential
+    |   expr_multiplicative SLASH  expr_exponential
+    |   expr_multiplicative  MOD   expr_exponential
+    |   expr_exponential
+    ;
+
+expr_exponential
+    ::= expr_secondary HAT expr_exponential
+    |   expr_secondary
+    ;
+
+expr_secondary
+    ::= EXCL         expr_secondary
+    |   MINUS        expr_secondary
+    |   PLUS         expr_secondary
+    |   PLUS_PLUS    expr_primary
+    |   MINUS_MINUS  expr_primary
+    |   expr_primary PLUS_PLUS
+    |   expr_primary MINUS_MINUS
+    |   expr_primary EQ_GT stmt_block
+    |   expr_primary EQ_GT expr_primary
+    |   expr_primary
+    ;
+
+expr_primary
+    ::= literal_char
+    |   literal_str
+    |   NUMBER
+    |   TRUE
+    |   FALSE
+    |   list
+    |   expr_reference
+    |   expr_primary LSQUARE expr RSQUARE           // array access
+    |   expr_primary list                           // function call
+    |   NEW expr_reference list                     // object creation
+    ;
+
+expr_reference
+    ::= expr_reference DOT IDENTIFIER
+    |   IDENTIFIER
+    ;

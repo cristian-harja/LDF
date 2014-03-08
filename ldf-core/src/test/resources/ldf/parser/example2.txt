@@ -1,0 +1,104 @@
+/*
+    The following examples deal with the contents of grammar actions. They
+    can contain imperative code, but they should produce no side effects
+    while parsing.
+
+    It is possible that side effects will be eliminated (or forbidden) in
+    future parser implementations. However, if you're parsing HTML+JS,
+    side-effects are probably a requirement, since executing the JS method
+    "document.write()" would alter the remaining HTML input.
+
+    I will think of a way (probably through a type system or annotations)
+    of indicating (or disallowing) the presence of such side effects.
+
+*/
+
+nterm decl_var ::=
+    {@init} "var" [vars@IDENTIFIER {@guard}, ',']+ ';' {@action}
+where
+    @init   = {: var n = 0; :}
+    @guard  = {? n++ < 10 ?}
+    @action = {: new StmtVarDecl(vars); :}
+;
+
+
+/*
+    The following is an example of various syntactic elements available for
+    imperative code.
+
+    Note that even though the code below is well-formed (syntactically), it
+    is semantically invalid. Semantic validation will be done later on and
+    this example will be updated as a result.
+
+    Please also note that the syntax in the example below is not final, but
+    rather more of an exercise.
+*/
+
+def myFunction() {
+
+    var i=0, j=n, k=(i+j)/2;
+
+    for (i = 0; i < j; ++i) {
+        while (i < j){
+            if (k % j == 0) j--;
+        }
+    }
+
+    var a = rand()*100, b = rand()*100; //function call: rand()
+
+    if (!(a > b)) {
+        k = a;
+        a = b;
+        b = k;
+    }
+
+    while (b <= 0) {
+        a = a % b;
+        if (a==0) {
+            a = b;
+            break;
+        }
+        b = b % a;
+    } else {
+        // this gets executed if the loop is never entered.
+        // (one of the numbers must be negative)
+    }
+
+    switch (something) {
+        case EXPR:  // this should trigger an error if "EXPR" can't be
+                    // determined at compile time
+
+            break;
+
+        case "hey": // when compiling, we should use a Patricia Tree here
+            break;
+
+        default:
+            continue hello; // this is obviously incorrect but nevertheless,
+                            // it's syntactically valid
+            break kitty;
+
+    }
+
+    if (true)
+        hello: x=12;
+    else
+        kitty: x=14;
+
+    var v: int = 0; // "v" is of type "int"
+    v = v+++v;      // v++ + v
+    v = v+++ +v;    // v++ + (+v)
+
+    // v++++v; // syntax error: ((v++)++) v
+
+    // Lambda-expressions:
+
+    var f = (x: float, y: int) => (x*k + y);  // functional
+
+    var g = ((x: float, y: int) => {          // imperative
+        x = x * k;
+        x = x + y;
+        return x;
+    });
+
+}
