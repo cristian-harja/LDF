@@ -1,3 +1,5 @@
+grammar Example1 {
+
 /*
     This is an example of basic BNF syntax.
 */
@@ -135,3 +137,5 @@ nterm decl_var
     ::= "var" [vars@IDENTIFIER, ',']{,10} ';'
         {: new StmtVarDecl(vars); :}
      ;
+
+}

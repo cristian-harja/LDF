@@ -1,3 +1,5 @@
+grammar Example2: Example1{
+
 /*
     The following examples deal with the contents of grammar actions. They
     can contain imperative code, but they should produce no side effects
@@ -100,5 +102,7 @@ def myFunction() {
         x = x + y;
         return x;
     });
+
+}
 
 }

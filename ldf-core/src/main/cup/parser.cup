@@ -16,7 +16,7 @@ terminal String
 /* Keywords: */
 
 terminal
-    NTERM, WHERE, VAR, DEF,                // declarations
+    GRAMMAR, NTERM, WHERE, VAR, DEF,       // declarations
     IF, ELSE, SWITCH, CASE, DEFAULT,       // branching
     FOR, DO, WHILE, BREAK, CONTINUE,       // looping
     RETURN, TRY, CATCH, FINALLY,           // jumps
@@ -60,10 +60,16 @@ non terminal
 
 non terminal
     decl,
+    decl_list,
     decl_vars,
     decl_vars_,
     decl_var__,
     decl_function;
+
+non terminal
+    decl_grammar,
+    decl_grammar_extend_,
+    decl_grammar_extend__;
 
 non terminal
     decl_nterm,
@@ -101,7 +107,7 @@ non terminal  main;
 
 start with main;
 
-main ::= main decl | /* empty */;
+main ::= decl_grammar;
 
 /* literals */
 literal_char        // '...'
@@ -122,11 +128,32 @@ string_contents__   // the invalid bits will get flagged
 
 /* Declarations */
 
+decl_grammar
+    ::= GRAMMAR IDENTIFIER decl_grammar_extend_
+        LCURLY decl_list RCURLY
+    ;
+
+decl_grammar_extend_
+    ::= COLON decl_grammar_extend__
+    |   /* empty */
+    ;
+
+decl_grammar_extend__
+    ::= decl_grammar_extend__ COMMA expr_reference
+    |   expr_reference
+    ;
+
+decl_list
+    ::= decl_list decl
+    |   /* empty */
+    ;
+
 decl
     ::= decl_vars
     |   decl_function
     |   decl_nterm
     ;
+
 decl_vars   // var ...;
     ::= VAR decl_vars_ SEMICOLON
     ;

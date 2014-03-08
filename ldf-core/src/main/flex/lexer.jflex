@@ -153,7 +153,7 @@ InvalidTokens = {LiteralInvalidInt}|{IdentifierInvalid}
 
 <YYINITIAL> {
 
-    "::="                { return symbol(COLON_COLON_EQ);       }
+    "grammar"            { return symbol(GRAMMAR);              }
     "nterm"              { return symbol(NTERM);                }
     "where"              { return symbol(WHERE);                }
     "if"                 { return symbol(IF);                   }
@@ -228,6 +228,7 @@ InvalidTokens = {LiteralInvalidInt}|{IdentifierInvalid}
     "|"                  { return symbol(PIPE);                 }
 
     /*special*/
+    "::="                { return symbol(COLON_COLON_EQ);       }
     "{:"                 { return symbol(LACTION);              }
     ":}"                 { return symbol(RACTION);              }
     "{?"                 { return symbol(LGUARD);               }
