@@ -1,5 +1,10 @@
 package ldf.parser.gen;
 import ldf.java_cup.runtime.*;
+import ldf.parser.ast.*;
+import ldf.parser.ast.BnfAtom.AtomType;
+
+import java.util.List;
+import java.util.LinkedList;
 
 /* -------------- Terminals ---------------- */
 
@@ -49,36 +54,41 @@ non terminal
     string_contents_,
     string_contents__;
 
-non terminal
-    bnf_syntax,
-    bnf_join,
-    bnf_meet,
-    bnf_action,
-    bnf_item,
-    bnf_atom,
-    bnf_multiplicity;
+non terminal BnfSyntax          bnf_syntax;
+non terminal BnfJoin            bnf_join;
+non terminal BnfMeet            bnf_meet;
+non terminal BnfAbstractAction  bnf_action;
+non terminal BnfAtom            bnf_atom, bnf_atom_;
+non terminal BnfMultiplicity    bnf_multiplicity;
 
-non terminal
-    decl,
-    decl_list,
-    decl_vars,
-    decl_vars_,
-    decl_var__,
-    decl_function;
+non terminal Declaration        decl;
+non terminal DeclList           decl_list;
+non terminal DeclVars           decl_vars, decl_vars_;
+non terminal DeclVariable       decl_var__;
+non terminal DeclFunction       decl_function;
 
-non terminal
-    decl_grammar,
+non terminal DeclGrammar        decl_grammar;
+
+non terminal List<ExprReference>
     decl_grammar_extend_,
     decl_grammar_extend__;
 
-non terminal
-    decl_nterm,
+non terminal DeclNonTerminal decl_nterm;
+
+non terminal DeclWhereClause
     decl_nterm_where_,
-    decl_nterm_where_entries_,
+    decl_nterm_where_entries_;
+
+non terminal DeclWhereClauseEntry
     decl_nterm_where_entry_;
 
-non terminal
-    stmt, stmt_list, stmt_block, stmt_empty, stmt_expr,
+non terminal StmtList stmt_list;
+
+non terminal Statement
+    stmt,
+    stmt_block,
+    stmt_empty,
+    stmt_expr,
     stmt_switch,
     switch_body_,
     stmt_decl,
@@ -87,19 +97,24 @@ non terminal
     stmt_catch_,
     stmt_catch__;
 
-non terminal
-    type_expr;
-
-non terminal
+non terminal Statement
     matched, unmatched; //for solving the dangling else problem
 
-non terminal
+non terminal TypeExpression
+    type_expr;
+
+non terminal Expression
     expr, expr_join, expr_meet, expr_bool, expr_additive,
     expr_multiplicative, expr_exponential, expr_primary,
-    expr_secondary, expr_assign, expr_reference;
+    expr_secondary, expr_assign;
 
-non terminal
-    list, list_, list_item;
+non terminal ExprReference expr_reference;
+
+non terminal ExprList
+    expr_list, expr_list_;
+
+non terminal Expression
+    expr_list_item;
 
 non terminal  main;
 
@@ -107,7 +122,10 @@ non terminal  main;
 
 start with main;
 
-main ::= decl_grammar;
+main
+    ::= decl_grammar:gram
+        {:  RESULT = gram;  :}
+    ;
 
 /* literals */
 literal_char        // '...'
@@ -129,122 +147,235 @@ string_contents__   // the invalid bits will get flagged
 /* Declarations */
 
 decl_grammar
-    ::= GRAMMAR IDENTIFIER decl_grammar_extend_
-        LCURLY decl_list RCURLY
+    ::= GRAMMAR IDENTIFIER:id decl_grammar_extend_:ext
+        LCURLY decl_list:decl RCURLY
+        {:
+            RESULT = new DeclGrammar(id, ext, decl);
+        :}
     ;
 
 decl_grammar_extend_
-    ::= COLON decl_grammar_extend__
+    ::= COLON decl_grammar_extend__:ext
+        {:  RESULT = ext;   :}
+
     |   /* empty */
     ;
 
 decl_grammar_extend__
-    ::= decl_grammar_extend__ COMMA expr_reference
-    |   expr_reference
+    ::= decl_grammar_extend__:ext COMMA expr_reference:ref
+        {:  (RESULT = ext).add(ref);    :}
+
+    |   expr_reference:ref
+        {:
+            RESULT = new LinkedList<ExprReference>();
+            RESULT.add(ref);
+        :}
     ;
 
 decl_list
-    ::= decl_list decl
+    ::= decl_list:list decl:decl
+        {:  (RESULT = list).add(decl);  :}
+
     |   /* empty */
+        {:  RESULT = new DeclList();    :}
     ;
 
 decl
-    ::= decl_vars
-    |   decl_function
-    |   decl_nterm
+    ::= decl_vars:vars      {:  RESULT = vars;  :}
+    |   decl_function:fn    {:  RESULT = fn;    :}
+    |   decl_nterm:nterm    {:  RESULT = nterm; :}
     ;
 
 decl_vars   // var ...;
-    ::= VAR decl_vars_ SEMICOLON
+    ::= VAR decl_vars_:vars SEMICOLON
+        {:  RESULT = vars;  :}
     ;
 
 decl_vars_
-    ::= decl_vars_ COMMA
-        decl_var__
-    |   decl_var__
+    ::= decl_vars_:vars COMMA decl_var__:var
+        {:  (RESULT = vars).add(var);   :}
+
+    |   decl_var__:var
+        {:  (RESULT = new DeclVars()).add(var);   :}
     ;
 
 decl_var__     // identifier [ : type ] [ = expr ]
-    ::= IDENTIFIER
-    |   IDENTIFIER COLON type_expr
-    |   IDENTIFIER                 EQ expr
-    |   IDENTIFIER COLON type_expr EQ expr
+    ::= IDENTIFIER:id
+        {:  RESULT = new DeclVariable(id, null, null);  :}
+
+    |   IDENTIFIER:id COLON type_expr:t
+        {:  RESULT = new DeclVariable(id, t, null);     :}
+
+    |   IDENTIFIER:id EQ expr:e
+        {:  RESULT = new DeclVariable(id, null, e);     :}
+
+    |   IDENTIFIER:id COLON type_expr:t EQ expr:e
+        {:  RESULT = new DeclVariable(id, t, e);        :}
     ;
 
 decl_function
-    ::= DEF IDENTIFIER list stmt_block
+    ::= DEF IDENTIFIER:id expr_list:args stmt_block:body
+        {:  RESULT = new DeclFunction(id, args, null, body);    :}
+
+    |   DEF IDENTIFIER:id expr_list:args
+        COLON type_expr:type
+        stmt_block:body
+        {:  RESULT = new DeclFunction(id, args, type, body);    :}
+
     ;
 
 /* Declarative statements (grammar definition) */
 
 decl_nterm          // nterm ID ::= ... [where ...] ;
-    ::= NTERM IDENTIFIER
-        COLON_COLON_EQ bnf_syntax
-        decl_nterm_where_
+    ::= NTERM IDENTIFIER:id
+        COLON_COLON_EQ bnf_syntax:bnf
+        decl_nterm_where_:where_clause
         SEMICOLON
+        {:
+            RESULT = new DeclNonTerminal(id, bnf, where_clause);
+        :}
     ;
 
 decl_nterm_where_   // where @id = {: action code :} ...
-    ::= WHERE decl_nterm_where_entries_
+    ::= WHERE decl_nterm_where_entries_:list
+        {:  RESULT = list;  :}
     | /* empty */
     ;
 
 decl_nterm_where_entries_
-    ::= decl_nterm_where_entries_  // iteration
-        decl_nterm_where_entry_    // item
+    ::= decl_nterm_where_entries_:list  // iteration
+        decl_nterm_where_entry_:item    // item
+        {:  (RESULT = list).add(item);  :}
+
     |   /* empty */
+        {:  RESULT = new DeclWhereClause(); :}
     ;
 
 decl_nterm_where_entry_ // @identifier = {: action code :}
-    ::= AT_SIGN IDENTIFIER EQ bnf_action
+    ::= AT_SIGN IDENTIFIER:id EQ bnf_action:a
+        {:  RESULT = new DeclWhereClauseEntry(id, a);   :}
     ;
 
 /* BNF syntax */
 
 bnf_syntax
-    ::= bnf_join
+    ::= bnf_join:root
+        {:  RESULT = new BnfSyntax(root);   :}
     ;
 
 bnf_join        // a|b|c|... (precedence: 0)
-    ::= bnf_join PIPE bnf_meet
-    |   bnf_meet
+    ::= bnf_join:join PIPE bnf_meet:meet
+        {:  (RESULT = join).add(meet);  :}
+
+    |   bnf_meet:meet
+        {:
+            RESULT = new BnfJoin();
+            RESULT.add(meet);
+        :}
     ;
 
 bnf_meet        // a b c ... (precedence: 1)
-    ::= bnf_meet bnf_item
-    |   bnf_meet bnf_action
+    ::= bnf_meet:meet bnf_atom:obj
+        {:  (RESULT = meet).add(obj);   :}
+
+    |   bnf_meet:meet bnf_action:obj
+        {:  (RESULT = meet).add(obj);   :}
+
     |   /* empty */
+        {:  RESULT = new BnfMeet();     :}
     ;
 
 bnf_action
-   ::= LACTION stmt_list RACTION        // {: ... :} -- action to perform
-    |  LGUARD     expr   RGUARD         // {? ... ?} -- condition to check
-    |  LCURLY_AT_SIGN IDENTIFIER RCURLY // {@label}  -- expanded in "where"
+    ::= // {: ... :} -- action to be executed
+        LACTION stmt_list:s RACTION
+        {:  RESULT = new BnfAction(s);  :}
+
+    |   // {? ... ?} -- condition to be checked
+        LGUARD expr:e RGUARD
+        {:  RESULT = new BnfGuard(e);   :}
+
+    |   // {@label} -- placeholder to be expanded in the "where" clause
+        LCURLY_AT_SIGN IDENTIFIER:id RCURLY
+        {:  RESULT = new BnfPlaceholder(id);  :}
     ;
 
-bnf_item        // [label@] something [multiplicity]
-    ::=                    bnf_atom
-    |   IDENTIFIER AT_SIGN bnf_atom
-    |   IDENTIFIER AT_SIGN bnf_atom bnf_multiplicity
-    |                      bnf_atom bnf_multiplicity
-    ;
-
+// [label@] something [multiplicity]
 bnf_atom
-    ::= IDENTIFIER
-    |   literal_char
-    |   literal_str
-    |   LPAREN  bnf_join RPAREN
-    |   LSQUARE bnf_join COMMA bnf_join RSQUARE
+    ::= bnf_atom_:a
+        {:  RESULT = a; :}
+
+    |   IDENTIFIER:id AT_SIGN bnf_atom_:a
+        {:
+            RESULT = a;
+            a.setLabel(id);
+        :}
+
+    |   IDENTIFIER:id AT_SIGN bnf_atom_:a bnf_multiplicity:m
+        {:
+            RESULT = a;
+            a.setLabel(id);
+            a.setMultiplicity(m);
+        :}
+
+    |   bnf_atom_:a bnf_multiplicity:m
+        {:
+            RESULT = a;
+            a.setMultiplicity(m);
+        :}
     ;
 
-bnf_multiplicity        // used after a bnf_atom to indicate repetition
-    ::= TIMES                               // * = 0 or more
-    |   PLUS                                // + = 1 or more
-    |   Q_MARK                              // ? = 0 or 1
-    |   LCURLY NUMBER              RCURLY   // {n}   = exactly n
-    |   LCURLY NUMBER COMMA        RCURLY   // {n,}  = n or more
-    |   LCURLY NUMBER COMMA NUMBER RCURLY   // {,n}  = n or less
-    |   LCURLY        COMMA NUMBER RCURLY   // {n,m} = between n and m
+bnf_atom_
+    ::= expr_reference:ref
+        {:
+            RESULT = new BnfAtom(AtomType.REFERENCE, ref);
+        :}
+
+    |   literal_char:chr
+        {:
+            RESULT = new BnfAtom(AtomType.LITERAL_CHAR, chr);
+        :}
+
+    |   literal_str:str
+        {:
+            RESULT = new BnfAtom(AtomType.LITERAL_STRING, str);
+        :}
+
+    |   LPAREN bnf_join:bnf RPAREN
+        {:
+            RESULT = new BnfAtom(AtomType.BNF_JOIN, bnf);
+        :}
+
+
+    |   LSQUARE bnf_join:e1 COMMA bnf_join:e2 RSQUARE
+        {:
+            RESULT = new BnfAtom(
+                AtomType.ALTERNATION,
+                new BnfAlternation(e1, e2)
+            );
+        :}
+    ;
+
+bnf_multiplicity        // used after a bnf_atom_ to indicate repetition
+    ::= TIMES                                   // * = 0 or more
+        {:  RESULT = new BnfMultiplicity("*", 0, null);     :}
+
+    |   PLUS                                    // + = 1 or more
+        {:  RESULT = new BnfMultiplicity("+", 1, null);     :}
+
+    |   Q_MARK                                  // ? = 0 or 1
+        {:  RESULT = new BnfMultiplicity("?", 0, 1);        :}
+
+    |   LCURLY NUMBER:n RCURLY                  // {n}   = exactly n
+        {:  RESULT = new BnfMultiplicity("{n}", n, n);      :}
+
+    |   LCURLY NUMBER:n COMMA RCURLY            // {n,}  = n or more
+        {:  RESULT = new BnfMultiplicity("{n,}", n, null);  :}
+
+    |   LCURLY NUMBER:n COMMA NUMBER:m RCURLY   // {n,m} = between n and m
+        {:  RESULT = new BnfMultiplicity("{n,m}", n, m);    :}
+
+    |   LCURLY COMMA NUMBER:n RCURLY            // {,n}  = n or less
+        {:  RESULT = new BnfMultiplicity("{,n}", null, n);  :}
     ;
 
 /* Imperative statements (action body) */
@@ -358,19 +489,25 @@ type_expr
 
 /* Lists: (a, b, c) or (a: int, b: char, c: T) */
 
-list
-    ::= LPAREN list_ RPAREN
+expr_list
+    ::= LPAREN expr_list_:list RPAREN
+        {:  RESULT = list;  :}
     ;
 
-list_
-    ::= list_ COMMA list_item
-    |   list_item
+expr_list_
+    ::= expr_list_:list COMMA expr_list_item:item
+        {:  (RESULT = list).add(item);  :}
+
+    |   expr_list_item:item
+        {:  (RESULT = new ExprList()).add(item);    :}
+
     |   /* empty */
+        {:  RESULT = new ExprList();    :}
     ;
 
-list_item
-    ::= IDENTIFIER COLON type_expr
-    |   expr
+expr_list_item
+    ::= IDENTIFIER COLON type_expr  // formal parameter
+    |   expr                        // actual parameter
     ;
 
 /* Expression statements */
@@ -439,14 +576,17 @@ expr_primary
     |   NUMBER
     |   TRUE
     |   FALSE
-    |   list
+    |   expr_list
     |   expr_reference
     |   expr_primary LSQUARE expr RSQUARE           // array access
-    |   expr_primary list                           // function call
-    |   NEW expr_reference list                     // object creation
+    |   expr_primary expr_list                      // function call
+    |   NEW expr_reference expr_list                // object creation
     ;
 
 expr_reference
-    ::= expr_reference DOT IDENTIFIER
-    |   IDENTIFIER
+    ::= expr_reference:r DOT IDENTIFIER:id
+        {:  (RESULT = r).addFirst(id);  :}
+
+    |   IDENTIFIER:id
+        {:  (RESULT = new ExprReference()).addFirst(id);    :}
     ;
