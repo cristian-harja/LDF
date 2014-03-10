@@ -141,7 +141,10 @@ public class production {
         6/14/96 frankf */
       if (action_str == null) action_str = "";
       if (tail_action != null && tail_action.code_string() != null)
-        action_str = action_str + "\t\t" +  tail_action.code_string();
+        action_str =
+                action_str +
+                "              " +
+                tail_action.code_string();
 
       /* stash the action */
       _action = new action_part(action_str);
@@ -391,18 +394,43 @@ public class production {
                                     String  stack_type,
                                     int     offset)
     {
-      String ret = "";
+      StringBuilder sb = new StringBuilder();
 
-        String cast = "";
-        if (!stack_type.equals("Object")) {
-            cast = "(" + stack_type +")";
-        }
-        return ret + "\t\t" + stack_type + " " + labelname + " = " + cast
-          + emit.pre("stack") +
-            // TUM 20050917
-            ((offset==0)?".peek()":(".elementAt(" + emit.pre("top") + "-" + offset + ")"))+
-            ".value;\n";
+      String indent = "              ";
+      // Symbol <labelname>_sym = ...;
+      sb.append(indent);
+      sb.append("Symbol ");
+      sb.append(labelname);
+      sb.append("_sym = ");
+      sb.append(emit.pre("stack"));
+      if (offset == 0) {
+          sb.append(".peek()");
+      } else {
+          sb.append(".elementAt(");
+          sb.append(emit.pre("top"));
+          sb.append("-");
+          sb.append(offset);
+          sb.append(")");
+      }
+      sb.append(";\n");
 
+      // <stack_type>
+      sb.append(indent);
+      sb.append(stack_type);
+      sb.append(" ");
+      sb.append(labelname);
+      sb.append("     = ");
+
+      if (!"Object".equals(stack_type)) {
+          sb.append("(");
+          sb.append(stack_type);
+          sb.append(") ");
+      }
+
+      sb.append(labelname);
+      sb.append("_sym.value;\n");
+
+      return sb.toString();
     }
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
