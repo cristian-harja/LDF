@@ -442,7 +442,7 @@ public class emit {
             and be changed by action code
             6/13/96 frankf */
           out.println("              " +  prod.lhs().the_symbol().stack_type() +
-                      " RESULT ="+result+";");
+                      " RESULT = "+result+";");
 
           /* Add code to propagate RESULT assignments that occur in
            * action code embedded in a production (ie, non-rightmost
@@ -470,7 +470,7 @@ public class emit {
   // TUM 20060608: even when its null: who cares?
 
             // store the intermediate result into RESULT
-            out.print("                " + "RESULT = ");
+            out.print("              RESULT = ");
             String type = prod.lhs().the_symbol().stack_type();
             if (!type.equals("Object")) {
                 out.print("(" + type + ") ");
