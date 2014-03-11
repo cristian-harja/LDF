@@ -113,8 +113,11 @@ non terminal ExprReference expr_reference;
 non terminal ExprList
     expr_list, expr_list_;
 
-non terminal Expression
-    expr_list_item;
+non terminal FormalParamList
+    formal_params, formal_params_;
+
+non terminal FormalParam
+    formal_params__;
 
 non terminal  main;
 
@@ -214,10 +217,10 @@ decl_var__     // identifier [ : type ] [ = expr ]
     ;
 
 decl_function
-    ::= DEF IDENTIFIER:id expr_list:args stmt_block:body
+    ::= DEF IDENTIFIER:id formal_params:args stmt_block:body
         {:  RESULT = new DeclFunction(id, args, null, body);    :}
 
-    |   DEF IDENTIFIER:id expr_list:args
+    |   DEF IDENTIFIER:id formal_params:args
         COLON type_expr:type
         stmt_block:body
         {:  RESULT = new DeclFunction(id, args, type, body);    :}
@@ -489,25 +492,44 @@ type_expr
 
 /* Lists: (a, b, c) or (a: int, b: char, c: T) */
 
-expr_list
-    ::= LPAREN expr_list_:list RPAREN
+formal_params
+    ::= LPAREN formal_params_:list RPAREN
         {:  RESULT = list;  :}
+
+    |   LPAREN RPAREN
+        {:  RESULT = new FormalParamList(); :}
     ;
 
-expr_list_
-    ::= expr_list_:list COMMA expr_list_item:item
+formal_params_
+    ::= formal_params_:list COMMA formal_params__:item
         {:  (RESULT = list).add(item);  :}
 
-    |   expr_list_item:item
-        {:  (RESULT = new ExprList()).add(item);    :}
+    |   formal_params__:item
+        {:  (RESULT = new FormalParamList()).add(item); :}
+    ;
+
+formal_params__
+    ::= IDENTIFIER:id COLON type_expr:t
+        {:  RESULT = new FormalParam(id, t);    :}
+
+    |   IDENTIFIER:id
+        {:  RESULT = new FormalParam(id, null); :}
+    ;
+
+expr_list
+    ::= expr_list_:list
+        {:  RESULT = list;  :}
 
     |   /* empty */
         {:  RESULT = new ExprList();    :}
     ;
 
-expr_list_item
-    ::= IDENTIFIER COLON type_expr  // formal parameter
-    |   expr                        // actual parameter
+expr_list_
+    ::= expr_list_:list COMMA expr:item
+        {:  (RESULT = list).add(item);  :}
+
+    |   expr:item
+        {:  (RESULT = new ExprList()).add(item);    :}
     ;
 
 /* Expression statements */
@@ -558,15 +580,13 @@ expr_exponential
     ;
 
 expr_secondary
-    ::= EXCL         expr_secondary
-    |   MINUS        expr_secondary
-    |   PLUS         expr_secondary
-    |   PLUS_PLUS    expr_primary
-    |   MINUS_MINUS  expr_primary
-    |   expr_primary PLUS_PLUS
-    |   expr_primary MINUS_MINUS
-    |   expr_primary EQ_GT stmt_block
-    |   expr_primary EQ_GT expr_primary
+    ::= expr_secondary DOT IDENTIFIER               // field access
+    |   expr_secondary LSQUARE expr RSQUARE         // array access
+    |   expr_secondary LPAREN expr_list RPAREN      // function call
+    |   expr_secondary PLUS_PLUS                    // postfix increment
+    |   expr_secondary MINUS_MINUS                  // postfix decrement
+    |   DEF formal_params EQ_GT stmt_block          // lambda ...=>(...)
+    |   DEF formal_params EQ_GT expr_primary        // lambda ...=>{...}
     |   expr_primary
     ;
 
@@ -576,11 +596,15 @@ expr_primary
     |   NUMBER
     |   TRUE
     |   FALSE
-    |   expr_list
-    |   expr_reference
-    |   expr_primary LSQUARE expr RSQUARE           // array access
-    |   expr_primary expr_list                      // function call
-    |   NEW expr_reference expr_list                // object creation
+    |   IDENTIFIER
+    |   LPAREN expr_list RPAREN
+    |   LSQUARE expr_list RSQUARE
+    |   EXCL         expr_primary                   // negation (!a)
+    |   MINUS        expr_primary                   // unary plus (+a)
+    |   PLUS         expr_primary                   // unary minus (-a)
+    |   PLUS_PLUS    expr_primary                   // prefix increment
+    |   MINUS_MINUS  expr_primary                   // prefix decrement
+    |   NEW expr_reference LPAREN expr_list RPAREN  // object creation
     ;
 
 expr_reference

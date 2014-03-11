@@ -14,7 +14,7 @@ public class DeclFunction extends Declaration {
     private String name;
 
     @Nonnull
-    private ExprList args;
+    private FormalParamList args;
 
     @Nullable
     private TypeExpression type;
@@ -24,7 +24,7 @@ public class DeclFunction extends Declaration {
 
     public DeclFunction(
             @Nonnull String name,
-            @Nonnull ExprList args,
+            @Nonnull FormalParamList args,
             @Nullable TypeExpression type,
             @Nonnull Statement body) {
         this.name = name;
@@ -39,7 +39,7 @@ public class DeclFunction extends Declaration {
     }
 
     @Nonnull
-    public ExprList getArgs() {
+    public FormalParamList getArgs() {
         return args;
     }
 
