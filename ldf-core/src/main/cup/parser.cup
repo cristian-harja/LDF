@@ -1,15 +1,18 @@
 package ldf.parser.gen;
 import ldf.java_cup.runtime.*;
 import ldf.parser.ast.*;
-import ldf.parser.ast.BnfAtom.AtomType;
+import ldf.parser.ast.bnf.*;
+import ldf.parser.ast.decl.*;
+import ldf.parser.ast.expr.*;
+import ldf.parser.ast.stmt.*;
 
-import java.util.List;
-import java.util.LinkedList;
+import java.util.*;
 
 /* -------------- Terminals ---------------- */
 
 terminal String  IDENTIFIER;
 terminal Number  NUMBER;
+terminal Boolean BOOLEAN;
 
 terminal
     STRING_BEGIN, STRING_END, CHAR_BEGIN, CHAR_END;
@@ -25,13 +28,13 @@ terminal
     IF, ELSE, SWITCH, CASE, DEFAULT,       // branching
     FOR, DO, WHILE, BREAK, CONTINUE,       // looping
     RETURN, TRY, CATCH, FINALLY,           // jumps
-    NEW, TRUE, FALSE;                      // other
+    NEW;                                   // other
 
 /* Punctuation */
 
 terminal
     COLON, SEMICOLON, COMMA, DOT, AT_SIGN, Q_MARK,    // : ; , . @ ?
-    PIPE, HAT, PLUS, MINUS, TIMES, SLASH, MOD,        // | ^ ~ + - * / %
+    PIPE, /* HAT, */ PLUS, MINUS, TIMES, SLASH, MOD,  // | ~ + - * / %
     PLUS_PLUS, MINUS_MINUS, EXCL, PIPE_PIPE, AMP_AMP, // ++ -- ! || &&
     EQ, EQEQ, NEQ, LT, LTE, GT, GTE,                  // = == != < <= > >=
     COLON_COLON_EQ, ELLIPSIS, EQ_GT;                  // ::=  ... =>
@@ -42,28 +45,28 @@ terminal
     LPAREN, RPAREN,   // ( ... )
     LSQUARE, RSQUARE, // [ ... ]
     LCURLY, RCURLY,   // { ... }
-    LCURLY_AT_SIGN,   // {@ ...
+    LCURLY_AT_SIGN,   // {@....}
     LACTION, RACTION, // {: ... :}
     LGUARD, RGUARD;   // {? ... ?}
 
 /* ------------- Non-terminals ------------- */
 
-non terminal
-    literal_char,
-    literal_str,
-    string_contents_,
-    string_contents__;
+non terminal LiteralString         string_literal;
+non terminal LiteralString.Builder string_contents_;
 
 non terminal BnfSyntax          bnf_syntax;
-non terminal BnfJoin            bnf_join;
-non terminal BnfMeet            bnf_meet;
+non terminal BnfUnion.Builder   bnf_union;
+non terminal BnfConcat.Builder  bnf_concat;
 non terminal BnfAbstractAction  bnf_action;
-non terminal BnfAtom            bnf_atom, bnf_atom_;
-non terminal BnfMultiplicity    bnf_multiplicity;
+non terminal BnfItem            bnf_item;
+non terminal BnfAtom            bnf_atom;
+non terminal BnfQuantifier      bnf_quantifier;
 
 non terminal Declaration        decl;
 non terminal DeclList           decl_list;
-non terminal DeclVars           decl_vars, decl_vars_;
+non terminal DeclList.Builder   decl_list_;
+non terminal DeclVars           decl_vars;
+non terminal DeclVars.Builder   decl_vars_;
 non terminal DeclVariable       decl_var__;
 non terminal DeclFunction       decl_function;
 
@@ -75,27 +78,23 @@ non terminal List<ExprReference>
 
 non terminal DeclNonTerminal decl_nterm;
 
-non terminal DeclWhereClause
-    decl_nterm_where_,
-    decl_nterm_where_entries_;
-
-non terminal DeclWhereClauseEntry
-    decl_nterm_where_entry_;
+non terminal DeclWhereClause         decl_nterm_where_;
+non terminal DeclWhereClause.Builder decl_nterm_where__;
 
 non terminal StmtList stmt_list;
+non terminal StmtList.Builder stmt_list_;
 
 non terminal Statement
     stmt,
-    stmt_block,
-    stmt_empty,
     stmt_expr,
-    stmt_switch,
-    switch_body_,
-    stmt_decl,
-    stmt_label,
-    stmt_try,
-    stmt_catch_,
-    stmt_catch__;
+    stmt_decl;
+
+non terminal StmtBlock              stmt_block;
+non terminal StmtSwitch             stmt_switch;
+non terminal StmtSwitch.Builder     switch_body_;
+
+non terminal StmtTry                stmt_try;
+non terminal StmtTry.Builder        stmt_catch_;
 
 non terminal Statement
     matched, unmatched; //for solving the dangling else problem
@@ -104,17 +103,29 @@ non terminal TypeExpression
     type_expr;
 
 non terminal Expression
-    expr, expr_join, expr_meet, expr_bool, expr_additive,
-    expr_multiplicative, expr_exponential, expr_primary,
-    expr_secondary, expr_assign;
+    expr;
 
-non terminal ExprReference expr_reference;
+// various expressions, sorter by precedence (low to high)
+non terminal ExprCompound.Builder
+    expr_1, // assignment       RTL     =
+    expr_2, // boolean sum      LTR     ||
+    expr_3, // boolean product  LTR     &&
+    expr_4, // comparison       LTR     == != < <= > >=
+    expr_5, // additive         LTR     + -
+    expr_6; // multiplicative   LTR     * / %
 
-non terminal ExprList
-    expr_list, expr_list_;
+non terminal Expression
+    expr_7, // secondary        LTR
+    expr_8; // primary          RTL
 
-non terminal FormalParamList
-    formal_params, formal_params_;
+non terminal ExprReference              expr_reference;
+non terminal ExprReference.Builder      expr_reference_;
+
+non terminal ExprList                   expr_list;
+non terminal ExprList.Builder           expr_list_;
+
+non terminal FormalParamList            formal_params;
+non terminal FormalParamList.Builder    formal_params_;
 
 non terminal FormalParam
     formal_params__;
@@ -130,21 +141,24 @@ main
         {:  RESULT = gram;  :}
     ;
 
-/* literals */
-literal_char        // '...'
-    ::= CHAR_BEGIN string_contents_ CHAR_END;
+/* string literal */
+string_literal      // "..."
+    ::= STRING_BEGIN string_contents_:builder STRING_END
+        {:  RESULT = builder.build(false); :}
 
-literal_str         // "..."
-    ::= STRING_BEGIN string_contents_ STRING_END;
-
-string_contents_    // sequence of valid (and invalid) bits of a string
-    ::= string_contents__ string_contents_
-    |   /* empty */
+    |   CHAR_BEGIN string_contents_:builder CHAR_END
+        {:  RESULT = builder.build(true); :}
     ;
 
-string_contents__   // the invalid bits will get flagged
-    ::= STRING_FRAGMENT
-    |   INVALID_ESCAPE_SEQ
+string_contents_    // sequence of valid (and invalid) bits of a string
+    ::= string_contents_:builder STRING_FRAGMENT:f
+        {:  RESULT = builder.add(f, true);  :}
+
+    |   string_contents_:builder INVALID_ESCAPE_SEQ:f
+        {:  RESULT = builder.add(f, false);  :}
+
+    |   /* empty */
+        {:  RESULT = new LiteralString.Builder();   :}
     ;
 
 /* Declarations */
@@ -176,11 +190,16 @@ decl_grammar_extend__
     ;
 
 decl_list
-    ::= decl_list:list decl:decl
-        {:  (RESULT = list).add(decl);  :}
+    ::= decl_list_:list
+        {:  RESULT = list.build();  :}
+    ;
+
+decl_list_
+    ::= decl_list_:list decl:decl
+        {:  RESULT = list.add(decl);  :}
 
     |   /* empty */
-        {:  RESULT = new DeclList();    :}
+        {:  RESULT = new DeclList.Builder();    :}
     ;
 
 decl
@@ -191,15 +210,15 @@ decl
 
 decl_vars   // var ...;
     ::= VAR decl_vars_:vars SEMICOLON
-        {:  RESULT = vars;  :}
+        {:  RESULT = vars.build();  :}
     ;
 
 decl_vars_
     ::= decl_vars_:vars COMMA decl_var__:var
-        {:  (RESULT = vars).add(var);   :}
+        {:  RESULT = vars.add(var);   :}
 
     |   decl_var__:var
-        {:  (RESULT = new DeclVars()).add(var);   :}
+        {:  RESULT = new DeclVars.Builder().add(var);   :}
     ;
 
 decl_var__     // identifier [ : type ] [ = expr ]
@@ -240,52 +259,82 @@ decl_nterm          // nterm ID ::= ... [where ...] ;
     ;
 
 decl_nterm_where_   // where @id = {: action code :} ...
-    ::= WHERE decl_nterm_where_entries_:list
-        {:  RESULT = list;  :}
+    ::= WHERE decl_nterm_where__:list
+        {:  RESULT = list.build();  :}
     | /* empty */
     ;
 
-decl_nterm_where_entries_
-    ::= decl_nterm_where_entries_:list  // iteration
-        decl_nterm_where_entry_:item    // item
-        {:  (RESULT = list).add(item);  :}
+decl_nterm_where__
+    ::= decl_nterm_where__:list AT_SIGN IDENTIFIER:id EQ bnf_action:a
+        {:  RESULT = list.add(id, a);  :}
 
     |   /* empty */
-        {:  RESULT = new DeclWhereClause(); :}
-    ;
-
-decl_nterm_where_entry_ // @identifier = {: action code :}
-    ::= AT_SIGN IDENTIFIER:id EQ bnf_action:a
-        {:  RESULT = new DeclWhereClauseEntry(id, a);   :}
+        {:  RESULT = new DeclWhereClause.Builder(); :}
     ;
 
 /* BNF syntax */
 
 bnf_syntax
-    ::= bnf_join:root
-        {:  RESULT = new BnfSyntax(root);   :}
+    ::= bnf_union:root
+        {:  RESULT = new BnfSyntax(root.build());   :}
     ;
 
-bnf_join        // a|b|c|... (precedence: 0)
-    ::= bnf_join:join PIPE bnf_meet:meet
-        {:  (RESULT = join).add(meet);  :}
+bnf_union        // a|b|c|... (precedence: 0)
+    ::= bnf_union:union PIPE bnf_concat:concat
+        {:  RESULT = union.add(concat.build());  :}
 
-    |   bnf_meet:meet
+    |   bnf_concat:concat
         {:
-            RESULT = new BnfJoin();
-            RESULT.add(meet);
+            RESULT = new BnfUnion.Builder().add(concat.build());
         :}
     ;
 
-bnf_meet        // a b c ... (precedence: 1)
-    ::= bnf_meet:meet bnf_atom:obj
-        {:  (RESULT = meet).add(obj);   :}
-
-    |   bnf_meet:meet bnf_action:obj
-        {:  (RESULT = meet).add(obj);   :}
+bnf_concat        // a b c ... (precedence: 1)
+    ::= bnf_concat:concat bnf_item:obj
+        {:  RESULT = concat.add(obj);   :}
 
     |   /* empty */
-        {:  RESULT = new BnfMeet();     :}
+        {:  RESULT = new BnfConcat.Builder();     :}
+    ;
+
+bnf_item
+    ::= // label@atom{n,m}
+        IDENTIFIER:label AT_SIGN
+        bnf_atom:atom bnf_quantifier:quantifier
+        {:  RESULT = new BnfItem(label, atom, quantifier);    :}
+
+    |   // atom{n,m}
+        bnf_atom:atom bnf_quantifier:quantifier
+        {:  RESULT = new BnfItem(null, atom, quantifier);     :}
+
+    |   // label@atom
+        IDENTIFIER:label AT_SIGN bnf_atom:atom
+        {:  RESULT = new BnfItem(label, atom, null);    :}
+
+    |   // atom
+        bnf_atom:atom
+        {:  RESULT = new BnfItem(null, atom, null);     :}
+    ;
+
+bnf_atom
+    ::= // String literal
+        string_literal:str
+        {:  RESULT = str;  :}
+
+        // BNF alternation
+    |   LSQUARE bnf_union:e1 COMMA bnf_union:e2 RSQUARE
+        {:  RESULT = new BnfAlternation(e1.build(), e2.build());    :}
+
+    |   // a.b.c -- identifies a symbol (can be a fully qualified name)
+        expr_reference:ref
+        {:  RESULT = ref;  :}
+
+    |   // ( ... ) -- parenthesized sub-expression
+        LPAREN bnf_union:union RPAREN
+        {:  RESULT = union.build();  :}
+
+    |   bnf_action:a
+        {:  RESULT = a; :}
     ;
 
 bnf_action
@@ -302,187 +351,193 @@ bnf_action
         {:  RESULT = new BnfPlaceholder(id);  :}
     ;
 
-// [label@] something [multiplicity]
-bnf_atom
-    ::= bnf_atom_:a
-        {:  RESULT = a; :}
-
-    |   IDENTIFIER:id AT_SIGN bnf_atom_:a
-        {:
-            RESULT = a;
-            a.setLabel(id);
-        :}
-
-    |   IDENTIFIER:id AT_SIGN bnf_atom_:a bnf_multiplicity:m
-        {:
-            RESULT = a;
-            a.setLabel(id);
-            a.setMultiplicity(m);
-        :}
-
-    |   bnf_atom_:a bnf_multiplicity:m
-        {:
-            RESULT = a;
-            a.setMultiplicity(m);
-        :}
-    ;
-
-bnf_atom_
-    ::= expr_reference:ref
-        {:
-            RESULT = new BnfAtom(AtomType.REFERENCE, ref);
-        :}
-
-    |   literal_char:chr
-        {:
-            RESULT = new BnfAtom(AtomType.LITERAL_CHAR, chr);
-        :}
-
-    |   literal_str:str
-        {:
-            RESULT = new BnfAtom(AtomType.LITERAL_STRING, str);
-        :}
-
-    |   LPAREN bnf_join:bnf RPAREN
-        {:
-            RESULT = new BnfAtom(AtomType.BNF_JOIN, bnf);
-        :}
-
-
-    |   LSQUARE bnf_join:e1 COMMA bnf_join:e2 RSQUARE
-        {:
-            RESULT = new BnfAtom(
-                AtomType.ALTERNATION,
-                new BnfAlternation(e1, e2)
-            );
-        :}
-    ;
-
-bnf_multiplicity        // used after a bnf_atom_ to indicate repetition
+bnf_quantifier        // used after a bnf_atom to indicate repetition
     ::= TIMES                                   // * = 0 or more
-        {:  RESULT = new BnfMultiplicity("*", 0, null);     :}
+        {:  RESULT = new BnfQuantifier("*", 0, null);     :}
 
     |   PLUS                                    // + = 1 or more
-        {:  RESULT = new BnfMultiplicity("+", 1, null);     :}
+        {:  RESULT = new BnfQuantifier("+", 1, null);     :}
 
     |   Q_MARK                                  // ? = 0 or 1
-        {:  RESULT = new BnfMultiplicity("?", 0, 1);        :}
+        {:  RESULT = new BnfQuantifier("?", 0, 1);        :}
 
     |   LCURLY NUMBER:n RCURLY                  // {n}   = exactly n
-        {:  RESULT = new BnfMultiplicity("{n}", n, n);      :}
+        {:  RESULT = new BnfQuantifier("{n}", n, n);      :}
 
     |   LCURLY NUMBER:n COMMA RCURLY            // {n,}  = n or more
-        {:  RESULT = new BnfMultiplicity("{n,}", n, null);  :}
+        {:  RESULT = new BnfQuantifier("{n,}", n, null);  :}
 
     |   LCURLY NUMBER:n COMMA NUMBER:m RCURLY   // {n,m} = between n and m
-        {:  RESULT = new BnfMultiplicity("{n,m}", n, m);    :}
+        {:  RESULT = new BnfQuantifier("{n,m}", n, m);    :}
 
     |   LCURLY COMMA NUMBER:n RCURLY            // {,n}  = n or less
-        {:  RESULT = new BnfMultiplicity("{,n}", null, n);  :}
+        {:  RESULT = new BnfQuantifier("{,n}", null, n);  :}
     ;
 
 /* Imperative statements (action body) */
 
 stmt_list
-    ::= stmt_list stmt
-    |   /* empty */
+    ::= stmt_list_:builder
+        {:  RESULT = builder.build();  :}
     ;
 
+stmt_list_
+    ::= stmt_list_:builder stmt:s
+        {:  RESULT = builder.add(s);    :}
+
+    |   /* empty */
+        {:  RESULT = new StmtList.Builder(); :}
+
+    ;
+
+// "matched" and "unmatched" solve the "dangling else" problem
+// http://www.cs.man.ac.uk/~pjj/complang/g2lr.html#5
 stmt
-    ::= matched   // these two solve the dangling else problem
-    |   unmatched // http://www.cs.man.ac.uk/~pjj/complang/g2lr.html#5
+    ::= matched:s   {:  RESULT = s; :}
+    |   unmatched:s {:  RESULT = s; :}
     ;
 
 unmatched
-    ::= IF LPAREN expr RPAREN stmt
-    |   IF LPAREN expr RPAREN matched ELSE unmatched
+    ::= IF LPAREN expr:i RPAREN stmt:t
+        {:  RESULT = new StmtIf(i, t, null);    :}
+
+    |   IF LPAREN expr:i RPAREN matched:t ELSE unmatched:e
+        {:  RESULT = new StmtIf(i, t, e);   :}
 
     /* for-else (syntactic sugar) */
-    |   FOR LPAREN expr SEMICOLON expr SEMICOLON expr RPAREN stmt
-    |   FOR LPAREN expr SEMICOLON expr SEMICOLON expr RPAREN matched
-        ELSE unmatched
+    |   FOR LPAREN
+            expr:_init SEMICOLON
+            expr:_condition SEMICOLON
+            expr:_next
+        RPAREN stmt:_loop
+        {:  RESULT = new StmtFor(_init, _condition, _next, _loop, null); :}
+
+    |   FOR LPAREN
+            expr:_init SEMICOLON
+            expr:_condition SEMICOLON
+            expr:_next
+        RPAREN  matched:_loop
+        ELSE unmatched:_else
+        {:  RESULT = new StmtFor(_init, _condition, _next, _loop, _else);:}
 
     /* while-else (syntactic sugar) */
-    |   WHILE LPAREN expr RPAREN stmt
-    |   WHILE LPAREN expr RPAREN matched ELSE unmatched
+    |   WHILE LPAREN expr:_if RPAREN stmt:_loop
+        {:  RESULT = new StmtWhile(false, _if, _loop, null); :}
 
-    |   stmt_label unmatched
+    |   WHILE LPAREN expr:_if RPAREN matched:_loop ELSE unmatched:_else
+        {:  RESULT = new StmtWhile(false, _if, _loop, _else); :}
+
+    |   IDENTIFIER COLON unmatched:s // label: statement
+        {:  RESULT = s; :}
+
     |   ELLIPSIS // dummy statement
     ;
 
 matched
-    ::= IF LPAREN expr RPAREN matched ELSE matched
+    ::= IF LPAREN expr:i RPAREN matched:t ELSE matched:e
+        {:  RESULT = new StmtIf(i, t, e);   :}
 
     /* for-else (syntactic sugar) */
-    |   FOR LPAREN expr SEMICOLON expr SEMICOLON expr RPAREN matched
-        ELSE matched
+    |   FOR LPAREN
+            expr:_init SEMICOLON
+            expr:_condition SEMICOLON
+            expr:_next
+        RPAREN matched:_loop
+        ELSE matched:_else
+        {:  RESULT = new StmtFor(_init, _condition, _next, _loop, _else);:}
 
     /* while-else (syntactic sugar) */
-    |   WHILE LPAREN expr RPAREN matched
-        ELSE matched
+    |   WHILE LPAREN expr:_if RPAREN matched:_loop ELSE matched:_else
+        {:  RESULT = new StmtWhile(false, _if, _loop, _else); :}
 
-    |   DO stmt WHILE LPAREN expr RPAREN SEMICOLON
+    |   DO stmt:_loop WHILE LPAREN expr:_condition RPAREN SEMICOLON
+        {:  RESULT = new StmtWhile(true, _condition, _loop, null); :}
+
     |   BREAK    SEMICOLON
+        {:  RESULT = new StmtBreak(null);   :}
+
     |   CONTINUE SEMICOLON
-    |   BREAK    IDENTIFIER SEMICOLON
-    |   CONTINUE IDENTIFIER SEMICOLON
-    |   RETURN expr SEMICOLON
-    |   stmt_block
-    |   stmt_empty
-    |   stmt_expr
-    |   stmt_switch
-    |   stmt_decl
-    |   stmt_label matched
-    |   stmt_try
+        {:  RESULT = new StmtContinue(null);    :}
+
+    |   BREAK    IDENTIFIER:id SEMICOLON
+        {:  RESULT = new StmtBreak(id);   :}
+
+    |   CONTINUE IDENTIFIER:id SEMICOLON
+        {:  RESULT = new StmtContinue(id);    :}
+
+    |   RETURN expr:e SEMICOLON
+        {:  RESULT = new StmtReturn(e); :}
+
+    |   RETURN SEMICOLON
+        {:  RESULT = new StmtReturn(null); :}
+
+    |   stmt_block:s
+        {:  RESULT = s;  :}
+
+    |   SEMICOLON
+        {:  RESULT = new StmtEmpty(); :}
+
+    |   stmt_expr:s          {:  RESULT = s;  :}
+    |   stmt_switch:s        {:  RESULT = s;  :}
+    |   stmt_decl:s          {:  RESULT = s;  :}
+    |   stmt_try:s           {:  RESULT = s;  :}
+
+    |   IDENTIFIER COLON matched:s // label: statement
+        {:  RESULT = s; :}
+
     ;
 
 stmt_decl
-    ::= decl_vars
-    ;
-
-stmt_label
-    ::= IDENTIFIER COLON
+    ::= decl_vars:vars
+        {:  RESULT = vars;  :}
     ;
 
 stmt_block      // { ... code ... }
-    ::= LCURLY stmt_list RCURLY
-    ;
-
-stmt_empty      // ;
-    ::= SEMICOLON
+    ::= LCURLY stmt_list:l RCURLY
+        {:  RESULT = new StmtBlock(l);  :}
     ;
 
 stmt_expr       // expr;
-    ::= expr SEMICOLON
+    ::= expr:e SEMICOLON
+        {:  RESULT = new StmtExpression(e); :}
     ;
 
 stmt_switch     // switch(expr) { ... }
-    ::= SWITCH LPAREN expr RPAREN LCURLY
-            switch_body_
+    ::= SWITCH LPAREN expr:e RPAREN LCURLY
+            switch_body_:builder
         RCURLY
+        {:  RESULT = builder.build(e);    :}
     ;
 
 switch_body_
-    ::= CASE expr COLON switch_body_
-    |   DEFAULT COLON   switch_body_
-    |   stmt            switch_body_
+    ::= switch_body_:builder CASE expr:e COLON
+        {:  RESULT = builder.beginCase(e);  :}
+
+    |   switch_body_:builder DEFAULT COLON
+        {:  RESULT = builder.beginDefaultCase();  :}
+
+    |   switch_body_:builder stmt:s
+        {:  RESULT = builder.addStatement(s); :}
+
     |   /* empty */
+        {:  RESULT = new StmtSwitch.Builder();  :}
     ;
 
 stmt_try
-    ::= TRY LCURLY stmt_list RCURLY stmt_catch_
-    |   TRY LCURLY stmt_list RCURLY stmt_catch_
-        FINALLY LCURLY stmt_list RCURLY
+    ::= TRY stmt_block:block stmt_catch_:builder
+        {:  RESULT = builder.build(block, null);  :}
+
+    |   TRY stmt_block:block stmt_catch_:builder FINALLY stmt_block:f
+        {:  RESULT = builder.build(block, f);  :}
     ;
 
 stmt_catch_
-    ::= stmt_catch_ stmt_catch__
-    |   stmt_catch__
-    ;
+    ::= stmt_catch_:builder
+        CATCH LPAREN type_expr:t IDENTIFIER:id RPAREN stmt_block:s
+        {:  RESULT = builder.addCatch(t, id, s); :}
 
-stmt_catch__
-    ::= CATCH LPAREN type_expr IDENTIFIER RPAREN
-        LCURLY stmt_list RCURLY
+    |   /* empty */
+        {:  RESULT = new StmtTry.Builder();  :}
     ;
 
 /* Type expressions (needs expanding) */
@@ -494,18 +549,18 @@ type_expr
 
 formal_params
     ::= LPAREN formal_params_:list RPAREN
-        {:  RESULT = list;  :}
+        {:  RESULT = list.build();  :}
 
     |   LPAREN RPAREN
-        {:  RESULT = new FormalParamList(); :}
+        {:  RESULT = new FormalParamList.Builder().build(); :}
     ;
 
 formal_params_
     ::= formal_params_:list COMMA formal_params__:item
-        {:  (RESULT = list).add(item);  :}
+        {:  RESULT = list.add(item);  :}
 
     |   formal_params__:item
-        {:  (RESULT = new FormalParamList()).add(item); :}
+        {:  RESULT = new FormalParamList.Builder().add(item); :}
     ;
 
 formal_params__
@@ -518,7 +573,7 @@ formal_params__
 
 expr_list
     ::= expr_list_:list
-        {:  RESULT = list;  :}
+        {:  RESULT = list.build();  :}
 
     |   /* empty */
         {:  RESULT = new ExprList();    :}
@@ -529,88 +584,170 @@ expr_list_
         {:  (RESULT = list).add(item);  :}
 
     |   expr:item
-        {:  (RESULT = new ExprList()).add(item);    :}
+        {:  (RESULT = new ExprList.Builder()).add(item);    :}
     ;
 
 /* Expression statements */
 
 expr
-    ::= expr_assign;
+    ::= expr_1:e
+        {:  RESULT = e.build(); :};
 
-expr_assign
-    ::= expr_join EQ expr_assign
-    |   expr_join
+expr_1 // a = b = c = ...
+    ::= expr_1:builder EQ expr_2:e
+        {:  RESULT = builder.add(BinaryOp.ASSIGN, e); :}
+
+    |   expr_2:e
+        {:  RESULT = new ExprCompound.Builder().init(
+                BinaryOpClass.ASSIGNMENT, e.build()); :}
     ;
 
-expr_join
-    ::= expr_join PIPE_PIPE  expr_meet
-    |   expr_meet
+expr_2 // a && b && c && ...
+    ::= expr_2:builder PIPE_PIPE  expr_3:e
+        {:  RESULT = builder.add(BinaryOp.BOOL_AND, e);      :}
+
+    |   expr_3:e
+        {:  RESULT = new ExprCompound.Builder().init(
+                BinaryOpClass.BOOL_ADDITIVE, e.build()); :}
     ;
 
-expr_meet
-    ::= expr_meet AMP_AMP    expr_bool
-    |   expr_bool
-    ;
-expr_bool
-    ::= expr_bool EQEQ expr_additive
-    |   expr_bool NEQ  expr_additive
-    |   expr_bool LT   expr_additive
-    |   expr_bool LTE  expr_additive
-    |   expr_bool GT   expr_additive
-    |   expr_bool GTE  expr_additive
-    |   expr_additive
+expr_3 // a || b || c || ...
+    ::= expr_3:builder AMP_AMP    expr_4:e
+        {:  RESULT = builder.add(BinaryOp.BOOL_OR, e);     :}
+
+    |   expr_4:e
+        {:  RESULT = new ExprCompound.Builder().init(
+                BinaryOpClass.BOOL_MULTIPLICATIVE, e.build());
+        :}
     ;
 
-expr_additive
-    ::= expr_additive PLUS  expr_multiplicative
-    |   expr_additive MINUS expr_multiplicative
-    |   expr_multiplicative
+expr_4 // a ? b ? c ? ... (where ? can be ==, !=, <, <=, >, >=)
+    ::= expr_4:builder EQEQ expr_5:e
+        {:  RESULT = builder.add(BinaryOp.CMP_EQ, e);  :}
+
+    |   expr_4:builder NEQ  expr_5:e
+        {:  RESULT = builder.add(BinaryOp.CMP_NEQ, e); :}
+
+    |   expr_4:builder LT   expr_5:e
+        {:  RESULT = builder.add(BinaryOp.CMP_LT, e);  :}
+
+    |   expr_4:builder LTE  expr_5:e
+        {:  RESULT = builder.add(BinaryOp.CMP_LTE, e); :}
+
+    |   expr_4:builder GT   expr_5:e
+        {:  RESULT = builder.add(BinaryOp.CMP_GT, e);  :}
+
+    |   expr_4:builder GTE  expr_5:e
+        {:  RESULT = builder.add(BinaryOp.CMP_GTE, e); :}
+
+    |   expr_5:e
+        {:  RESULT = new ExprCompound.Builder().init(
+                BinaryOpClass.COMPARISON, e.build()); :}
     ;
 
-expr_multiplicative
-    ::= expr_multiplicative TIMES  expr_exponential
-    |   expr_multiplicative SLASH  expr_exponential
-    |   expr_multiplicative  MOD   expr_exponential
-    |   expr_exponential
+expr_5 // a ? b ? c ? ... (where ? can be + or -)
+    ::= expr_5:builder PLUS  expr_6:e
+        {:  RESULT = builder.add(BinaryOp.ALG_ADD, e);     :}
+
+    |   expr_5:builder MINUS expr_6:e
+        {:  RESULT = builder.add(BinaryOp.ALG_SUB, e);     :}
+
+    |   expr_6:e
+        {:  RESULT = new ExprCompound.Builder().init(
+                BinaryOpClass.ADDITIVE, e.build()
+            );
+        :}
     ;
 
-expr_exponential
-    ::= expr_secondary HAT expr_exponential
-    |   expr_secondary
+expr_6 // a ? b ? c ? ... (where ? can be *, / or %)
+    ::= expr_6:builder TIMES  expr_7:e
+        {:  RESULT = builder.add(BinaryOp.ALG_MUL, e);     :}
+
+    |   expr_6:builder SLASH  expr_7:e
+        {:  RESULT = builder.add(BinaryOp.ALG_DIV, e);     :}
+
+    |   expr_6:builder  MOD   expr_7:e
+        {:  RESULT = builder.add(BinaryOp.ALG_MOD, e);     :}
+
+    |   expr_7:e
+        {:  RESULT = new ExprCompound.Builder().init(
+                BinaryOpClass.MULTIPLICATIVE, e); :}
     ;
 
-expr_secondary
-    ::= expr_secondary DOT IDENTIFIER               // field access
-    |   expr_secondary LSQUARE expr RSQUARE         // array access
-    |   expr_secondary LPAREN expr_list RPAREN      // function call
-    |   expr_secondary PLUS_PLUS                    // postfix increment
-    |   expr_secondary MINUS_MINUS                  // postfix decrement
-    |   DEF formal_params EQ_GT stmt_block          // lambda ...=>(...)
-    |   DEF formal_params EQ_GT expr_primary        // lambda ...=>{...}
-    |   expr_primary
+expr_7
+    ::= EXCL         expr_7:e               // negation (!a)
+        {:  RESULT = new ExprUnary(UnaryOp.NOT, e); :}
+
+    |   MINUS        expr_7:e               // unary plus (-a)
+        {:  RESULT = new ExprUnary(UnaryOp.MINUS, e); :}
+
+    |   PLUS         expr_7:e               // unary minus (+a)
+        {:  RESULT = new ExprUnary(UnaryOp.PLUS, e); :}
+
+    |   PLUS_PLUS    expr_7:e               // prefix increment
+        {:  RESULT = new ExprIncrement(true, false, e); :}
+
+    |   MINUS_MINUS  expr_7:e               // prefix decrement
+        {:  RESULT = new ExprIncrement(false, false, e); :}
+
+    |   DEF formal_params:p EQ_GT expr_7:e  // lambda ...=>{...}
+        {:  RESULT = new ExprLambda(p, e);  :}
+
+    |   DEF formal_params:p EQ_GT stmt_block:s      // lambda ...=>(...)
+        {:  RESULT = new ExprLambda(p, s);  :}
+
+    |   NEW expr_reference:r LPAREN expr_list:l RPAREN // object creation
+        {:  RESULT = new ExprNew(r, l);     :}
+
+    |   expr_8:e
+        {:  RESULT = e; :}
     ;
 
-expr_primary
-    ::= literal_char
-    |   literal_str
-    |   NUMBER
-    |   TRUE
-    |   FALSE
-    |   IDENTIFIER
-    |   LPAREN expr_list RPAREN
-    |   LSQUARE expr_list RSQUARE
-    |   EXCL         expr_primary                   // negation (!a)
-    |   MINUS        expr_primary                   // unary plus (+a)
-    |   PLUS         expr_primary                   // unary minus (-a)
-    |   PLUS_PLUS    expr_primary                   // prefix increment
-    |   MINUS_MINUS  expr_primary                   // prefix decrement
-    |   NEW expr_reference LPAREN expr_list RPAREN  // object creation
+expr_8
+    ::= string_literal:s
+        {:  RESULT = s; :}
+
+    |   NUMBER:n
+        {:  RESULT = new LiteralNumber(n); :}
+
+    |   BOOLEAN:b
+        {:  RESULT = new LiteralBoolean(b); :}
+
+    |   IDENTIFIER:id
+        {:  RESULT = new ExprIdentifier(id);    :}
+
+    |   LPAREN  expr:l RPAREN
+        {:  RESULT = l; :}
+
+    |   LSQUARE expr_list:l RSQUARE
+        {:  RESULT = new LiteralArray(l);   :}
+
+    |   expr_8:e PLUS_PLUS                    // postfix increment
+        {:  RESULT = new ExprIncrement(true, true, e); :}
+
+    |   expr_8:e MINUS_MINUS                  // postfix decrement
+        {:  RESULT = new ExprIncrement(false, true, e); :}
+
+    |   expr_8:e DOT IDENTIFIER:f             // field access
+        {:  RESULT = new ExprFieldAccess(e, f); :}
+
+    |   expr_8:e LSQUARE expr:a RSQUARE       // array access
+        {:  RESULT = new ExprArrayAccess(e, a); :}
+
+    |   expr_8:e LPAREN expr_list:p RPAREN    // function call
+        {:  RESULT = new ExprFunctionCall(e, p);    :}
+
     ;
 
 expr_reference
-    ::= expr_reference:r DOT IDENTIFIER:id
-        {:  (RESULT = r).addFirst(id);  :}
+    ::= expr_reference_:builder
+        {:  RESULT = builder.build();   :}
+    ;
+
+expr_reference_
+    ::= expr_reference_:builder DOT IDENTIFIER:id
+        {:  RESULT = builder.add(id);  :}
 
     |   IDENTIFIER:id
-        {:  (RESULT = new ExprReference()).addFirst(id);    :}
+        {:  RESULT = new ExprReference.Builder().add(id);    :}
     ;

@@ -107,6 +107,10 @@ import java.util.Map;
         }
     }
 
+    private Symbol symbolBoolean(boolean value) {
+        return symbol(BOOLEAN, Boolean.valueOf(value));
+    }
+
 
 %}
 
@@ -168,17 +172,15 @@ InvalidTokens = {LiteralInvalidInt}|{IdentifierInvalid}
     "default"            { return symbol(DEFAULT);              }
     "return"             { return symbol(RETURN);               }
     "new"                { return symbol(NEW);                  }
-    "true"               { return symbol(TRUE);                 }
-    "false"              { return symbol(FALSE);                }
     "try"                { return symbol(TRY);                  }
     "catch"              { return symbol(CATCH);                }
     "finally"            { return symbol(FINALLY);              }
     "var"                { return symbol(VAR);                  }
     "def"                { return symbol(DEF);                  }
 
-    {Identifier}         { return symbol(IDENTIFIER, yytext()); }
-
     /* literals */
+    "true"               { return symbolBoolean(true);          }
+    "false"              { return symbolBoolean(false);         }
     {LiteralIntOctal}    { return symbolInteger(yytext(), 8);   }
     {LiteralIntDecimal}  { return symbolInteger(yytext(), 10);  }
     {LiteralIntHex}      { return symbolInteger(
@@ -200,11 +202,11 @@ InvalidTokens = {LiteralInvalidInt}|{IdentifierInvalid}
     "*"                  { return symbol(TIMES);                }
     "/"                  { return symbol(SLASH);                }
     "%"                  { return symbol(MOD);                  }
-    "^"                  { return symbol(HAT);                  }
+//  "^"                  { return symbol(HAT);                  }
     "&&"                 { return symbol(AMP_AMP);              }
     "||"                 { return symbol(PIPE_PIPE);            }
     "!"                  { return symbol(EXCL);                 }
-//  "~"                  { return symbol(TILDA);                }
+//  "~"                  { return symbol(TILDE);                }
     ":"                  { return symbol(COLON);                }
     ";"                  { return symbol(SEMICOLON);            }
     ","                  { return symbol(COMMA);                }
@@ -237,6 +239,7 @@ InvalidTokens = {LiteralInvalidInt}|{IdentifierInvalid}
     "..."                { return symbol(ELLIPSIS);             }
     "=>"                 { return symbol(EQ_GT);                }
 
+    {Identifier}         { return symbol(IDENTIFIER, yytext()); }
     {Comment}            { comment();                           }
     {WhiteSpace}*        { whitespace();                        }
 

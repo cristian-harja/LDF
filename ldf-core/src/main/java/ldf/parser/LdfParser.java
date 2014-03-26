@@ -50,6 +50,7 @@ public class LdfParser {
             parser  p = new parser(s, tf);
             parseResult = p.parse();
         } catch (Exception e) {
+            e.printStackTrace();
             parseError = e;
         } finally {
             parsed = true;
