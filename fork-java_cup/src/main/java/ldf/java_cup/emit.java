@@ -52,6 +52,7 @@ import java.util.Date;
  * @see ldf.java_cup.Main
  * @version last update: 11/25/95
  * @author Scott Hudson
+ * @author Cristian Harja (changes related to code generation)
  */
 
 /* Major externally callable routines here include:
@@ -108,7 +109,7 @@ public class emit {
   /*--- Static (Class) Variables ------------------------------*/
   /*-----------------------------------------------------------*/
 
-  /** The prefix placed on names that pollute someone else's name space. */
+    /** The prefix placed on names that pollute someone else's name space. */
   public static String prefix = "CUP$";
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
@@ -353,6 +354,9 @@ public class emit {
 
       long start_time = System.currentTimeMillis();
 
+      /* A certain level of indentation, for grammar actions. */
+      String indent = "              ";
+
       /* class header */
       out.println();
       out.println(
@@ -459,7 +463,8 @@ public class emit {
             // OK, it fits.  Make a conditional assignment to RESULT.
             int index = prod.rhs_length() - i - 1; // last rhs is on top.
             // set comment to inform about where the intermediate result came from
-            out.println("              " + "// propagate RESULT from " +s.name());
+            out.println();
+            out.println(indent + "// propagate RESULT from " +s.name());
 //            // look out, whether the intermediate result is null or not
 //            out.println("              " + "if ( " +
 //              "((ldf.java_cup.runtime.Symbol) " + emit.pre("stack") +
@@ -484,9 +489,14 @@ public class emit {
 
         /* if there is an action string, emit it */
         String code_string = prod.action().code_string();
-        if (prod.action() != null && code_string != null &&
-              !code_string.equals(""))
+            if (prod.action() != null && code_string != null &&
+              !code_string.equals("")) {
+
             out.println(code_string);
+        }
+
+        out.println();
+        out.println(indent + "// Generated code:");
 
           /* here we have the left and right values being propagated.
                 must make this a command line option.
@@ -507,28 +517,65 @@ public class emit {
                 ;
             if (prod.rhs_length() == 0) {
               leftstring = rightstring;
-              out.println("              " + pre("result") +
-                      " = parser.getSymbolFactory().newEmptySymbol(" +
-                      "\""+         prod.lhs().the_symbol().name() +"\","+
-                      prod.lhs().the_symbol().index()  +
-                      ", " + leftstring + ", RESULT);");
+
+              out.println(
+                      indent + pre("result") +
+                      " = parser.getSymbolFactory().newEmptySymbol("
+              );
+
+              out.println(
+                      indent +
+                      "  \""+ prod.lhs().the_symbol().name() + "\", " +
+                      prod.lhs().the_symbol().index() + ","
+              );
+
+              out.println(indent + "  " + leftstring + ",");
+              out.println(indent + "  RESULT");
+              out.println(indent + ");");
             }
             else {
               loffset = prod.rhs_length() - 1;
-              leftstring = emit.pre("stack") +
-                  // TUM 20050917
-                  ((loffset==0)?(".peek()"):(".elementAt(" + emit.pre("top") + "-" + loffset + ")"));
-                  // TUM 20060327 removed .left
-              out.println("              " + pre("result") + " = parser.getSymbolFactory().newSymbol(" +
-                      "\""+         prod.lhs().the_symbol().name() +"\","+
-                      prod.lhs().the_symbol().index()  +
-                      ", " + leftstring + ", " + rightstring + ", RESULT);");
+
+              // TUM 20050917
+              if (loffset == 0) {
+                leftstring = emit.pre("stack") + ".peek()";
+              } else {
+                leftstring = emit.pre("stack") +
+                    ".elementAt(" +
+                    emit.pre("top") +
+                    "-" + loffset + ")";
+              }
+
+              // TUM 20060327 removed .left
+              out.println(
+                      indent + pre("result") +
+                      " = parser.getSymbolFactory().newSymbol("
+              );
+
+              out.println(
+                      indent +
+                      "  \"" + prod.lhs().the_symbol().name() + "\", "+
+                      prod.lhs().the_symbol().index() + ","
+              );
+
+              out.println(indent + "  " + leftstring + ",");
+              out.println(indent + "  " + rightstring + ",");
+              out.println(indent + "  RESULT");
+              out.println(indent + ");");
+
             }
           } else {
-            out.println("              " + pre("result") + " = parser.getSymbolFactory().newSymbol(" +
-                "\""+         prod.lhs().the_symbol().name() +  "\","+
-                        prod.lhs().the_symbol().index() +
-                        ", RESULT);");
+            out.println(
+                    indent + pre("result") +
+                    " = parser.getSymbolFactory().newSymbol("
+            );
+
+            out.println(
+                    indent +
+                    "  \""+ prod.lhs().the_symbol().name() + "\", "+
+                    prod.lhs().the_symbol().index() + ", RESULT"
+            );
+            out.println(indent + ");");
           }
 
           /* end of their block */

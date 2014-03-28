@@ -21,6 +21,7 @@ import java.util.Hashtable;
  * @see     ldf.java_cup.action_part
  * @version last updated: 7/3/96
  * @author  Frank Flannery
+ * @author  Cristian Harja (changes related to code generation)
  */
 
 public class production {
@@ -100,9 +101,9 @@ public class production {
                     rhs_parts, rightlen, action_str);
 
       if (action_str == null)
-        action_str = declare_str;
+        action_str = declare_str + noteUserCode;
       else
-        action_str = declare_str + action_str;
+        action_str = declare_str + noteUserCode + action_str;
 
       /* count use of lhs */
       lhs_sym.note_use();
@@ -238,6 +239,10 @@ public class production {
       _all.clear();
       next_index=0;
   }
+
+  private static final String indent = "              ";
+  private static final String noteUserCode =
+         '\n' + indent + "// User-provided code:\n";
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
@@ -387,21 +392,19 @@ public class production {
 
   /** Return label declaration code
    * @param labelname    the label name
-   * @param stack_type   the stack type of label?
    */
   protected String make_declaration(
-                                    String  labelname,
-                                    String  stack_type,
-                                    int     offset)
+    String  labelname,
+    int     offset
+  )
     {
       StringBuilder sb = new StringBuilder();
 
-      String indent = "              ";
-      // Symbol <labelname>_sym = ...;
+      // Symbol sym_<labelname> = ...;
       sb.append(indent);
-      sb.append("Symbol ");
+      sb.append("Symbol sym_");
       sb.append(labelname);
-      sb.append("_sym = ");
+      sb.append(" = ");
       sb.append(emit.pre("stack"));
       if (offset == 0) {
           sb.append(".peek()");
@@ -414,23 +417,32 @@ public class production {
       }
       sb.append(";\n");
 
-      // <stack_type>
-      sb.append(indent);
-      sb.append(stack_type);
-      sb.append(" ");
-      sb.append(labelname);
-      sb.append("     = ");
-
-      if (!"Object".equals(stack_type)) {
-          sb.append("(");
-          sb.append(stack_type);
-          sb.append(") ");
-      }
-
-      sb.append(labelname);
-      sb.append("_sym.value;\n");
-
       return sb.toString();
+    }
+
+    protected String make_declaration2(
+            String labelName,
+            String stackType
+    ) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(indent);
+        sb.append(stackType);
+        sb.append(" ");
+        sb.append(labelName);
+        sb.append(" = ");
+
+        if (!"Object".equals(stackType)) {
+            sb.append("(");
+            sb.append(stackType);
+            sb.append(") ");
+        }
+
+        sb.append("sym_");
+        sb.append(labelName);
+        sb.append(".value;\n");
+
+        return sb.toString();
     }
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
@@ -444,31 +456,56 @@ public class production {
     int              rhs_len,
     String           final_action)
     {
-      String declaration = "";
+      StringBuilder sb = new StringBuilder();
 
-      symbol_part part;
-      int         pos;
+      declare_labels_helper(sb, rhs, rhs_len, true);
+      declare_labels_helper(sb, rhs, rhs_len, false);
 
-      /* walk down the parts and extract the labels */
-      for (pos = 0; pos < rhs_len; pos++)
-        {
-          if (!rhs[pos].is_action())
-            {
-              part = (symbol_part)rhs[pos];
-
-              /* if it has a label, make declaration! */
-              if (part.label() != null)
-                {
-                  declaration = declaration +
-                    make_declaration(part.label(), part.the_symbol().stack_type(),
-                                     rhs_len-pos-1);
-                }
-            }
-        }
-      return declaration;
+        return sb.toString();
     }
 
+  private void declare_labels_helper(
+          StringBuilder sb,
+          production_part rhs[],
+          int rhs_len,
+          boolean declSymbols
+  ) {
+    symbol_part part;
+    int         pos;
+    boolean first = true;
 
+    /* walk down the parts and extract the labels */
+    for (pos = 0; pos < rhs_len; pos++) {
+      if (!rhs[pos].is_action()) {
+        part = (symbol_part)rhs[pos];
+
+        /* if it has a label, make declaration! */
+        if (part.label() != null) {
+          if (first) {
+              sb.append('\n');
+              sb.append(indent);
+              if (declSymbols) {
+                  sb.append("// Symbol objects:\n");
+              } else {
+                  sb.append("// Semantic values:\n");
+              }
+              first = false;
+          }
+          if (declSymbols) {
+              sb.append(make_declaration(
+                      part.label(),
+                      rhs_len-pos-1
+              ));
+          } else {
+              sb.append(make_declaration2(
+                      part.label(),
+                      part.the_symbol().stack_type()
+              ));
+          }
+        }
+      }
+    }
+  }
 
   /*. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .*/
 
@@ -593,7 +630,10 @@ public class production {
 
             /* create a new production with just the action */
             new_prod = new action_production(this, new_nt, null, 0,
-                declare_str + ((action_part)rhs(act_loc)).code_string(), (lastLocation==-1)?-1:(act_loc-lastLocation));
+                declare_str +
+                ((action_part)rhs(act_loc)).code_string(),
+
+                (lastLocation==-1)?-1:(act_loc-lastLocation));
 
             /* replace the action with the generated non terminal */
             _rhs[act_loc] = new symbol_part(new_nt);
