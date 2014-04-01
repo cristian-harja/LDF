@@ -1,28 +1,31 @@
 package ldf.parser.ast.expr;
 
+import ldf.parser.ast.AstIdentifier;
+
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Field access (ex: {@code a.b}).
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprFieldAccess implements Expression {
+@ThreadSafe
+public final class ExprFieldAccess extends Expression {
 
     @Nonnull
     private Expression object;
 
     @Nonnull
-    private String field;
+    private AstIdentifier field;
 
     public ExprFieldAccess(
             @Nonnull Expression object,
-            @Nonnull String field
+            @Nonnull AstIdentifier field
     ) {
         this.object = object;
         this.field = field;
+        addAstChildren(object, field);
     }
 
     @Nonnull
@@ -31,7 +34,7 @@ public final class ExprFieldAccess implements Expression {
     }
 
     @Nonnull
-    public String getField() {
+    public AstIdentifier getField() {
         return field;
     }
 }

@@ -3,7 +3,7 @@ package ldf.parser.ast.bnf;
 import ldf.parser.ast.stmt.StmtList;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Grammar action to be executed when a production has been recognized in
@@ -12,8 +12,8 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class BnfAction implements BnfAbstractAction {
+@ThreadSafe
+public final class BnfAction extends BnfAbstractAction {
 
     @Nonnull
     private StmtList stmtList;
@@ -25,6 +25,7 @@ public final class BnfAction implements BnfAbstractAction {
             @Nonnull StmtList stmtList
     ){
         this.stmtList = stmtList;
+        addAstChildren(stmtList);
     }
 
     @Nonnull

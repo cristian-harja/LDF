@@ -1,12 +1,13 @@
 package ldf.parser.ast.expr;
 
 import ldf.parser.Util.ListBuilder;
+import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.bnf.BnfAtom;
 import ldf.parser.ast.bnf.BnfAtomType;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
 
 /**
@@ -16,20 +17,21 @@ import java.util.List;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprReference implements Expression, BnfAtom
-{
+@ThreadSafe
+public final class ExprReference extends Expression
+        implements BnfAtom {
     @Nonnull
-    private List<String> path;
+    private List<AstIdentifier> path;
 
     private ExprReference(
-            @Nonnull List<String> path
+            @Nonnull List<AstIdentifier> path
     ) {
         this.path = path;
+        addAstChildren(path);
     }
 
     @Nonnull
-    public List<String> getPath() {
+    public List<AstIdentifier> getPath() {
         return path;
     }
 
@@ -45,7 +47,8 @@ public final class ExprReference implements Expression, BnfAtom
      * Builds {@link ExprReference} objects.
      */
     @NotThreadSafe
-    public static class Builder extends ListBuilder<String, Builder> {
+    public static class Builder
+            extends ListBuilder<AstIdentifier, Builder> {
 
         public ExprReference build() {
             assertNotBuilt();

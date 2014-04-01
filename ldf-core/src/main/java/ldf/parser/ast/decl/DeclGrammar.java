@@ -1,10 +1,11 @@
 package ldf.parser.ast.decl;
 
+import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.expr.ExprReference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,11 +15,11 @@ import java.util.List;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class DeclGrammar implements Declaration {
+@ThreadSafe
+public final class DeclGrammar extends Declaration {
 
     @Nonnull
-    private String name;
+    private AstIdentifier name;
 
     @Nullable
     private List<ExprReference> extended;
@@ -32,7 +33,7 @@ public final class DeclGrammar implements Declaration {
      * @param declarations the contents of the grammar
      */
     public DeclGrammar(
-            @Nonnull String name,
+            @Nonnull AstIdentifier name,
             @Nullable List<ExprReference> extended,
             @Nonnull DeclList declarations
     ) {
@@ -40,10 +41,14 @@ public final class DeclGrammar implements Declaration {
         this.extended = extended == null ? null :
                 Collections.unmodifiableList(extended);
         this.declarations = declarations;
+
+        addAstChildren(name);
+        addAstChildren(extended);
+        addAstChildren(declarations);
     }
 
     @Nonnull
-    public String getName() {
+    public AstIdentifier getName() {
         return name;
     }
 

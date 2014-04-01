@@ -1,8 +1,10 @@
 package ldf.parser.ast.expr;
 
+import ldf.parser.ast.AstNode;
+
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,8 +17,8 @@ import static ldf.parser.Util.ListBuilder;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprList {
+@ThreadSafe
+public final class ExprList extends AstNode {
 
     @Nonnull
     private List<Expression> items;
@@ -30,6 +32,7 @@ public final class ExprList {
             @Nonnull List<Expression> items
     ) {
         this.items = items;
+        addAstChildren(items);
     }
 
     public ExprList() {

@@ -7,5 +7,5 @@ import ldf.parser.ast.stmt.Statement;
  *
  * @author Cristian Harja
  */
-public interface Declaration extends Statement {
+public abstract class Declaration extends Statement {
 }

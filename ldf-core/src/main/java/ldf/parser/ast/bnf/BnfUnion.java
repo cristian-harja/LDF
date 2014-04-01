@@ -1,9 +1,11 @@
 package ldf.parser.ast.bnf;
 
 import ldf.parser.Util.ListBuilder;
+import ldf.parser.ast.AstNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
 
 /**
@@ -15,7 +17,10 @@ import java.util.List;
  *
  * @author Cristian Harja
  */
-public final class BnfUnion implements BnfAtom {
+@ThreadSafe
+public final class BnfUnion extends AstNode
+        implements BnfAtom
+{
     @Nonnull
     private List<BnfConcat> items;
 
@@ -24,6 +29,7 @@ public final class BnfUnion implements BnfAtom {
      */
     private BnfUnion(@Nonnull List<BnfConcat> items) {
         this.items = items;
+        addAstChildren(items);
     }
 
     /**

@@ -1,6 +1,7 @@
 package ldf.parser.ast.stmt;
 
 import ldf.parser.Util;
+import ldf.parser.ast.AstNode;
 import ldf.parser.ast.expr.Expression;
 
 import javax.annotation.Nonnull;
@@ -12,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
+import static ldf.parser.Util.ListBuilder;
 
 /**
  * {@code switch} statement. Has features which help detect syntax errors.
@@ -19,7 +21,7 @@ import static java.util.Collections.unmodifiableList;
  * @author Cristian Harja
  */
 @Immutable
-public final class StmtSwitch implements Statement {
+public final class StmtSwitch extends Statement {
 
     @Nonnull
     private Expression match;
@@ -29,6 +31,19 @@ public final class StmtSwitch implements Statement {
 
     @Nonnull
     private List<Statement> noCase;
+
+    private StmtSwitch(
+            @Nonnull Expression match,
+            @Nonnull List<Statement> noCase,
+            @Nonnull List<Case> cases
+    ) {
+        this.match = match;
+        this.noCase = noCase;
+        this.cases = cases;
+        addAstChildren(match);
+        addAstChildren(noCase);
+        addAstChildren(cases);
+    }
 
     @Nonnull
     public Expression getMatch() {
@@ -49,13 +64,23 @@ public final class StmtSwitch implements Statement {
      * {@code case ...: ...} (or {@code default: ...} ).
      */
     @Immutable
-    public static final class Case {
+    public static final class Case extends AstNode {
 
         @Nullable
         private Expression  match;
 
         @Nonnull
         private List<Statement> stmts;
+
+        private Case(
+                @Nullable Expression match,
+                @Nonnull List<Statement> stmts
+        ) {
+            this.match = match;
+            this.stmts = stmts;
+            addAstChildren(match);
+            addAstChildren(stmts);
+        }
 
         @Nullable
         public Expression getMatch() {
@@ -66,6 +91,22 @@ public final class StmtSwitch implements Statement {
         public List<Statement> getStatements() {
             return stmts;
         }
+
+        static class Builder extends ListBuilder<Statement, Builder>{
+
+            private final Expression match;
+
+            public Builder(Expression match) {
+
+                this.match = match;
+            }
+
+            public Case build() {
+                assertNotBuilt();
+                return new Case(match, buildList());
+            }
+        }
+
     }
 
     /**
@@ -74,7 +115,7 @@ public final class StmtSwitch implements Statement {
     @NotThreadSafe
     public static class Builder {
 
-        private Case currentCase;
+        private Case.Builder currentCase;
         private List<Case> cases = new LinkedList<Case>();
 
         private List<Statement> noCaseStmts;
@@ -88,9 +129,7 @@ public final class StmtSwitch implements Statement {
         public Builder beginCase(@Nullable Expression e) {
             Util.assertNotBuilt(built, StmtSwitch.class);
             flush();
-            currentCase = new Case();
-            currentCase.match = e;
-            cases.add(currentCase);
+            currentCase = new Case.Builder(e);
 
             return this;
         }
@@ -104,13 +143,13 @@ public final class StmtSwitch implements Statement {
         public StmtSwitch build(Expression expr) {
             Util.assertNotBuilt(built, StmtSwitch.class);
             flush();
-            StmtSwitch sw = new StmtSwitch();
-            sw.match = expr;
-            sw.noCase = noCaseStmts;
-            sw.cases = cases;
-
             built = true;
-            return sw;
+
+            return new StmtSwitch(
+                    expr,
+                    noCaseStmts,
+                    cases
+            );
         }
 
         private void flush() {
@@ -120,8 +159,9 @@ public final class StmtSwitch implements Statement {
                     currentStmts = new ArrayList<Statement>();
                 }
             } else {
-                currentCase.stmts = currentStmts;
+                currentCase.addAll(currentStmts);
                 currentStmts = new ArrayList<Statement>();
+                cases.add(currentCase.build());
             }
             currentCase = null;
         }

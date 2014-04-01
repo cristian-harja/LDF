@@ -1,9 +1,11 @@
 package ldf.parser.ast.expr;
 
+import ldf.parser.ast.AstNode;
+
 /**
  * A common interface for expressions.
  *
  * @author Cristian Harja
  */
-public interface Expression {
+public abstract class Expression extends AstNode {
 }

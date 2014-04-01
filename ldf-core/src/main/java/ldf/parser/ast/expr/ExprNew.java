@@ -1,15 +1,15 @@
 package ldf.parser.ast.expr;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * AST node for object creation (using the {@code new} keyword).
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprNew implements Expression {
+@ThreadSafe
+public final class ExprNew extends Expression {
 
     @Nonnull
     private ExprReference classRef;
@@ -23,6 +23,7 @@ public final class ExprNew implements Expression {
     ) {
         this.classRef = classRef;
         this.ctorParams = ctorParams;
+        addAstChildren(classRef, ctorParams);
     }
 
     @Nonnull

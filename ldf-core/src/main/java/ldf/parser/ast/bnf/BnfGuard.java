@@ -3,6 +3,7 @@ package ldf.parser.ast.bnf;
 import ldf.parser.ast.expr.Expression;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A type of grammar action (similar to {@link BnfAction}), containing a
@@ -12,7 +13,8 @@ import javax.annotation.Nonnull;
  *
  * @author Cristian Harja
  */
-public final class BnfGuard implements BnfAbstractAction {
+@ThreadSafe
+public final class BnfGuard extends BnfAbstractAction {
 
     @Nonnull
     private Expression condition;
@@ -22,6 +24,7 @@ public final class BnfGuard implements BnfAbstractAction {
      */
     public BnfGuard(@Nonnull Expression condition) {
         this.condition = condition;
+        addAstChildren(condition);
     }
 
     @Nonnull

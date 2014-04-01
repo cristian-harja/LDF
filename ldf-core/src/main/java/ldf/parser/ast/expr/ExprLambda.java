@@ -4,7 +4,7 @@ import ldf.parser.ast.stmt.StmtBlock;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Lambda expressions. A lambda expression is a function definition used as
@@ -12,8 +12,8 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprLambda implements Expression {
+@ThreadSafe
+public final class ExprLambda extends Expression {
 
     @Nonnull
     private FormalParamList params;
@@ -29,6 +29,7 @@ public final class ExprLambda implements Expression {
         this.params = params;
         this.code = code;
         this.expr = null;
+        addAstChildren(params, code);
     }
 
     public ExprLambda(
@@ -38,6 +39,7 @@ public final class ExprLambda implements Expression {
         this.params = params;
         this.code = null;
         this.expr = expr;
+        addAstChildren(params, expr);
     }
 
 

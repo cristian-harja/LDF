@@ -1,4 +1,4 @@
-package ldf.parser;
+package ldf.parser.st;
 
 import ldf.java_cup.runtime.Symbol;
 
@@ -32,9 +32,9 @@ import java.util.ListIterator;
  * ldf.java_cup.runtime.SymbolFactory} interface. Those methods would
  * then call {@link Symbol#setLeftRightSymbols} on the newly created
  * symbol, to indicate the leftmost and rightmost child of that node.
- * Using this information, the overloaded {@link #setLeftRightSymbols} in
- * {@code StNode} can explore the syntax tree and reconstruct a list of
- * direct descendants for the newly created node.
+ * Using this information, the overloaded {@link #setLeftRightSymbols
+ * setLeftRightSymbols} in {@code StNode} can explore the syntax tree and
+ * reconstruct a list of direct descendants for the newly created node.
  * </p>
  */
 @NotThreadSafe
@@ -257,12 +257,12 @@ public class StNode extends Symbol implements Collection<StNode> {
 
     @Nullable
     public StNode getLeafL() {
-        return leafL;
+        return leafL != null ? leafL : this;
     }
 
     @Nullable
     public StNode getLeafR() {
-        return leafR;
+        return leafR != null ? leafR : this;
     }
 
     @Nullable

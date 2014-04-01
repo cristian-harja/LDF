@@ -1,8 +1,11 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ast.AstIdentifier;
+import ldf.parser.ast.AstNode;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * <p>AST node for BNF <em>items</em>, which are the building blocks of BNF
@@ -14,11 +17,12 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class BnfItem implements BnfAtom {
+@ThreadSafe
+public final class BnfItem extends AstNode
+        implements BnfAtom {
 
     @Nullable
-    private String label;
+    private AstIdentifier label;
 
     @Nonnull
     private BnfAtom atom;
@@ -32,13 +36,14 @@ public final class BnfItem implements BnfAtom {
      * @param quantifier optional quantifier
      */
     public BnfItem(
-            @Nullable String label,
+            @Nullable AstIdentifier label,
             @Nonnull BnfAtom atom,
             @Nullable BnfQuantifier quantifier
     ) {
         this.label = label;
         this.atom = atom;
         this.quantifier = quantifier;
+        addAstChildren(label, (AstNode) atom, quantifier);
     }
 
     /**
@@ -46,7 +51,7 @@ public final class BnfItem implements BnfAtom {
      *         there isn't one).
      */
     @Nullable
-    public String getLabel() {
+    public AstIdentifier getLabel() {
         return label;
     }
 

@@ -1,7 +1,9 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ast.AstIdentifier;
+
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * An item in the BNF syntax which expands to a grammar action (in a
@@ -9,24 +11,25 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class BnfPlaceholder implements BnfAbstractAction {
+@ThreadSafe
+public final class BnfPlaceholder extends BnfAbstractAction {
 
     @Nonnull
-    private String label;
+    private AstIdentifier label;
 
     /**
      * @param label the name of this placeholder
      */
-    public BnfPlaceholder(@Nonnull String label) {
+    public BnfPlaceholder(@Nonnull AstIdentifier label) {
         this.label = label;
+        addAstChildren(label);
     }
 
     /**
      * @return name of this placeholder
      */
     @Nonnull
-    public String getLabel() {
+    public AstIdentifier getLabel() {
         return label;
     }
 

@@ -1,8 +1,8 @@
 package ldf.parser.ast.decl;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
 
 import static ldf.parser.Util.ListBuilder;
@@ -13,8 +13,9 @@ import static ldf.parser.Util.ListBuilder;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class DeclVars implements Declaration {
+@ThreadSafe
+public final class DeclVars extends Declaration {
+
     @Nonnull
     private List<DeclVariable> items;
 
@@ -22,6 +23,7 @@ public final class DeclVars implements Declaration {
             @Nonnull List<DeclVariable> items
     ) {
         this.items = items;
+        addAstChildren(items);
     }
 
     @Nonnull

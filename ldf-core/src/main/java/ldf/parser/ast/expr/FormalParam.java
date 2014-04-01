@@ -1,10 +1,12 @@
 package ldf.parser.ast.expr;
 
+import ldf.parser.ast.AstIdentifier;
+import ldf.parser.ast.AstNode;
 import ldf.parser.ast.TypeExpression;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Formal parameter.
@@ -13,25 +15,26 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class FormalParam {
+@ThreadSafe
+public final class FormalParam extends AstNode {
 
     @Nonnull
-    private String identifier;
+    private AstIdentifier identifier;
 
     @Nullable
     private TypeExpression type;
 
     public FormalParam(
-            @Nonnull String identifier,
+            @Nonnull AstIdentifier identifier,
             @Nullable TypeExpression type
     ) {
         this.identifier = identifier;
         this.type = type;
+        addAstChildren(identifier, type);
     }
 
     @Nonnull
-    public String getIdentifier() {
+    public AstIdentifier getIdentifier() {
         return identifier;
     }
 

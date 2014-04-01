@@ -1,15 +1,15 @@
 package ldf.parser.ast.expr;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * AST node for prefix/postfix increment/decrement.
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprIncrement implements Expression {
+@ThreadSafe
+public final class ExprIncrement extends Expression {
     private boolean increment;
     private boolean postfix;
 
@@ -29,6 +29,7 @@ public final class ExprIncrement implements Expression {
         this.increment = increment;
         this.postfix = postfix;
         this.target = target;
+        addAstChildren(target);
     }
 
     public boolean isIncrement() {

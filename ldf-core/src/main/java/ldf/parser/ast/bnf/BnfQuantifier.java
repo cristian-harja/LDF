@@ -1,5 +1,7 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ast.AstNode;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -23,7 +25,7 @@ import javax.annotation.concurrent.Immutable;
  * @author Cristian Harja
  */
 @Immutable
-public final class BnfQuantifier {
+public final class BnfQuantifier extends AstNode {
 
     @Nonnull  private String pattern;
     @Nullable private Number min;

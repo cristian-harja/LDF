@@ -6,5 +6,5 @@ package ldf.parser.ast.stmt;
  *
  * @author Cristian Harja
  */
-public final class StmtEmpty implements Statement {
+public final class StmtEmpty extends Statement {
 }

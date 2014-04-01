@@ -4,6 +4,7 @@ import ldf.parser.ast.expr.Expression;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * <p>{@code for} statement (as seen in languages like Java, C, C++, etc).
@@ -15,7 +16,8 @@ import javax.annotation.Nullable;
  *
  * @author Cristian Harja
  */
-public final class StmtFor implements Statement {
+@ThreadSafe
+public final class StmtFor extends Statement {
 
     @Nullable
     private Expression exprInit;
@@ -43,6 +45,7 @@ public final class StmtFor implements Statement {
         this.exprNext = exprNext;
         this.stmtLoop = stmtLoop;
         this.stmtElse = stmtElse;
+        addAstChildren(exprInit, exprCond, exprNext, stmtLoop, stmtElse);
     }
 
     @Nullable

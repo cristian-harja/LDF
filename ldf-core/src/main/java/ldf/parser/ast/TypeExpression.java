@@ -3,5 +3,5 @@ package ldf.parser.ast;
 /**
  * @author Cristian Harja
  */
-public abstract class TypeExpression {
+public abstract class TypeExpression extends AstNode {
 }

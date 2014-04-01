@@ -1,10 +1,11 @@
 package ldf.parser;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+import static java.lang.System.identityHashCode;
 import static java.util.Collections.*;
 
 /**
@@ -126,6 +127,110 @@ public final class Util {
                 built = true;
             }
             return items;
+        }
+
+        public void addAll(Collection<ItemT> items) {
+            for (ItemT item: items) {
+                add(item);
+            }
+        }
+    }
+
+    /**
+     * Apparently, there's no readily available interface in JDK for
+     * defining a parameter-less factory method on-the-fly.
+     *
+     * @param <T> type of object
+     */
+    public interface Factory<T> {
+        T factoryMethod();
+    }
+
+    /**
+     *
+     */
+    public static final Comparator<Object> NATIVE_HASH_COMPARATOR =
+            new Comparator<Object>() {
+                @Override
+                public int compare(Object o1, Object o2) {
+                    return identityHashCode(o1) - identityHashCode(o2);
+                }
+            };
+
+    /**
+     * TODO: doc
+     * @param map
+     * @param key
+     * @param value
+     * @param <K> map key type
+     * @param <V> list element type
+     * @throws java.lang.NullPointerException
+     */
+    @SuppressWarnings("ALL")
+    public static <K, V> void safeMapAdd(
+            @Nonnull Map<K, Collection<V>> map,
+            @Nonnull CollectionType factory,
+            @Nonnull K key,
+            @Nullable V value
+    ) {
+        Collection<V> coll;
+        synchronized (map) {
+            coll = map.get(key);
+            if (coll == null) {
+                coll = factory.newInstance();
+                map.put(key, coll);
+            }
+            coll.add(value);
+        }
+    }
+
+    @SuppressWarnings("ALL")
+    public static <K, V> boolean safeMapRemove(
+            @Nonnull Map<K, Collection<V>> map,
+            @Nonnull K key,
+            @Nonnull V value
+    ) {
+        Collection<V> coll;
+        synchronized (map) {
+            coll = map.get(key);
+            if (coll == null) return false;
+            return coll.remove(value);
+        }
+    }
+
+    public enum CollectionType {
+        LINKED_LIST(new Factory<LinkedList>() {
+            public LinkedList factoryMethod() {
+                return new LinkedList();
+            }
+        }),
+
+        ARRAY_LIST(new Factory<ArrayList>() {
+            public ArrayList factoryMethod() {
+                return new ArrayList();
+            }
+        }),
+
+        HASH_SET(new Factory<LinkedHashSet>() {
+            public LinkedHashSet factoryMethod() {
+                return new LinkedHashSet();
+            }
+        }),
+
+        TREE_SET(new Factory<TreeSet>() {
+            public TreeSet factoryMethod() {
+                return new TreeSet();
+            }
+        });
+
+        private final Factory<? extends Collection> factory;
+
+        CollectionType(Factory<? extends Collection> factory) {
+            this.factory = factory;
+        }
+
+        Collection newInstance() {
+            return factory.factoryMethod();
         }
 
     }

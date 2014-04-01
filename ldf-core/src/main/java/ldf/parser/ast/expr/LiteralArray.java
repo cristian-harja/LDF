@@ -1,15 +1,15 @@
 package ldf.parser.ast.expr;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Array literal (ex: {@code [1, 2, 5, "Alice", "Bob"]}).
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class LiteralArray implements ExprLiteral {
+@ThreadSafe
+public final class LiteralArray extends ExprLiteral {
 
     @Nonnull
     private ExprList elements;
@@ -18,6 +18,7 @@ public final class LiteralArray implements ExprLiteral {
             @Nonnull ExprList elements
     ){
         this.elements = elements;
+        addAstChildren(elements);
     }
 
     @Nonnull

@@ -1,15 +1,15 @@
 package ldf.parser.ast.expr;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Boolean literal.
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class LiteralBoolean implements ExprLiteral {
+@ThreadSafe
+public final class LiteralBoolean extends ExprLiteral {
 
     @Nonnull
     private Boolean value;

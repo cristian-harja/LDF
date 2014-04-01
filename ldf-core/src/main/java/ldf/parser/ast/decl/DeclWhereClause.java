@@ -1,10 +1,13 @@
 package ldf.parser.ast.decl;
 
+import ldf.parser.ast.AstIdentifier;
+import ldf.parser.ast.AstNode;
 import ldf.parser.ast.bnf.BnfAbstractAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +23,8 @@ import static ldf.parser.Util.assertNotBuilt;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class DeclWhereClause {
+@ThreadSafe
+public final class DeclWhereClause extends AstNode {
 
     @Nonnull
     private List<Entry> actionList;
@@ -32,7 +35,16 @@ public final class DeclWhereClause {
     @Nonnull
     private Map<String, List<Entry>> duplicates;
 
-    private DeclWhereClause() {}
+    private DeclWhereClause(
+            @Nonnull List<Entry> actionList,
+            @Nonnull Map<String, Entry> actionMap,
+            @Nonnull Map<String, List<Entry>> duplicates
+    ) {
+        this.actionList = actionList;
+        this.actionMap = actionMap;
+        this.duplicates = duplicates;
+        addAstChildren(actionList);
+    }
 
     @Nonnull
     public List<Entry> getActionList() {
@@ -54,23 +66,24 @@ public final class DeclWhereClause {
      * = {: ... :} }.
      */
     @Immutable
-    public static class Entry {
+    public static class Entry extends AstNode {
         @Nonnull
-        private String identifier;
+        private AstIdentifier identifier;
 
         @Nonnull
         private BnfAbstractAction action;
 
         public Entry(
-                @Nonnull String identifier,
+                @Nonnull AstIdentifier identifier,
                 @Nonnull BnfAbstractAction action
         ) {
             this.identifier = identifier;
             this.action = action;
+            addAstChildren(action);
         }
 
         @Nonnull
-        public String getIdentifier() {
+        public AstIdentifier getIdentifier() {
             return identifier;
         }
 
@@ -94,14 +107,14 @@ public final class DeclWhereClause {
             actionMap = new TreeMap<String, List<Entry>>();
         }
 
-        public Builder add(String id, BnfAbstractAction action) {
+        public Builder add(AstIdentifier id, BnfAbstractAction action) {
             List<Entry> entries;
 
             assertNotBuilt(built, DeclWhereClause.class);
 
-            if ((entries = actionMap.get(id)) == null) {
+            if ((entries = actionMap.get(id.getName())) == null) {
                 entries = new ArrayList<Entry>();
-                actionMap.put(id, entries);
+                actionMap.put(id.getName(), entries);
             }
 
             Entry e = new Entry(id, action);
@@ -129,10 +142,11 @@ public final class DeclWhereClause {
                     duplicates.put(id, a);
                 }
             }
-            DeclWhereClause whereClause = new DeclWhereClause();
-            whereClause.actionList = unmodifiableList(actionList);
-            whereClause.actionMap = unmodifiableMap(actionMap);
-            whereClause.duplicates = unmodifiableMap(duplicates);
+            DeclWhereClause whereClause = new DeclWhereClause(
+                    unmodifiableList(actionList),
+                    unmodifiableMap(actionMap),
+                    unmodifiableMap(duplicates)
+            );
             built = true;
             return whereClause;
         }

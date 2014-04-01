@@ -1,24 +1,29 @@
 package ldf.parser.ast.stmt;
 
+import ldf.parser.ast.AstIdentifier;
+
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * {@code break;} statement.
  *
  * @author Cristian Harja
  */
-public final class StmtBreak implements Statement {
-    private String label;
+@ThreadSafe
+public final class StmtBreak extends Statement {
+    private AstIdentifier label;
 
     /**
      * @param label optional label (pointing to the loop that should be
      *              exited).
      */
-    public StmtBreak(@Nullable String label) {
+    public StmtBreak(@Nullable AstIdentifier label) {
         this.label = label;
+        addAstChildren(label);
     }
 
-    public String getLabel() {
+    public AstIdentifier getLabel() {
         return label;
     }
 }

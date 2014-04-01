@@ -51,6 +51,8 @@ terminal
 
 /* ------------- Non-terminals ------------- */
 
+non terminal AstIdentifier id;
+
 non terminal LiteralString         string_literal;
 non terminal LiteralString.Builder string_contents_;
 
@@ -141,6 +143,10 @@ main
         {:  RESULT = gram;  :}
     ;
 
+id  ::= IDENTIFIER:id
+    {:  RESULT = new AstIdentifier(id); :}
+;
+
 /* string literal */
 string_literal      // "..."
     ::= STRING_BEGIN string_contents_:builder STRING_END
@@ -164,7 +170,7 @@ string_contents_    // sequence of valid (and invalid) bits of a string
 /* Declarations */
 
 decl_grammar
-    ::= GRAMMAR IDENTIFIER:id decl_grammar_extend_:ext
+    ::= GRAMMAR id:id decl_grammar_extend_:ext
         LCURLY decl_list:decl RCURLY
         {:
             RESULT = new DeclGrammar(id, ext, decl);
@@ -222,24 +228,24 @@ decl_vars_
     ;
 
 decl_var__     // identifier [ : type ] [ = expr ]
-    ::= IDENTIFIER:id
+    ::= id:id
         {:  RESULT = new DeclVariable(id, null, null);  :}
 
-    |   IDENTIFIER:id COLON type_expr:t
+    |   id:id COLON type_expr:t
         {:  RESULT = new DeclVariable(id, t, null);     :}
 
-    |   IDENTIFIER:id EQ expr:e
+    |   id:id EQ expr:e
         {:  RESULT = new DeclVariable(id, null, e);     :}
 
-    |   IDENTIFIER:id COLON type_expr:t EQ expr:e
+    |   id:id COLON type_expr:t EQ expr:e
         {:  RESULT = new DeclVariable(id, t, e);        :}
     ;
 
 decl_function
-    ::= DEF IDENTIFIER:id formal_params:args stmt_block:body
+    ::= DEF id:id formal_params:args stmt_block:body
         {:  RESULT = new DeclFunction(id, args, null, body);    :}
 
-    |   DEF IDENTIFIER:id formal_params:args
+    |   DEF id:id formal_params:args
         COLON type_expr:type
         stmt_block:body
         {:  RESULT = new DeclFunction(id, args, type, body);    :}
@@ -248,8 +254,8 @@ decl_function
 
 /* Declarative statements (grammar definition) */
 
-decl_nterm          // nterm ID ::= ... [where ...] ;
-    ::= NTERM IDENTIFIER:id
+decl_nterm          // nterm id ::= ... [where ...] ;
+    ::= NTERM id:id
         COLON_COLON_EQ bnf_syntax:bnf
         decl_nterm_where_:where_clause
         SEMICOLON
@@ -265,7 +271,7 @@ decl_nterm_where_   // where @id = {: action code :} ...
     ;
 
 decl_nterm_where__
-    ::= decl_nterm_where__:list AT_SIGN IDENTIFIER:id EQ bnf_action:a
+    ::= decl_nterm_where__:list AT_SIGN id:id EQ bnf_action:a
         {:  RESULT = list.add(id, a);  :}
 
     |   /* empty */
@@ -299,7 +305,7 @@ bnf_concat        // a b c ... (precedence: 1)
 
 bnf_item
     ::= // label@atom{n,m}
-        IDENTIFIER:label AT_SIGN
+        id:label AT_SIGN
         bnf_atom:atom bnf_quantifier:quantifier
         {:  RESULT = new BnfItem(label, atom, quantifier);    :}
 
@@ -308,7 +314,7 @@ bnf_item
         {:  RESULT = new BnfItem(null, atom, quantifier);     :}
 
     |   // label@atom
-        IDENTIFIER:label AT_SIGN bnf_atom:atom
+        id:label AT_SIGN bnf_atom:atom
         {:  RESULT = new BnfItem(label, atom, null);    :}
 
     |   // atom
@@ -347,7 +353,7 @@ bnf_action
         {:  RESULT = new BnfGuard(e);   :}
 
     |   // {@label} -- placeholder to be expanded in the "where" clause
-        LCURLY_AT_SIGN IDENTIFIER:id RCURLY
+        LCURLY_AT_SIGN id:id RCURLY
         {:  RESULT = new BnfPlaceholder(id);  :}
     ;
 
@@ -427,7 +433,7 @@ unmatched
     |   WHILE LPAREN expr:_if RPAREN matched:_loop ELSE unmatched:_else
         {:  RESULT = new StmtWhile(false, _if, _loop, _else); :}
 
-    |   IDENTIFIER COLON unmatched:s // label: statement
+    |   id COLON unmatched:s // label: statement
         {:  RESULT = s; :}
 
     |   ELLIPSIS // dummy statement
@@ -459,10 +465,10 @@ matched
     |   CONTINUE SEMICOLON
         {:  RESULT = new StmtContinue(null);    :}
 
-    |   BREAK    IDENTIFIER:id SEMICOLON
+    |   BREAK    id:id SEMICOLON
         {:  RESULT = new StmtBreak(id);   :}
 
-    |   CONTINUE IDENTIFIER:id SEMICOLON
+    |   CONTINUE id:id SEMICOLON
         {:  RESULT = new StmtContinue(id);    :}
 
     |   RETURN expr:e SEMICOLON
@@ -482,7 +488,7 @@ matched
     |   stmt_decl:s          {:  RESULT = s;  :}
     |   stmt_try:s           {:  RESULT = s;  :}
 
-    |   IDENTIFIER COLON matched:s // label: statement
+    |   id COLON matched:s // label: statement
         {:  RESULT = s; :}
 
     ;
@@ -533,7 +539,7 @@ stmt_try
 
 stmt_catch_
     ::= stmt_catch_:builder
-        CATCH LPAREN type_expr:t IDENTIFIER:id RPAREN stmt_block:s
+        CATCH LPAREN type_expr:t id:id RPAREN stmt_block:s
         {:  RESULT = builder.addCatch(t, id, s); :}
 
     |   /* empty */
@@ -543,7 +549,7 @@ stmt_catch_
 /* Type expressions (needs expanding) */
 
 type_expr
-    ::= IDENTIFIER;
+    ::= id;
 
 /* Lists: (a, b, c) or (a: int, b: char, c: T) */
 
@@ -564,10 +570,10 @@ formal_params_
     ;
 
 formal_params__
-    ::= IDENTIFIER:id COLON type_expr:t
+    ::= id:id COLON type_expr:t
         {:  RESULT = new FormalParam(id, t);    :}
 
-    |   IDENTIFIER:id
+    |   id:id
         {:  RESULT = new FormalParam(id, null); :}
     ;
 
@@ -713,8 +719,8 @@ expr_8
     |   BOOLEAN:b
         {:  RESULT = new LiteralBoolean(b); :}
 
-    |   IDENTIFIER:id
-        {:  RESULT = new ExprIdentifier(id);    :}
+    |   id:id
+        {:  RESULT = id;    :}
 
     |   LPAREN  expr:l RPAREN
         {:  RESULT = l; :}
@@ -728,7 +734,7 @@ expr_8
     |   expr_8:e MINUS_MINUS                  // postfix decrement
         {:  RESULT = new ExprIncrement(false, true, e); :}
 
-    |   expr_8:e DOT IDENTIFIER:f             // field access
+    |   expr_8:e DOT id:f             // field access
         {:  RESULT = new ExprFieldAccess(e, f); :}
 
     |   expr_8:e LSQUARE expr:a RSQUARE       // array access
@@ -745,9 +751,9 @@ expr_reference
     ;
 
 expr_reference_
-    ::= expr_reference_:builder DOT IDENTIFIER:id
+    ::= expr_reference_:builder DOT id:id
         {:  RESULT = builder.add(id);  :}
 
-    |   IDENTIFIER:id
+    |   id:id
         {:  RESULT = new ExprReference.Builder().add(id);    :}
     ;

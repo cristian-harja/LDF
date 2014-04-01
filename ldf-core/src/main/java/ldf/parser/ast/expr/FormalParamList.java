@@ -1,8 +1,13 @@
 package ldf.parser.ast.expr;
 
+import ldf.parser.ast.AstNode;
+
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
-import java.util.*;
+import javax.annotation.concurrent.ThreadSafe;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.*;
 import static ldf.parser.Util.ListBuilder;
@@ -13,8 +18,8 @@ import static ldf.parser.Util.ListBuilder;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class FormalParamList {
+@ThreadSafe
+public final class FormalParamList extends AstNode {
 
     @Nonnull
     private List<FormalParam> paramsList;
@@ -25,7 +30,16 @@ public final class FormalParamList {
     @Nonnull
     private Map<String, List<FormalParam>> duplicates;
 
-    private FormalParamList() {}
+    private FormalParamList(
+            @Nonnull List<FormalParam> paramsList,
+            @Nonnull Map<String, FormalParam> paramsMap,
+            @Nonnull Map<String, List<FormalParam>> duplicates
+    ) {
+        this.paramsList = paramsList;
+        this.paramsMap = paramsMap;
+        this.duplicates = duplicates;
+        addAstChildren(paramsList);
+    }
 
     @Nonnull
     public List<FormalParam> getParameterList() {
@@ -55,7 +69,7 @@ public final class FormalParamList {
             duplicates = new LinkedHashMap<String, List<FormalParam>>();
 
             for (FormalParam p: list) {
-                String id = p.getIdentifier();
+                String id = p.getIdentifier().getName();
                 if (duplicates.containsKey(id)) {
                     duplicates.get(id).add(p);
                 } else if (map.containsKey(id)) {
@@ -68,25 +82,22 @@ public final class FormalParamList {
                 }
             }
 
-            FormalParamList fpl = new FormalParamList();
-
-            fpl.paramsList = unmodifiableList(list);
-            fpl.paramsMap = unmodifiableMap(map);
-
             if (duplicates.size() == 0) {
-                fpl.duplicates = emptyMap();
+                duplicates = emptyMap();
             } else {
                 for (Map.Entry<String, List<FormalParam>>
                         p: duplicates.entrySet()
                         ) {
                     duplicates.put(p.getKey(), unmodifiableList(p.getValue()));
                 }
+                duplicates = unmodifiableMap(duplicates);
             }
 
-            fpl.duplicates = duplicates.size() != 0 ? duplicates
-                    : Collections.<String, List<FormalParam>>emptyMap();
-
-            return fpl;
+            return new FormalParamList(
+                    unmodifiableList(list),
+                    unmodifiableMap(map),
+                    duplicates
+            );
         }
     }
 }

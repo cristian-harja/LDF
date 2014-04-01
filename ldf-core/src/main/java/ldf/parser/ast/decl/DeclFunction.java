@@ -1,23 +1,24 @@
 package ldf.parser.ast.decl;
 
+import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.TypeExpression;
 import ldf.parser.ast.expr.FormalParamList;
 import ldf.parser.ast.stmt.StmtBlock;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Function declaration. Backed by the {@code decl_function} non-terminal.
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class DeclFunction implements Declaration {
+@ThreadSafe
+public final class DeclFunction extends Declaration {
 
     @Nonnull
-    private String name;
+    private AstIdentifier name;
 
     @Nonnull
     private FormalParamList args;
@@ -35,7 +36,7 @@ public final class DeclFunction implements Declaration {
      * @param body function body
      */
     public DeclFunction(
-            @Nonnull String name,
+            @Nonnull AstIdentifier name,
             @Nonnull FormalParamList args,
             @Nullable TypeExpression type,
             @Nonnull StmtBlock body) {
@@ -43,10 +44,11 @@ public final class DeclFunction implements Declaration {
         this.args = args;
         this.type = type;
         this.body = body;
+        addAstChildren(name, args, type, body);
     }
 
     @Nonnull
-    public String getName() {
+    public AstIdentifier getName() {
         return name;
     }
 

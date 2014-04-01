@@ -1,15 +1,16 @@
 package ldf.parser.ast.expr;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Number literal (ex: {@code 12.7}, {@code -3}, etc).
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class LiteralNumber implements ExprLiteral {
+@ThreadSafe
+public final class LiteralNumber extends ExprLiteral {
+
     @Nonnull
     private Number value;
 

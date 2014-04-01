@@ -1,7 +1,9 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ast.AstNode;
+
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * <p>BNF "alternations" (repetitions of <b>{@code e1}</b>, with <b>{@code
@@ -20,8 +22,9 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class BnfAlternation implements BnfAtom {
+@ThreadSafe
+public final class BnfAlternation extends AstNode
+        implements BnfAtom {
 
     @Nonnull
     private BnfUnion elementSyntax;
@@ -39,6 +42,7 @@ public final class BnfAlternation implements BnfAtom {
     ) {
         this.elementSyntax = elementSyntax;
         this.separatorSyntax = separatorSyntax;
+        addAstChildren(elementSyntax, separatorSyntax);
     }
 
     /**

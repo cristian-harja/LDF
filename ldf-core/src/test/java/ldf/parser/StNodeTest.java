@@ -1,5 +1,6 @@
 package ldf.parser;
 
+import ldf.parser.st.StNode;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

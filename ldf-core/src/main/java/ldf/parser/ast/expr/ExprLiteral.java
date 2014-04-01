@@ -5,5 +5,5 @@ package ldf.parser.ast.expr;
  *
  * @author Cristian Harja
  */
-public interface ExprLiteral extends Expression {
+public abstract class ExprLiteral extends Expression {
 }

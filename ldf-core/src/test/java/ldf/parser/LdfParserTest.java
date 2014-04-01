@@ -13,7 +13,10 @@ public class LdfParserTest {
         LdfParser parser = new LdfParser(
             getClass().getResourceAsStream("example1.txt")
         );
+        parser.setCreateSyntaxTree(true);
         assertNull(parser.getParseError());
+        Object result = parser.getParseResult();
+        System.out.println(result.getClass().getName());
     }
 
     @Test
@@ -21,6 +24,9 @@ public class LdfParserTest {
         LdfParser parser = new LdfParser(
             getClass().getResourceAsStream("example2.txt")
         );
+        parser.setCreateSyntaxTree(true);
         assertNull(parser.getParseError());
+        Object result = parser.getParseResult();
+        System.out.println(result.getClass().getName());
     }
 }

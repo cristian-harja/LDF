@@ -1,7 +1,7 @@
 package ldf.parser.ast.expr;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Function call. Basically, any expression followed by a list of
@@ -9,8 +9,8 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprFunctionCall implements Expression {
+@ThreadSafe
+public final class ExprFunctionCall extends Expression {
 
     @Nonnull
     private final Expression function;
@@ -30,6 +30,7 @@ public final class ExprFunctionCall implements Expression {
     ) {
         this.function = function;
         this.params = params;
+        addAstChildren(function, params);
     }
 
     @Nonnull

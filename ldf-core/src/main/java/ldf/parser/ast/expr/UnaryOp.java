@@ -3,13 +3,13 @@ package ldf.parser.ast.expr;
 /**
  * Unary operators (to be used by {@link ExprUnary}).
  *
- * @see ExprUnary
  * @author Cristian Harja
+ * @see ExprUnary
  */
 public enum UnaryOp {
-    PLUS  ("+"),
-    MINUS ("-"),
-    NOT   ("!");
+    PLUS("+"),
+    MINUS("-"),
+    NOT("!");
 
     private String op;
 

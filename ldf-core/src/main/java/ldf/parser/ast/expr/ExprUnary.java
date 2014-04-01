@@ -1,7 +1,7 @@
 package ldf.parser.ast.expr;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Unary expression. There are few possible {@link UnaryOp unary
@@ -11,8 +11,8 @@ import javax.annotation.concurrent.Immutable;
  * @see UnaryOp
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprUnary implements Expression {
+@ThreadSafe
+public final class ExprUnary extends Expression {
     @Nonnull
     private UnaryOp operator;
 
@@ -25,6 +25,7 @@ public final class ExprUnary implements Expression {
     ) {
         this.operator = operator;
         this.target = target;
+        addAstChildren(target);
     }
 
     @Nonnull

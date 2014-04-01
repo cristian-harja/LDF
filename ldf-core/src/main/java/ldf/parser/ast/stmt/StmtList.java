@@ -1,10 +1,11 @@
 package ldf.parser.ast.stmt;
 
 import ldf.parser.Util.ListBuilder;
+import ldf.parser.ast.AstNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
 
 /**
@@ -13,14 +14,15 @@ import java.util.List;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class StmtList {
+@ThreadSafe
+public final class StmtList extends AstNode {
 
     @Nonnull
     private final List<Statement> items;
 
     private StmtList(@Nonnull List<Statement> items) {
         this.items = items;
+        addAstChildren(items);
     }
 
     @Nonnull

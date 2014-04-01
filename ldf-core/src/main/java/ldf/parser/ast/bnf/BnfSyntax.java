@@ -1,7 +1,9 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ast.AstNode;
+
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A wrapper over a BNF expression. Backed by the {@code bnf_syntax}
@@ -9,8 +11,8 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class BnfSyntax {
+@ThreadSafe
+public final class BnfSyntax extends AstNode {
     @Nonnull
     private BnfUnion root;
 
@@ -19,6 +21,7 @@ public final class BnfSyntax {
      */
     public BnfSyntax(@Nonnull BnfUnion root) {
         this.root = root;
+        addAstChildren(root);
     }
 
     /**

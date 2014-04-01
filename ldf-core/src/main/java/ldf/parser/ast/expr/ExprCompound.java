@@ -1,8 +1,8 @@
 package ldf.parser.ast.expr;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +15,8 @@ import static java.util.Collections.unmodifiableList;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprCompound implements Expression {
+@ThreadSafe
+public final class ExprCompound extends Expression {
 
     @Nonnull
     private BinaryOpClass expressionType;
@@ -35,6 +35,7 @@ public final class ExprCompound implements Expression {
         this.expressionType = expressionType;
         this.items = unmodifiableList(items);
         this.separators = unmodifiableList(separators);
+        addAstChildren(items);
     }
 
     /**

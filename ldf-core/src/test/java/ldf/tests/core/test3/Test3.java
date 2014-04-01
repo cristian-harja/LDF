@@ -2,8 +2,8 @@ package ldf.tests.core.test3;
 
 import ldf.java_cup.runtime.Scanner;
 import ldf.java_cup.runtime.Symbol;
-import ldf.parser.StNode;
-import ldf.parser.TokenFactory;
+import ldf.parser.st.StNode;
+import ldf.parser.st.TokenFactory;
 import org.junit.Test;
 
 import java.io.InputStream;

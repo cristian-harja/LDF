@@ -1,7 +1,7 @@
 package ldf.parser.ast.expr;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Array access. The index is not necessarily an integer (as far as the
@@ -9,8 +9,8 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class ExprArrayAccess implements Expression {
+@ThreadSafe
+public final class ExprArrayAccess extends Expression {
 
     @Nonnull
     private final Expression array;
@@ -24,6 +24,7 @@ public final class ExprArrayAccess implements Expression {
     ) {
         this.array = array;
         this.index = index;
+        addAstChildren(array, index);
     }
 
     @Nonnull

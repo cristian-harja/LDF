@@ -4,7 +4,7 @@ import ldf.parser.ast.expr.Expression;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * {@code while} statement. Syntactic sugar: {@code while(...) {...} else
@@ -13,8 +13,8 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class StmtWhile implements Statement {
+@ThreadSafe
+public final class StmtWhile extends Statement {
 
     private boolean    doWhile;
 
@@ -43,6 +43,7 @@ public final class StmtWhile implements Statement {
         this.exprCond = exprCond;
         this.stmtLoop = stmtLoop;
         this.stmtElse = stmtElse;
+        addAstChildren(exprCond, stmtLoop, stmtElse);
     }
 
     public boolean isDoWhile() {

@@ -1,8 +1,5 @@
 /**
- * Implements the classes needed to represent the ASTs (abstract syntax
- * trees) required by the LDF parser. Some design aspects are not
- * definitively chosen (subject to change).
- *
- * @author Cristian Harja
+ * Classes for building the <b>Abstract Syntax Tree</b>. Some design
+ * aspects are subject to change.
  */
 package ldf.parser.ast;

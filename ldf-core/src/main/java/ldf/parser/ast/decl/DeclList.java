@@ -1,10 +1,11 @@
 package ldf.parser.ast.decl;
 
 import ldf.parser.Util.ListBuilder;
+import ldf.parser.ast.AstNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
 
 /**
@@ -14,14 +15,15 @@ import java.util.List;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class DeclList {
+@ThreadSafe
+public final class DeclList extends AstNode {
 
     @Nonnull
     private List<Declaration> items;
 
     private DeclList(@Nonnull List<Declaration> items) {
         this.items = items;
+        addAstChildren(items);
     }
 
     @Nonnull

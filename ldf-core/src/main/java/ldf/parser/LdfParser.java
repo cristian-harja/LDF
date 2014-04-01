@@ -3,6 +3,8 @@ package ldf.parser;
 import ldf.java_cup.runtime.*;
 import ldf.parser.gen.Lexer;
 import ldf.parser.gen.parser;
+import ldf.parser.st.*;
+import ldf.parser.st.TokenFactory;
 
 import java.io.*;
 

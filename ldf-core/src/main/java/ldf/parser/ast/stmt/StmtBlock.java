@@ -1,11 +1,8 @@
 package ldf.parser.ast.stmt;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
-
-import static java.util.Collections.unmodifiableList;
-import static ldf.parser.Util.ListBuilder;
 
 /**
  * A list of statements, within a pair of brackets (ex: {@code { ... }} ).
@@ -13,35 +10,22 @@ import static ldf.parser.Util.ListBuilder;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class StmtBlock implements Statement {
+@ThreadSafe
+public final class StmtBlock extends Statement {
 
     @Nonnull
-    private List<Statement> statements;
+    private StmtList list;
 
     public StmtBlock(@Nonnull StmtList list) {
-        this(list.getItems());
+        this.list = list;
+        addAstChildren(list);
     }
 
-    private StmtBlock(@Nonnull List<Statement> stmts) {
-        statements = unmodifiableList(stmts);
-    }
+    private StmtBlock() {}
 
     @Nonnull
     public List<Statement> getStatements() {
-        return statements;
+        return list.getItems();
     }
 
-    /**
-     * Builds {@link StmtBlock} objects.
-     */
-    public static class Builder extends ListBuilder<Statement, Builder>{
-
-        @Nonnull
-        public StmtBlock build() {
-            assertNotBuilt();
-            return new StmtBlock(buildList());
-        }
-
-    }
 }

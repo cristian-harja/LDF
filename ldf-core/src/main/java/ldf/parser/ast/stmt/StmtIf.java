@@ -4,15 +4,15 @@ import ldf.parser.ast.expr.Expression;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * {@code if} statement.
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class StmtIf implements Statement {
+@ThreadSafe
+public final class StmtIf extends Statement {
     @Nonnull
     private Expression exprCond;
 
@@ -30,6 +30,7 @@ public final class StmtIf implements Statement {
         this.exprCond = exprCond;
         this.stmtThen = stmtThen;
         this.stmtElse = stmtElse;
+        addAstChildren(exprCond, stmtThen, stmtElse);
     }
 
     @Nonnull

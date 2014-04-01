@@ -1,7 +1,5 @@
 package ldf.parser.ast.bnf;
 
-import javax.annotation.concurrent.Immutable;
-
 /**
  * <p>Common interface for BNF "atoms", which are the kernel of {@link
  * BnfItem BnfItem}s. These are, in turn, the building blocks of BNF
@@ -31,7 +29,6 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
-@Immutable
 public interface BnfAtom {
     /**
      * Returns a value indicating the actual type of this atom object.

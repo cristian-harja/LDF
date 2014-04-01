@@ -1,6 +1,4 @@
 /**
- * This package contains generated code of the LDF parser.
- *
- * @author Cristian Harja
+ * Generated code for the LDF parser.
  */
 package ldf.parser.gen;

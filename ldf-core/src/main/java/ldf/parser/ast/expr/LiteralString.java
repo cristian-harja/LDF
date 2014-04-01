@@ -6,6 +6,7 @@ import ldf.parser.ast.bnf.BnfAtomType;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,9 +20,9 @@ import static java.util.Collections.unmodifiableList;
  *
  * @author Cristian Harja
  */
-@Immutable
-public final class LiteralString implements ExprLiteral, BnfAtom
-{
+@ThreadSafe
+public final class LiteralString extends ExprLiteral
+        implements BnfAtom {
     @Nonnull
     private List<Fragment> frags;
 
