@@ -39,7 +39,7 @@ import java.util.ListIterator;
  */
 @NotThreadSafe
 @SuppressWarnings("unused")
-public class StNode extends Symbol implements Collection<StNode> {
+public class StNode extends Symbol implements Iterable<StNode> {
 
     // Implementing a tree (with descendants in a linked list):
 
@@ -165,49 +165,6 @@ public class StNode extends Symbol implements Collection<StNode> {
         leafR.root = this;
 
         super.setLeftRightSymbols(l, r);
-    }
-
-    /**
-     * Detaches this node from its parent (if any).
-     *
-     * @return whether this node had a parent
-     */
-    public boolean orphan() {
-        if (parent == null) {
-            return false;
-        }
-        StNode prev = siblingL;
-        StNode next = siblingR;
-        if (prev == null) {
-            parent.childL = next;
-            if (next != null) {
-                next.siblingL = null;
-            }
-        }
-        if (next == null) {
-            parent.childR = prev;
-            if (prev != null) {
-                prev.siblingR = null;
-            }
-        }
-        if (parent.leafL == this) {
-            parent.leafL = next;
-        }
-        if (parent.leafR == this) {
-            parent.leafR = prev;
-        }
-        --parent.numChildren;
-        parent = null;
-        root = null;
-
-        return true;
-    }
-
-    @Override
-    public boolean remove(Object o) {
-        if (!contains(o)) return false;
-        ((StNode)o).orphan(); // assert this
-        return true;
     }
 
     public boolean isLeafNode() {
@@ -369,47 +326,7 @@ public class StNode extends Symbol implements Collection<StNode> {
         return true;
     }
 
-    public boolean addAll(@Nonnull Collection<? extends StNode> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean removeAll(@Nonnull Collection<?> c) {
-        boolean modified = false;
-        for (Object o: c) {
-            if (remove(o)) {
-                modified = true;
-            }
-        }
-        return modified;
-    }
-
-    @Override
-    public boolean retainAll(@Nonnull Collection<?> c) {
-        boolean modified = false;
-        for (Object o: c) {
-            if (o instanceof StNode &&
-                    ((StNode) o).parent != this) {
-                ((StNode) o).orphan();
-                modified = true;
-            }
-        }
-        return modified;
-    }
-
-    @Override
-    public void clear() {
-        StNode node = childL;
-        while (node != null) {
-            node.parent = null;
-            node = node.siblingR;
-        }
-        childL = null;
-        childR = null;
-        numChildren = 0;
-    }
-
     @Nonnull
-    @Override
     public Object[] toArray() {
         return toArray_(new StNode[numChildren]);
     }
@@ -430,11 +347,6 @@ public class StNode extends Symbol implements Collection<StNode> {
         }
 
         return toArray_(a);
-    }
-
-    @Override
-    public boolean add(StNode node) {
-        throw new UnsupportedOperationException();
     }
 
     private class StIterator implements ListIterator<StNode> {
@@ -485,7 +397,7 @@ public class StNode extends Symbol implements Collection<StNode> {
 
         @Override
         public void remove() {
-            next.orphan();
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -547,7 +459,7 @@ public class StNode extends Symbol implements Collection<StNode> {
 
         @Override
         public void remove() {
-            next.orphan();
+            throw new UnsupportedOperationException();
         }
 
         @Override

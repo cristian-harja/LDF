@@ -3,7 +3,6 @@ package ldf.parser;
 import ldf.parser.st.StNode;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -140,45 +139,4 @@ public class StNodeTest {
         assertFalse(n123.contains(n12));
     }
 
-    @Test
-    public void orphan_test1() throws Exception {
-        StNode n1 = new StNode();
-        StNode n2 = new StNode();
-        StNode n3 = new StNode();
-        n2.setLeftRightSymbols(n3, n3);
-        n1.setLeftRightSymbols(n2, n2);
-
-        assertTrue(n3.isDescendantOf(n1));
-
-        n2.orphan();
-
-        assertFalse(n3.isDescendantOf(n1));
-
-    }
-
-    @Test
-    public void remove_test1() throws Exception {
-        StNode n0 = new StNode();
-        StNode n1 = new StNode();
-        StNode n2 = new StNode();
-        StNode n3 = new StNode();
-
-        StNode.linkTokens(n1, n2);
-        StNode.linkTokens(n2, n3);
-
-        n0.setLeftRightSymbols(n1, n3);
-
-        assertFalse(n0.remove(n0));
-        assertEquals(n0.size(), 3);
-
-        assertTrue(n0.remove(n2));
-        assertEquals(n0.size(), 2);
-
-        assertTrue(n0.remove(n1));
-        assertEquals(n0.size(), 1);
-
-        assertTrue(n0.remove(n3));
-        assertEquals(n0.size(), 0);
-
-    }
 }

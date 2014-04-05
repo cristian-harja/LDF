@@ -1,56 +1,149 @@
 package ldf.parser;
 
-import ldf.java_cup.runtime.*;
+import ldf.java_cup.runtime.LocationAwareEntity;
+import ldf.java_cup.runtime.Scanner;
+import ldf.java_cup.runtime.Symbol;
+import ldf.java_cup.runtime.TokenFactory;
+import ldf.parser.ast.AstNode;
 import ldf.parser.gen.Lexer;
 import ldf.parser.gen.parser;
-import ldf.parser.st.*;
-import ldf.parser.st.TokenFactory;
+import ldf.parser.inspect.InspectionSet;
+import ldf.parser.inspect.Result;
+import ldf.parser.st.LdfTokenFactory;
+import ldf.parser.st.StNode;
+import ldf.parser.st.StNodeFactory;
+import ldf.parser.syntax.BnfQuantifierCheck;
+import ldf.parser.syntax.BnfQuantifierOnActionCheck;
+import ldf.parser.util.StreamRecorder;
+import ldf.parser.util.SubSequenceImpl;
 
+import javax.annotation.Nonnull;
 import java.io.*;
+import java.security.InvalidParameterException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * @author Cristian Harja
  */
-@SuppressWarnings("unused")
-public class LdfParser {
+public final class LdfParser implements Context {
 
-    private Reader _input;
+    private boolean syntaxTree;
+    private boolean recordInput;
 
-    private boolean createSyntaxTree;
+    private CharSequence recordedInput;
+    private Reader reader;
+    private parser parser;
 
     private boolean parsed;
-    private Symbol parseResult;
+    private boolean success;
     private Exception parseError;
 
-    public LdfParser(Reader isr) {
-        _input = isr;
+    private StNode  stRoot;
+    private AstNode astRoot;
+
+    private String fileName;
+
+    private SortedSet<Result> results =
+            new TreeSet<Result>(Result.COMPARATOR);
+
+    private SortedSet<Result> readOnlyResults =
+            Collections.unmodifiableSortedSet(results);
+
+    public LdfParser(LdfParserSettings settings)
+            throws FileNotFoundException {
+        initInputMethod(settings);
+        initParser(settings);
     }
 
-    public LdfParser(InputStream in) {
-        this(new InputStreamReader(in));
+    private void initInputMethod(LdfParserSettings settings)
+            throws FileNotFoundException {
+
+        recordInput = settings.recordInput;
+
+        if (settings.inputString != null) {
+            reader = new StringReader(settings.inputString);
+            if (recordInput) {
+                recordedInput = new SubSequenceImpl(settings.inputString);
+            }
+        } else {
+            if (settings.inputReader != null) {
+                reader = settings.inputReader;
+            } else if (settings.inputStream != null) {
+                reader = new InputStreamReader(settings.inputStream);
+            } else if (settings.inputFile != null) {
+                reader = new FileReader(settings.inputFile);
+            } else {
+                throw new InvalidParameterException(
+                        "No input method provided"
+                );
+            }
+            if (recordInput) {
+                StreamRecorder rec;
+                if (settings.inputFile != null) {
+                    long len = settings.inputFile.length();
+                    rec = new StreamRecorder(reader,
+                            (int) Math.min(len, 1024 * 1024)
+                    );
+                } else {
+                    rec = new StreamRecorder(reader);
+                }
+                reader = rec;
+                recordedInput = rec;
+            }
+        }
+
+        if (settings.fileName != null) {
+            fileName = settings.fileName;
+        } else if (settings.inputFile != null) {
+            fileName = settings.inputFile.getAbsolutePath();
+        } else {
+            fileName = null;
+        }
     }
 
-    public LdfParser(File file) throws FileNotFoundException {
-        this(new FileInputStream(file));
+    private void initParser(LdfParserSettings settings) {
+
+        syntaxTree = settings.syntaxTree;
+
+        TokenFactory symbolFactory = syntaxTree
+                ? new StNodeFactory()
+                : new LdfTokenFactory();
+
+        Scanner scanner = new Lexer(reader, symbolFactory);
+
+        parser  = new parser(scanner, symbolFactory);
+
     }
 
-    public LdfParser(String inputString) {
-        this(new StringReader(inputString));
+    /**
+     * If {@code recordInput} was set to {@code true}, this method
+     * retrieves a portion of the input text (which was recorder directly
+     * from the parser's input).
+     */
+    public CharSequence getRecordedText(@Nonnull LocationAwareEntity loc) {
+        return recordInput ? recordedInput.subSequence(
+                loc.getOffsetL(), loc.getOffsetR()
+        ) : null;
     }
 
-    protected void parse() {
+    /**
+     * Perform
+     */
+    public synchronized void parseInput() {
         if (parsed) {
             return;
         }
         try {
-            ldf.java_cup.runtime.TokenFactory tf;
-            tf = createSyntaxTree
-                    ? new TokenFactory()
-                    : new TokenFactoryImpl()
-            ;
-            Scanner s = new Lexer(_input, tf);
-            parser  p = new parser(s, tf);
-            parseResult = p.parse();
+            Symbol parseResult;
+            parseResult = parser.parse(); // invoke the parser
+            astRoot = (AstNode) parseResult.value;
+            if (syntaxTree) {
+                stRoot = (StNode) parseResult;
+            }
+            success = true;
         } catch (Exception e) {
             e.printStackTrace();
             parseError = e;
@@ -59,27 +152,69 @@ public class LdfParser {
         }
     }
 
+    /**
+     * Currently, the LALR(1) parser throws an exception when the input
+     * can't be parsed. This should be fixed soon.
+     */
     public Exception getParseError() {
-        parse();
+        parseInput();
         return parseError;
     }
 
-    public Object getParseResult() {
-        parse();
-        return parseResult != null ? parseResult.value : null;
+    /**
+     * If the parser completed successfully, returns the root AST node.
+     */
+    public AstNode getAbstractSyntaxTree() {
+        parseInput();
+        return astRoot;
     }
 
+    /**
+     * If the parser completed successfully, returns the root ST node.
+     */
     public StNode getSyntaxTree() {
-        parse();
-        return createSyntaxTree ? (StNode) parseResult : null;
+        parseInput();
+        return stRoot;
     }
 
-    public void setCreateSyntaxTree(boolean createSyntaxTree) {
-        if (parsed) {
-            throw new IllegalStateException(
-                    "Input already parsed"
-            );
+    /**
+     * Runs the LALR(1) parser and runs a couple of inspections over the
+     * AST nodes.
+     */
+    public void syntaxCheck() {
+        parseInput();
+        if (!success) {
+            return;
         }
-        this.createSyntaxTree = createSyntaxTree;
+
+        @SuppressWarnings("ALL")
+        InspectionSet<AstNode> inspections = new InspectionSet<AstNode>();
+
+        inspections.addAll(Arrays.asList(
+                BnfQuantifierCheck.getInstance(),
+                BnfQuantifierOnActionCheck.getInstance()
+        ));
+
+        inspections.runAllOnIterator(this, astRoot.findAllByDFS(null));
+
     }
+
+    @Override
+    public void report(@Nonnull Result result) {
+        results.add(result);
+    }
+
+    /**
+     * @return a list of errors/warnings, sorted by their position in the
+     *         input
+     */
+    public SortedSet<Result> getResults() {
+        return readOnlyResults;
+    }
+
+    @Override
+    public String getFilename() {
+        return fileName;
+    }
+
 }

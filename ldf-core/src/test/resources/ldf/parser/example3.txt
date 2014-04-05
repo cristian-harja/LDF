@@ -1,0 +1,32 @@
+/*
+    This example is used to test our syntactic validation feature.
+    We are looking to catch as many errors / warnings as possible.
+*/
+grammar Example3: Example1, Example1, Example2, Example3 {
+
+    nterm func_decl
+        ::= name@IDENTIFIER '(' [IDENTIFIER, ','] {3,2} ')'
+        ;
+
+    nterm action_quantifier
+        ::= a {0}   // error: 0 not acceptable
+        |   b {,0}  // error: 0 not acceptable
+        |   c {0,}  // warning: can be replaced with *
+        |   d {0,1} // warning: can be replaced with ?
+        |   e {,1}  // warning: can be replaced with ?
+        |   f {1,}  // warning: can be replaced with +
+        |   g {1}   // warning: {1} can be omitted
+        |   h {1,1} // warning: {1,1} can be omitted
+        |   i {2,2} // warning: can be replaced with {2}
+        |   j {2,1} // error: 2 > 1
+        |   k ?
+        |   l *
+        |   m +
+        |   {: something(); :} + // error: quantifier not allowed
+        |   {? true ?} ?         // error: quantifier not allowed
+        |   {@placeholder} *     // error: quantifier not allowed
+    where
+        @placeholder = {@placeholder}          // circular reference
+        @placeholder = {: /* some action */ :} // duplicate definition
+    ;
+}

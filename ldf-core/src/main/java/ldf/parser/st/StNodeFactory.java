@@ -1,13 +1,11 @@
 package ldf.parser.st;
 
 import ldf.java_cup.runtime.Symbol;
-import ldf.java_cup.runtime.TokenFactoryImpl;
-import ldf.parser.ast.AstNode;
 
 /**
  * @author Cristian Harja
  */
-public class TokenFactory extends TokenFactoryImpl {
+public class StNodeFactory extends LdfTokenFactory {
 
     private StNode lastToken;
 
@@ -16,45 +14,6 @@ public class TokenFactory extends TokenFactoryImpl {
             String symName, int symCode, int parse_state
     ) {
         return new StNode(symName, symCode, parse_state);
-    }
-
-    private Symbol addAstBackReference(Symbol sym) {
-        Object value = sym.value;
-        if (value instanceof AstNode) {
-            AstNode astNode = ((AstNode) value);
-            if (astNode.getStNode() == null) {
-                astNode.setStNode(sym);
-            }
-        }
-        return sym;
-    }
-
-    @Override
-    public Symbol newSymbol(
-            String name, int id,
-            Symbol left, Symbol right,
-            Object value
-    ) {
-        return addAstBackReference(super.newSymbol(
-                name, id, left, right, value
-        ));
-    }
-
-    @Override
-    public Symbol newSymbol(String name, int id, Object value) {
-        return addAstBackReference(super.newSymbol(
-                name, id, value
-        ));
-    }
-
-    @Override
-    public Symbol newEmptySymbol(
-            String name, int id,
-            Symbol previousSymbol, Object value
-    ) {
-        return addAstBackReference(super.newEmptySymbol(
-                name, id, previousSymbol, value
-        ));
     }
 
     @Override

@@ -69,7 +69,7 @@
         <cup
                 srcfile="src/test/cup/test3.cup"
                 interface="on"
-                destdir="${gen_cup}"
+                destdir="${test_gen_cup}"
                 parser="parser"
                 symbols="sym"
                 quiet="false"
@@ -79,7 +79,7 @@
 
         <jflex
                 file="src/test/flex/test3.jflex"
-                destdir="${gen_flex}"/>
+                destdir="${test_gen_flex}"/>
 
     </target>
 

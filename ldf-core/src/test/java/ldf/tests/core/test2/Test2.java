@@ -3,7 +3,7 @@ package ldf.tests.core.test2;
 import ldf.java_cup.runtime.Scanner;
 import ldf.java_cup.runtime.Symbol;
 import ldf.parser.st.StNode;
-import ldf.parser.st.TokenFactory;
+import ldf.parser.st.StNodeFactory;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class Test2 {
 
-    static class MyTokenFactory extends TokenFactory {
+    static class MyTokenFactory extends StNodeFactory {
         @Override
         protected Symbol newSymbol(
                 String symName, int symCode, int parse_state
@@ -41,7 +41,7 @@ public class Test2 {
     }
 
     private parser newParser(String resource) {
-        TokenFactory tf = new MyTokenFactory();
+        StNodeFactory tf = new MyTokenFactory();
         InputStream in = getClass().getResourceAsStream(resource);
         InputStreamReader isr = new InputStreamReader(in);
         Scanner scanner = new Lexer(isr, tf);
