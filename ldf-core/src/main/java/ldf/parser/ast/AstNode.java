@@ -104,6 +104,60 @@ public abstract class AstNode implements Iterable<AstNode> {
         return astParent;
     }
 
+    /**
+     * Looks for a parent node with the given type.
+     *
+     * @param maxDistance maximum distance to go searching (a negative
+     *        value means any distance). If zero, it always returns null.
+     */
+    @SuppressWarnings("unchecked")
+    public final <T> T getParentOfType(
+            @Nonnull Class<T> type,
+            int maxDistance
+    ) {
+        AstNode cursor = this;
+        while (maxDistance-- != 0) {
+            cursor = cursor.astParent;
+            if (cursor == null) {
+                break;
+            }
+            if (type.isAssignableFrom(cursor.getClass())) {
+                return (T) cursor;
+            }
+        }
+        return null;
+    }
+
+    public final <T> T getParentOfType(@Nonnull Class<T> type) {
+        return getParentOfType(type, -1);
+    }
+
+    public final boolean hasParentOfType(@Nonnull Class<?> type) {
+        return getParentOfType(type) != null;
+    }
+
+    public final boolean hasParentOfType(
+            @Nonnull Class<?> type,
+            int maxDistance
+    ) {
+        return getParentOfType(type, maxDistance) != null;
+    }
+
+    /**
+     * @return whether the node given as argument is a descendant of the
+     *         current node
+     */
+    public final boolean hasDescendant(@Nonnull AstNode child) {
+        AstNode cursor = child;
+        while (cursor != null) {
+            cursor = cursor.astParent;
+            if (cursor == this) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public final AstNode getAstSiblingL() {
         return astSiblingL;
     }

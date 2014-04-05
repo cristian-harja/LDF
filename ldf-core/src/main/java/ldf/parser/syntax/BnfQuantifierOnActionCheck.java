@@ -16,9 +16,9 @@ import javax.annotation.Nonnull;
  * @author Cristian Harja
  */
 public final class BnfQuantifierOnActionCheck
-        extends Inspection<BnfAbstractAction> {
+        extends Inspection<Context, BnfAbstractAction> {
 
-    private static BnfQuantifierOnActionCheck
+    private static final BnfQuantifierOnActionCheck
             instance = new BnfQuantifierOnActionCheck();
 
     protected BnfQuantifierOnActionCheck() {
@@ -30,7 +30,7 @@ public final class BnfQuantifierOnActionCheck
     }
 
     @Override
-    protected boolean filter(@Nonnull BnfAbstractAction obj) {
+    protected boolean filter(Context ctx, @Nonnull BnfAbstractAction obj) {
         AstNode parent = obj.getAstParent();
         return parent != null && parent instanceof BnfItem;
     }

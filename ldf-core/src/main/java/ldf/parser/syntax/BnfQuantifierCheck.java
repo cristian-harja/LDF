@@ -13,9 +13,9 @@ import javax.annotation.Nonnull;
  * @author Cristian Harja
  */
 public final class BnfQuantifierCheck
-        extends Inspection<BnfQuantifier> {
+        extends Inspection<Context, BnfQuantifier> {
 
-    private static BnfQuantifierCheck
+    private static final BnfQuantifierCheck
             instance = new BnfQuantifierCheck();
 
     private BnfQuantifierCheck() {

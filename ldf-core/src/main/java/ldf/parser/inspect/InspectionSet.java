@@ -17,7 +17,7 @@ import static ldf.parser.Util.NATIVE_HASH_COMPARATOR;
  */
 @ParametersAreNonnullByDefault
 public final class InspectionSet<T>
-        extends TreeSet<Inspection<? extends T>>{
+        extends TreeSet<Inspection<Context, ? extends T>>{
 
     public InspectionSet() {
         super(NATIVE_HASH_COMPARATOR);
@@ -34,7 +34,7 @@ public final class InspectionSet<T>
         while (it.hasNext()) {
             T obj = it.next();
 
-            for (Inspection i: this) {
+            for (Inspection<Context, ?> i: this) {
                 i.run(ctx, obj);
             }
         }

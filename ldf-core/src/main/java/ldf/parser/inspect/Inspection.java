@@ -1,7 +1,5 @@
 package ldf.parser.inspect;
 
-import ldf.parser.Context;
-
 import javax.annotation.Nonnull;
 
 /**
@@ -14,11 +12,12 @@ import javax.annotation.Nonnull;
  * object. If it is, then the {@code protected abstract} {@link #inspect}
  * method is called to analyze the object.</p>
  *
- * @param <TargetT> the type of objects targeted bu this inspection
+ * @param <ContextT> the type of the context variable that gets passed
+ * @param <TargetT> the type of objects targeted by this inspection
  *
  * @author Cristian Harja
  */
-public abstract class Inspection<TargetT> {
+public abstract class Inspection<ContextT, TargetT> {
 
     private final Class<TargetT> clazz;
 
@@ -39,10 +38,10 @@ public abstract class Inspection<TargetT> {
      * @return whether the inspection has been executed
      */
     @SuppressWarnings("unchecked")
-    public final boolean run(@Nonnull Context ctx, @Nonnull Object obj) {
+    public final boolean run(ContextT ctx, @Nonnull Object obj) {
         if (clazz.isAssignableFrom(obj.getClass())) {
             TargetT checked = (TargetT) obj;
-            return filter(checked) && inspect(ctx, checked);
+            return filter(null, checked) && inspect(ctx, checked);
         } else {
             return false;
         }
@@ -53,7 +52,9 @@ public abstract class Inspection<TargetT> {
      * objects which are irrelevant to this inspection. By returning
      * {@code false}, they won't be passed to the {@link #inspect} method.
      */
-    protected boolean filter(@Nonnull TargetT obj) { return true; }
+    protected boolean filter(ContextT ctx, @Nonnull TargetT obj) {
+        return true;
+    }
 
     /**
      * Performs the actual inspection, passing its results (0 or more) to
@@ -65,8 +66,5 @@ public abstract class Inspection<TargetT> {
      * @return whether the inspection has been executed (it can still skip
      *         objects which were not {@link #filter filter()}ed out)
      */
-    protected abstract boolean inspect(
-            @Nonnull Context ctx,
-            @Nonnull TargetT obj
-    );
+    protected abstract boolean inspect(ContextT ctx, @Nonnull TargetT obj);
 }

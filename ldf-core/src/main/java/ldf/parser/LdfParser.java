@@ -130,7 +130,7 @@ public final class LdfParser implements Context {
     }
 
     /**
-     * Perform
+     * Runs the LALR(1) parser (which backs the LDF parser).
      */
     public synchronized void parseInput() {
         if (parsed) {
