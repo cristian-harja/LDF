@@ -1,5 +1,7 @@
 package ldf.parser.ast.stmt;
 
+import ldf.parser.ast.decl.DeclFunction;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
@@ -28,4 +30,8 @@ public final class StmtBlock extends Statement {
         return list.getItems();
     }
 
+    @Override
+    public boolean hasOwnScope() {
+        return getAstParent() instanceof DeclFunction;
+    }
 }

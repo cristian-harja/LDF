@@ -1,6 +1,8 @@
 package ldf.parser.gen;
 import ldf.java_cup.runtime.TokenFactory;
 import ldf.java_cup.runtime.Symbol;
+import ldf.parser.ast.AstNode;
+import ldf.parser.ast.expr.LiteralString;
 
 import java.io.Reader;
 import java.io.IOException;
@@ -45,6 +47,10 @@ import java.util.Map;
             yycolumn + 1,
             yychar
         );
+
+        if (value instanceof AstNode) {
+            ((AstNode)value).setSymbol(tok);
+        }
 
         tok.value = value;
         return tok;
@@ -108,9 +114,14 @@ import java.util.Map;
     }
 
     private Symbol symbolBoolean(boolean value) {
-        return symbol(BOOLEAN, Boolean.valueOf(value));
+        return symbol(BOOLEAN, value);
     }
 
+    private Symbol symbolStringFragment(boolean valid) {
+        return symbol(STRING_FRAGMENT,
+                new LiteralString.Fragment(yytext(), valid)
+        );
+    }
 
 %}
 
@@ -246,21 +257,21 @@ InvalidTokens = {LiteralInvalidInt}|{IdentifierInvalid}
 }
 
 <YYCHARACTER> {
-    (\"|{StrChar})*      { return symbol(STRING_FRAGMENT);      }
+    (\"|{StrChar})*      { return symbolStringFragment(true);   }
     \'                   { yybegin(YYINITIAL);
                            return symbol(CHAR_END);
                          }
 }
 
 <YYSTRING> {
-    (\'|{StrChar})*     { return symbol(STRING_FRAGMENT);       }
+    (\'|{StrChar})*     { return symbolStringFragment(true);   }
     \"                  { yybegin(YYINITIAL);
                           return symbol(STRING_END);
                         }
 }
 
 <YYCHARACTER, YYSTRING> {
-    \\.                 { return symbol(INVALID_ESCAPE_SEQ);    }
+    \\.                 { return symbolStringFragment(false);  }
 }
 
 /* error fallback */

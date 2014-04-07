@@ -61,12 +61,17 @@ public final class DeclWhereClause extends AstNode {
         return duplicates;
     }
 
+    @Override
+    public boolean hasOwnScope() {
+        return true;
+    }
+
     /**
-     * An entry in the {@code where} clause. Example usage: {@code {@label}
+     * An entry in the {@code where} clause. Example usage: {@code @label
      * = {: ... :} }.
      */
     @Immutable
-    public static class Entry extends AstNode {
+    public static final class Entry extends AstNode {
         @Nonnull
         private AstIdentifier identifier;
 
@@ -79,11 +84,11 @@ public final class DeclWhereClause extends AstNode {
         ) {
             this.identifier = identifier;
             this.action = action;
-            addAstChildren(action);
+            addAstChildren((AstNode)action);
         }
 
         @Nonnull
-        public AstIdentifier getIdentifier() {
+        public AstIdentifier getId() {
             return identifier;
         }
 

@@ -1,6 +1,6 @@
 package ldf.parser.ast.bnf;
 
-import ldf.parser.ast.expr.ExprReference;
+import ldf.parser.ast.Reference;
 import ldf.parser.ast.expr.LiteralString;
 
 /**
@@ -13,7 +13,7 @@ import ldf.parser.ast.expr.LiteralString;
 public enum BnfAtomType {
 
     /**
-     * @see ExprReference
+     * @see Reference
      */
     REFERENCE,
 

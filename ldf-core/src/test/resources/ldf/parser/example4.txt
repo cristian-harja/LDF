@@ -1,0 +1,62 @@
+grammar Example4a {
+
+    nterm expr ::= _@expr_add;
+
+    nterm expr_add
+        ::= [v@expr_multiply, op@('+'|'-')]+
+        {:
+            var i, n, value = op[0];
+            for (i = 1, n = v.length; i < n; ++i) {
+                switch (op[i]) {
+                case '+':
+                    value = value + v[i];
+                    break;
+
+                case '-':
+                    value = value - v[i];
+                    break;
+                }
+            }
+        :}
+    ;
+
+    nterm expr_multiply
+        ::= {@decl}
+            [v@expr_primary, op@('*'|'%'|'/')]+
+            {@action}
+    where
+        @decl = {: var i, n, value; :}
+        @action = {:
+            value = op[0];
+            for (i = 1, n = op.length; i < n; ++i) {
+                switch (op[i]) {
+                case '*': value = value * v[i]; break;
+                case '%': value = value % v[i]; break;
+                case '/': value = value / v[i]; break;
+                }
+            }
+        :}
+    ;
+
+}
+
+grammar Example4b : Example4a {
+
+    nterm expr_primary
+        ::= _@INT
+        |   '(' _@expr ')'
+        |   '-' e@expr      {: return -e; :}
+        |   '+' _@expr
+        |   _@fn_call
+    ;
+
+    nterm fn_call
+        ::= id@ID '(' [args@expr, ',']+ ')'
+        {:
+            __external.call(id, args);
+        :}
+    ;
+
+
+
+}

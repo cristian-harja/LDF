@@ -1,6 +1,8 @@
 package ldf.parser.ast.bnf;
 
 import ldf.parser.ast.AstIdentifier;
+import ldf.parser.ast.decl.Declaration;
+import ldf.parser.decl.SymbolType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
@@ -12,16 +14,17 @@ import javax.annotation.concurrent.ThreadSafe;
  * @author Cristian Harja
  */
 @ThreadSafe
-public final class BnfPlaceholder extends BnfAbstractAction {
+public final class BnfPlaceholder extends Declaration
+        implements BnfAbstractAction{
 
     @Nonnull
-    private AstIdentifier label;
+    private AstIdentifier id;
 
     /**
      * @param label the name of this placeholder
      */
     public BnfPlaceholder(@Nonnull AstIdentifier label) {
-        this.label = label;
+        this.id = label;
         addAstChildren(label);
     }
 
@@ -29,8 +32,8 @@ public final class BnfPlaceholder extends BnfAbstractAction {
      * @return name of this placeholder
      */
     @Nonnull
-    public AstIdentifier getLabel() {
-        return label;
+    public AstIdentifier getId() {
+        return id;
     }
 
     /**
@@ -39,5 +42,20 @@ public final class BnfPlaceholder extends BnfAbstractAction {
     @Override
     public final BnfAtomType getBnfAtomType() {
         return BnfAtomType.PLACEHOLDER;
+    }
+
+    @Nonnull
+    @Override
+    public AstIdentifier getDeclaredSymbolName() {
+        return getId();
+    }
+
+    /**
+     * @return {@link SymbolType#PLACEHOLDER}
+     */
+    @Nonnull
+    @Override
+    public SymbolType getDeclaredSymbolType() {
+        return SymbolType.PLACEHOLDER;
     }
 }

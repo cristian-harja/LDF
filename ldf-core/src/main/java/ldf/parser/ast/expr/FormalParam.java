@@ -1,8 +1,9 @@
 package ldf.parser.ast.expr;
 
 import ldf.parser.ast.AstIdentifier;
-import ldf.parser.ast.AstNode;
 import ldf.parser.ast.TypeExpression;
+import ldf.parser.ast.decl.Declaration;
+import ldf.parser.decl.SymbolType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,7 +17,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @author Cristian Harja
  */
 @ThreadSafe
-public final class FormalParam extends AstNode {
+public final class FormalParam extends Declaration {
 
     @Nonnull
     private AstIdentifier identifier;
@@ -25,21 +26,36 @@ public final class FormalParam extends AstNode {
     private TypeExpression type;
 
     public FormalParam(
-            @Nonnull AstIdentifier identifier,
+            @Nonnull AstIdentifier name,
             @Nullable TypeExpression type
     ) {
-        this.identifier = identifier;
+        this.identifier = name;
         this.type = type;
-        addAstChildren(identifier, type);
+        addAstChildren(name, type);
     }
 
     @Nonnull
-    public AstIdentifier getIdentifier() {
+    public AstIdentifier getId() {
         return identifier;
     }
 
     @Nullable
     public TypeExpression getType() {
         return type;
+    }
+
+    @Nonnull
+    @Override
+    public AstIdentifier getDeclaredSymbolName() {
+        return getId();
+    }
+
+    /**
+     * @return {@link SymbolType#FUNCTION_FORMAL_PARAM}
+     */
+    @Nonnull
+    @Override
+    public SymbolType getDeclaredSymbolType() {
+        return SymbolType.FUNCTION_FORMAL_PARAM;
     }
 }

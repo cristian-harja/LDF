@@ -13,6 +13,7 @@ import javax.annotation.concurrent.Immutable;
  *
  * @author Cristian Harja
  */
+@SuppressWarnings({"UnusedParameters", "BooleanMethodIsAlwaysInverted"})
 @Immutable
 public abstract class Predicate<T> {
 

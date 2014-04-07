@@ -2,6 +2,7 @@ package ldf.parser.ast.decl;
 
 import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.bnf.BnfSyntax;
+import ldf.parser.decl.SymbolType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +18,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class DeclNonTerminal extends Declaration {
     @Nonnull
-    private AstIdentifier name;
+    private AstIdentifier identifier;
 
     @Nonnull
     private BnfSyntax syntax;
@@ -26,19 +27,19 @@ public final class DeclNonTerminal extends Declaration {
     private DeclWhereClause whereClause;
 
     /**
-     * @param name name of the non-terminal
+     * @param identifier name of the non-terminal
      * @param syntax right-hand side of the declaration
      * @param whereClause optional {@code where} clause
      */
     public DeclNonTerminal(
-            @Nonnull AstIdentifier name,
+            @Nonnull AstIdentifier identifier,
             @Nonnull BnfSyntax syntax,
             @Nullable DeclWhereClause whereClause
     ) {
-        this.name = name;
+        this.identifier = identifier;
         this.syntax = syntax;
         this.whereClause = whereClause;
-        addAstChildren(name, syntax, whereClause);
+        addAstChildren(identifier, syntax, whereClause);
     }
 
     @Nonnull
@@ -52,7 +53,27 @@ public final class DeclNonTerminal extends Declaration {
     }
 
     @Nonnull
-    public AstIdentifier getName() {
-        return name;
+    public AstIdentifier getId() {
+        return identifier;
+    }
+
+    @Override
+    public boolean hasOwnScope() {
+        return true;
+    }
+
+    @Nonnull
+    @Override
+    public AstIdentifier getDeclaredSymbolName() {
+        return getId();
+    }
+
+    /**
+     * @return {@link SymbolType#NTERM}
+     */
+    @Nonnull
+    @Override
+    public SymbolType getDeclaredSymbolType() {
+        return SymbolType.NTERM;
     }
 }

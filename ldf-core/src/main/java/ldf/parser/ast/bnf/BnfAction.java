@@ -1,5 +1,6 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ast.AstNode;
 import ldf.parser.ast.stmt.StmtList;
 
 import javax.annotation.Nonnull;
@@ -13,7 +14,8 @@ import javax.annotation.concurrent.ThreadSafe;
  * @author Cristian Harja
  */
 @ThreadSafe
-public final class BnfAction extends BnfAbstractAction {
+public final class BnfAction extends AstNode
+    implements BnfAbstractAction {
 
     @Nonnull
     private StmtList stmtList;

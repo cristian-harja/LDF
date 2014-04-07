@@ -2,6 +2,7 @@ package ldf.parser.ast;
 
 import ldf.java_cup.runtime.Symbol;
 import ldf.parser.Util;
+import ldf.parser.decl.Scope;
 import ldf.parser.util.Predicate;
 
 import javax.annotation.Nonnull;
@@ -41,8 +42,8 @@ public abstract class AstNode implements Iterable<AstNode> {
     private AstNode astSiblingL;
     private AstNode astSiblingR;
 
-    private final Map<Object, Object> extraInfo = synchronizedMap(
-            new TreeMap<Object, Object>(Util.NATIVE_HASH_COMPARATOR));
+    private Scope ownScope, nearestScope;
+    private Map<Object, Object> extraInfo;
 
     /**
      * Retrieves extra information associated with this node.
@@ -50,7 +51,7 @@ public abstract class AstNode implements Iterable<AstNode> {
      * chosen by whichever class originated that information.
      */
     public final Object getExtra(Object key) {
-        return extraInfo.get(key);
+        return getExtraInfo().get(key);
     }
 
     /**
@@ -59,7 +60,7 @@ public abstract class AstNode implements Iterable<AstNode> {
      * chosen by whichever class originated that information.
      */
     public final Object putExtra(Object key, Object value) {
-        return extraInfo.put(key, value);
+        return getExtraInfo().put(key, value);
     }
 
     /**
@@ -67,6 +68,17 @@ public abstract class AstNode implements Iterable<AstNode> {
      *         extra information associated with this node.
      */
     public final Map<Object, Object> getExtraInfo() {
+        if (extraInfo != null) {
+            return extraInfo;
+        }
+        synchronized (this) {
+            if (extraInfo != null) {
+                return extraInfo;
+            }
+            extraInfo = synchronizedMap(new TreeMap<Object, Object>(
+                    Util.NATIVE_HASH_COMPARATOR
+            ));
+        }
         return extraInfo;
     }
 
@@ -100,8 +112,18 @@ public abstract class AstNode implements Iterable<AstNode> {
         this.symbol = stNode;
     }
 
+    @Nullable
     public final AstNode getAstParent() {
         return astParent;
+    }
+
+    @Nonnull
+    public final AstNode assertGetAstParent() {
+        AstNode parent = astParent;
+        if (parent == null) {
+            throw new RuntimeException("assertGetAstParent() failed");
+        }
+        return parent;
     }
 
     /**
@@ -410,4 +432,44 @@ public abstract class AstNode implements Iterable<AstNode> {
 
         }
     }
+
+    /**
+     * If (an overridden version of) this method returns {@code true},
+     * {@link #initScopes} will allocate a {@link ldf.parser.decl.Scope}
+     * object for this object.
+     */
+    public boolean hasOwnScope() {
+        return false;
+    }
+
+    public final Scope getOwnScope() {
+        return ownScope; // only if hasOwnScope()
+    }
+
+    public final Scope getNearestScope() {
+        return ownScope == null ? nearestScope : ownScope;
+    }
+
+    /**
+     * Recursively initializes the scope information for this node and its
+     * descendants. This method must not be called more than once for any
+     * given node.
+     */
+    public synchronized void initScopes() {
+        if (nearestScope != null) {
+            throw new IllegalStateException(
+                    "Scope previously initialized for node"
+            );
+        }
+        if (astParent != null) {
+            nearestScope = astParent.getNearestScope();
+        }
+        if (hasOwnScope()) {
+            ownScope = new Scope(nearestScope);
+        }
+        for (AstNode node: this) {
+            node.initScopes();
+        }
+    }
+
 }

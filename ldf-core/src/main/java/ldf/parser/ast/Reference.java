@@ -1,9 +1,9 @@
-package ldf.parser.ast.expr;
+package ldf.parser.ast;
 
 import ldf.parser.Util.ListBuilder;
-import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.bnf.BnfAtom;
 import ldf.parser.ast.bnf.BnfAtomType;
+import ldf.parser.ast.expr.Expression;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -14,16 +14,15 @@ import java.util.List;
  * A "reference" is a fully qualified name (identifiers separated by dot).
  * Used in a couple of places. Subject to change.
  *
- *
  * @author Cristian Harja
  */
 @ThreadSafe
-public final class ExprReference extends Expression
+public final class Reference extends Expression
         implements BnfAtom {
     @Nonnull
     private List<AstIdentifier> path;
 
-    private ExprReference(
+    private Reference(
             @Nonnull List<AstIdentifier> path
     ) {
         this.path = path;
@@ -44,15 +43,15 @@ public final class ExprReference extends Expression
     }
 
     /**
-     * Builds {@link ExprReference} objects.
+     * Builds {@link Reference} objects.
      */
     @NotThreadSafe
     public static class Builder
             extends ListBuilder<AstIdentifier, Builder> {
 
-        public ExprReference build() {
+        public Reference build() {
             assertNotBuilt();
-            return new ExprReference(buildList());
+            return new Reference(buildList());
         }
     }
 }

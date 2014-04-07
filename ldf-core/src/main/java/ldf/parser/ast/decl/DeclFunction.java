@@ -4,6 +4,7 @@ import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.TypeExpression;
 import ldf.parser.ast.expr.FormalParamList;
 import ldf.parser.ast.stmt.StmtBlock;
+import ldf.parser.decl.SymbolType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,7 +19,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class DeclFunction extends Declaration {
 
     @Nonnull
-    private AstIdentifier name;
+    private AstIdentifier identifier;
 
     @Nonnull
     private FormalParamList args;
@@ -40,7 +41,7 @@ public final class DeclFunction extends Declaration {
             @Nonnull FormalParamList args,
             @Nullable TypeExpression type,
             @Nonnull StmtBlock body) {
-        this.name = name;
+        this.identifier = name;
         this.args = args;
         this.type = type;
         this.body = body;
@@ -48,8 +49,8 @@ public final class DeclFunction extends Declaration {
     }
 
     @Nonnull
-    public AstIdentifier getName() {
-        return name;
+    public AstIdentifier getId() {
+        return identifier;
     }
 
     @Nonnull
@@ -67,4 +68,36 @@ public final class DeclFunction extends Declaration {
         return body;
     }
 
+    @Override
+    public boolean hasOwnScope() {
+        return true;
+    }
+
+    @Nonnull
+    @Override
+    public AstIdentifier getDeclaredSymbolName() {
+        return getId();
+    }
+
+    /**
+     * @return {@link SymbolType#FUNCTION}
+     */
+    @Nonnull
+    @Override
+    public SymbolType getDeclaredSymbolType() {
+        return SymbolType.FUNCTION;
+    }
+
+    /**
+     * Overrides {@link ldf.parser.ast.AstNode#initScopes()
+     * AstNode.initScopes} in order to set the parent scope of the
+     * function body to be the scope of the formal parameters. This way
+     * the parameters become visible to the function body (even though,
+     * hierarchically, they are not above the function body in the AST).
+     */
+    @Override
+    public synchronized void initScopes() {
+        super.initScopes();
+        body.getOwnScope().setParentScope(args.getOwnScope());
+    }
 }

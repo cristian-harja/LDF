@@ -25,8 +25,16 @@ grammar Example3: Example1, Example1, Example2, Example3 {
         |   {: something(); :} + // error: quantifier not allowed
         |   {? true ?} ?         // error: quantifier not allowed
         |   {@placeholder} *     // error: quantifier not allowed
+        |   label@{@placeholder} // error: label not allowed
     where
         @placeholder = {@placeholder}          // circular reference
         @placeholder = {: /* some action */ :} // duplicate definition
+    ;
+
+    nterm strings
+        ::= "The\x20quick\u0020brown fox\x0c"
+        |   "jumps over the\n"
+        |   "lazy dog.\f\r\n\t"
+        |   "\bad"                  // illegal escape sequence "\b"
     ;
 }

@@ -17,9 +17,8 @@ terminal Boolean BOOLEAN;
 terminal
     STRING_BEGIN, STRING_END, CHAR_BEGIN, CHAR_END;
 
-terminal String
-    STRING_FRAGMENT,
-    INVALID_ESCAPE_SEQ;
+terminal LiteralString.Fragment
+    STRING_FRAGMENT;
 
 /* Keywords: */
 
@@ -63,18 +62,17 @@ non terminal BnfAbstractAction  bnf_action;
 non terminal BnfItem            bnf_item;
 non terminal BnfAtom            bnf_atom;
 non terminal BnfQuantifier      bnf_quantifier;
+non terminal BnfLabel           bnf_label;
 
 non terminal Declaration        decl;
 non terminal DeclList           decl_list;
 non terminal DeclList.Builder   decl_list_;
-non terminal DeclVars           decl_vars;
-non terminal DeclVars.Builder   decl_vars_;
 non terminal DeclVariable       decl_var__;
 non terminal DeclFunction       decl_function;
 
 non terminal DeclGrammar        decl_grammar;
 
-non terminal List<ExprReference>
+non terminal List<Reference>
     decl_grammar_extend_,
     decl_grammar_extend__;
 
@@ -88,8 +86,10 @@ non terminal StmtList.Builder stmt_list_;
 
 non terminal Statement
     stmt,
-    stmt_expr,
-    stmt_decl;
+    stmt_expr;
+
+non terminal StmtDeclLocalVars          stmt_decl_vars;
+non terminal StmtDeclLocalVars.Builder  stmt_decl_vars_;
 
 non terminal StmtBlock              stmt_block;
 non terminal StmtSwitch             stmt_switch;
@@ -120,8 +120,8 @@ non terminal Expression
     expr_7, // secondary        LTR
     expr_8; // primary          RTL
 
-non terminal ExprReference              expr_reference;
-non terminal ExprReference.Builder      expr_reference_;
+non terminal Reference                  expr_reference;
+non terminal Reference.Builder          expr_reference_;
 
 non terminal ExprList                   expr_list;
 non terminal ExprList.Builder           expr_list_;
@@ -132,15 +132,24 @@ non terminal FormalParamList.Builder    formal_params_;
 non terminal FormalParam
     formal_params__;
 
-non terminal  main;
+non terminal AstSourceFile main;
+non terminal DeclList.Builder grammar_list_;
 
 /* -------------- Productions -------------- */
 
 start with main;
 
 main
-    ::= decl_grammar:gram
-        {:  RESULT = gram;  :}
+    ::= grammar_list_:b
+        {:  RESULT = new AstSourceFile(b.build());  :}
+    ;
+
+grammar_list_
+    ::= grammar_list_:b decl_grammar:gram
+        {:  RESULT = b.add(gram); :}
+
+    |   decl_grammar:gram
+        {:  RESULT = new DeclList.Builder().add(gram);  :}
     ;
 
 id  ::= IDENTIFIER:id
@@ -158,10 +167,7 @@ string_literal      // "..."
 
 string_contents_    // sequence of valid (and invalid) bits of a string
     ::= string_contents_:builder STRING_FRAGMENT:f
-        {:  RESULT = builder.add(f, true);  :}
-
-    |   string_contents_:builder INVALID_ESCAPE_SEQ:f
-        {:  RESULT = builder.add(f, false);  :}
+        {:  RESULT = builder.add(f);  :}
 
     |   /* empty */
         {:  RESULT = new LiteralString.Builder();   :}
@@ -190,7 +196,7 @@ decl_grammar_extend__
 
     |   expr_reference:ref
         {:
-            RESULT = new LinkedList<ExprReference>();
+            RESULT = new LinkedList<Reference>();
             RESULT.add(ref);
         :}
     ;
@@ -209,22 +215,21 @@ decl_list_
     ;
 
 decl
-    ::= decl_vars:vars      {:  RESULT = vars;  :}
-    |   decl_function:fn    {:  RESULT = fn;    :}
+    ::= decl_function:fn    {:  RESULT = fn;    :}
     |   decl_nterm:nterm    {:  RESULT = nterm; :}
     ;
 
-decl_vars   // var ...;
-    ::= VAR decl_vars_:vars SEMICOLON
+stmt_decl_vars   // var ...;
+    ::= VAR stmt_decl_vars_:vars SEMICOLON
         {:  RESULT = vars.build();  :}
     ;
 
-decl_vars_
-    ::= decl_vars_:vars COMMA decl_var__:var
+stmt_decl_vars_
+    ::= stmt_decl_vars_:vars COMMA decl_var__:var
         {:  RESULT = vars.add(var);   :}
 
     |   decl_var__:var
-        {:  RESULT = new DeclVars.Builder().add(var);   :}
+        {:  RESULT = new StmtDeclLocalVars.Builder().add(var);  :}
     ;
 
 decl_var__     // identifier [ : type ] [ = expr ]
@@ -305,8 +310,7 @@ bnf_concat        // a b c ... (precedence: 1)
 
 bnf_item
     ::= // label@atom{n,m}
-        id:label AT_SIGN
-        bnf_atom:atom bnf_quantifier:quantifier
+        bnf_label:label bnf_atom:atom bnf_quantifier:quantifier
         {:  RESULT = new BnfItem(label, atom, quantifier);    :}
 
     |   // atom{n,m}
@@ -314,7 +318,7 @@ bnf_item
         {:  RESULT = new BnfItem(null, atom, quantifier);     :}
 
     |   // label@atom
-        id:label AT_SIGN bnf_atom:atom
+        bnf_label:label bnf_atom:atom
         {:  RESULT = new BnfItem(label, atom, null);    :}
 
     |   // atom
@@ -356,6 +360,11 @@ bnf_action
         LCURLY_AT_SIGN id:id RCURLY
         {:  RESULT = new BnfPlaceholder(id);  :}
     ;
+
+bnf_label
+    ::= id:id AT_SIGN
+        {:  RESULT = new BnfLabel(id);  :}
+;
 
 bnf_quantifier        // used after a bnf_atom to indicate repetition
     ::= TIMES                                   // * = 0 or more
@@ -412,14 +421,14 @@ unmatched
 
     /* for-else (syntactic sugar) */
     |   FOR LPAREN
-            expr:_init SEMICOLON
+            expr_list:_init SEMICOLON
             expr:_condition SEMICOLON
             expr:_next
         RPAREN stmt:_loop
         {:  RESULT = new StmtFor(_init, _condition, _next, _loop, null); :}
 
     |   FOR LPAREN
-            expr:_init SEMICOLON
+            expr_list:_init SEMICOLON
             expr:_condition SEMICOLON
             expr:_next
         RPAREN  matched:_loop
@@ -445,7 +454,7 @@ matched
 
     /* for-else (syntactic sugar) */
     |   FOR LPAREN
-            expr:_init SEMICOLON
+            expr_list:_init SEMICOLON
             expr:_condition SEMICOLON
             expr:_next
         RPAREN matched:_loop
@@ -485,17 +494,12 @@ matched
 
     |   stmt_expr:s          {:  RESULT = s;  :}
     |   stmt_switch:s        {:  RESULT = s;  :}
-    |   stmt_decl:s          {:  RESULT = s;  :}
+    |   stmt_decl_vars:s     {:  RESULT = s;  :}
     |   stmt_try:s           {:  RESULT = s;  :}
 
     |   id COLON matched:s // label: statement
         {:  RESULT = s; :}
 
-    ;
-
-stmt_decl
-    ::= decl_vars:vars
-        {:  RESULT = vars;  :}
     ;
 
 stmt_block      // { ... code ... }
@@ -720,7 +724,7 @@ expr_8
         {:  RESULT = new LiteralBoolean(b); :}
 
     |   id:id
-        {:  RESULT = id;    :}
+        {:  RESULT = new ExprIdentifier(id);    :}
 
     |   LPAREN  expr:l RPAREN
         {:  RESULT = l; :}
@@ -755,5 +759,5 @@ expr_reference_
         {:  RESULT = builder.add(id);  :}
 
     |   id:id
-        {:  RESULT = new ExprReference.Builder().add(id);    :}
+        {:  RESULT = new Reference.Builder().add(id);    :}
     ;

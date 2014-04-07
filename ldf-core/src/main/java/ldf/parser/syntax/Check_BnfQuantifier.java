@@ -12,17 +12,17 @@ import javax.annotation.Nonnull;
  *
  * @author Cristian Harja
  */
-public final class BnfQuantifierCheck
+public final class Check_BnfQuantifier
         extends Inspection<Context, BnfQuantifier> {
 
-    private static final BnfQuantifierCheck
-            instance = new BnfQuantifierCheck();
+    private static final Check_BnfQuantifier
+            instance = new Check_BnfQuantifier();
 
-    private BnfQuantifierCheck() {
+    private Check_BnfQuantifier() {
         super(BnfQuantifier.class);
     }
 
-    public static BnfQuantifierCheck getInstance() {
+    public static Check_BnfQuantifier getInstance() {
         return instance;
     }
 

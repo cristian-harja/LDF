@@ -1,7 +1,8 @@
 package ldf.parser.ast.decl;
 
 import ldf.parser.ast.AstIdentifier;
-import ldf.parser.ast.expr.ExprReference;
+import ldf.parser.ast.Reference;
+import ldf.parser.decl.SymbolType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,10 +20,10 @@ import java.util.List;
 public final class DeclGrammar extends Declaration {
 
     @Nonnull
-    private AstIdentifier name;
+    private AstIdentifier identifier;
 
-    @Nullable
-    private List<ExprReference> extended;
+    @Nonnull
+    private List<Reference> extended;
 
     @Nonnull
     private DeclList declarations;
@@ -34,12 +35,13 @@ public final class DeclGrammar extends Declaration {
      */
     public DeclGrammar(
             @Nonnull AstIdentifier name,
-            @Nullable List<ExprReference> extended,
+            @Nullable List<Reference> extended,
             @Nonnull DeclList declarations
     ) {
-        this.name = name;
-        this.extended = extended == null ? null :
-                Collections.unmodifiableList(extended);
+        this.identifier = name;
+        this.extended = extended == null
+                ? Collections.<Reference>emptyList()
+                : Collections.unmodifiableList(extended);
         this.declarations = declarations;
 
         addAstChildren(name);
@@ -48,12 +50,12 @@ public final class DeclGrammar extends Declaration {
     }
 
     @Nonnull
-    public AstIdentifier getName() {
-        return name;
+    public AstIdentifier getId() {
+        return identifier;
     }
 
-    @Nullable
-    public List<ExprReference> getExtendedGrammars() {
+    @Nonnull
+    public List<Reference> getExtendedGrammars() {
         return extended;
     }
 
@@ -61,4 +63,25 @@ public final class DeclGrammar extends Declaration {
     public DeclList getDeclarations() {
         return declarations;
     }
+
+    @Override
+    public boolean hasOwnScope() {
+        return true;
+    }
+
+    @Nonnull
+    @Override
+    public AstIdentifier getDeclaredSymbolName() {
+        return getId();
+    }
+
+    /**
+     * @return {@link SymbolType#GRAMMAR}
+     */
+    @Nonnull
+    @Override
+    public SymbolType getDeclaredSymbolType() {
+        return SymbolType.GRAMMAR;
+    }
+
 }

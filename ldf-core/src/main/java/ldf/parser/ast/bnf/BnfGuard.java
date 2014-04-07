@@ -1,5 +1,6 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ast.AstNode;
 import ldf.parser.ast.expr.Expression;
 
 import javax.annotation.Nonnull;
@@ -14,7 +15,8 @@ import javax.annotation.concurrent.ThreadSafe;
  * @author Cristian Harja
  */
 @ThreadSafe
-public final class BnfGuard extends BnfAbstractAction {
+public final class BnfGuard extends AstNode
+        implements BnfAbstractAction {
 
     @Nonnull
     private Expression condition;

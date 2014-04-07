@@ -1,6 +1,5 @@
 package ldf.parser.ast.bnf;
 
-import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.AstNode;
 
 import javax.annotation.Nonnull;
@@ -22,7 +21,7 @@ public final class BnfItem extends AstNode
         implements BnfAtom {
 
     @Nullable
-    private AstIdentifier label;
+    private BnfLabel label;
 
     @Nonnull
     private BnfAtom atom;
@@ -36,7 +35,7 @@ public final class BnfItem extends AstNode
      * @param quantifier optional quantifier
      */
     public BnfItem(
-            @Nullable AstIdentifier label,
+            @Nullable BnfLabel label,
             @Nonnull BnfAtom atom,
             @Nullable BnfQuantifier quantifier
     ) {
@@ -51,7 +50,7 @@ public final class BnfItem extends AstNode
      *         there isn't one).
      */
     @Nullable
-    public AstIdentifier getLabel() {
+    public BnfLabel getLabel() {
         return label;
     }
 

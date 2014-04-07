@@ -1,9 +1,7 @@
 package ldf.parser.inspect;
 
-import ldf.parser.Context;
-
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -15,9 +13,8 @@ import static ldf.parser.Util.NATIVE_HASH_COMPARATOR;
  *
  * @author Cristian Harja
  */
-@ParametersAreNonnullByDefault
-public final class InspectionSet<T>
-        extends TreeSet<Inspection<Context, ? extends T>>{
+public final class InspectionSet<ContextT, TargetT>
+        extends TreeSet<Inspection<? super ContextT, ? extends TargetT>>{
 
     public InspectionSet() {
         super(NATIVE_HASH_COMPARATOR);
@@ -28,13 +25,13 @@ public final class InspectionSet<T>
      * the elements</em> available through the iterator.
      */
     public void runAllOnIterator(
-            @Nonnull Context ctx,
-            @Nonnull Iterator<T> it
+            @Nullable ContextT ctx,
+            @Nonnull Iterator<TargetT> it
     ) {
         while (it.hasNext()) {
-            T obj = it.next();
+            TargetT obj = it.next();
 
-            for (Inspection<Context, ?> i: this) {
+            for (Inspection<? super ContextT, ?> i: this) {
                 i.run(ctx, obj);
             }
         }

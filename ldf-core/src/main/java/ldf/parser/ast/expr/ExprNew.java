@@ -1,5 +1,7 @@
 package ldf.parser.ast.expr;
 
+import ldf.parser.ast.Reference;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -12,13 +14,13 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class ExprNew extends Expression {
 
     @Nonnull
-    private ExprReference classRef;
+    private Reference classRef;
 
     @Nonnull
     private ExprList ctorParams;
 
     public ExprNew(
-            @Nonnull ExprReference classRef,
+            @Nonnull Reference classRef,
             @Nonnull ExprList ctorParams
     ) {
         this.classRef = classRef;
@@ -27,7 +29,7 @@ public final class ExprNew extends Expression {
     }
 
     @Nonnull
-    public ExprReference getClassRef() {
+    public Reference getClassRef() {
         return classRef;
     }
 
