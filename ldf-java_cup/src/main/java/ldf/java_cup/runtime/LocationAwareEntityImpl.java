@@ -8,15 +8,26 @@ package ldf.java_cup.runtime;
  * @author Cristian Harja
  */
 @SuppressWarnings("unused")
-public class LocationAwareEntity {
+public class LocationAwareEntityImpl
+        implements LocationAwareEntity {
 
     protected int lineL, columnL, offsetL = -1;
     protected int lineR, columnR, offsetR = -1;
+
+    @Override
+    public void setLeftPos(LocationAwareEntity l) {
+        setLeftPos(l.getLineL(), l.getColumnL(), l.getOffsetL());
+    }
 
     public void setLeftPos(int line, int column, int offset) {
         lineL = line;
         columnL = column;
         offsetL = offset;
+    }
+
+    @Override
+    public void setRightPos(LocationAwareEntity r) {
+        setRightPos(r.getLineR(), r.getColumnR(), r.getOffsetR());
     }
 
     public void setRightPos(int line, int column, int offset) {
@@ -25,27 +36,27 @@ public class LocationAwareEntity {
         offsetR = offset;
     }
 
-    public int getLineL() {
+    public final int getLineL() {
         return lineL;
     }
 
-    public int getLineR() {
+    public final int getLineR() {
         return lineR;
     }
 
-    public int getColumnL() {
+    public final int getColumnL() {
         return columnL;
     }
 
-    public int getColumnR() {
+    public final int getColumnR() {
         return columnR;
     }
 
-    public int getOffsetL() {
+    public final int getOffsetL() {
         return offsetL;
     }
 
-    public int getOffsetR() {
+    public final int getOffsetR() {
         return offsetR;
     }
 

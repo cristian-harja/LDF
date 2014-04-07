@@ -104,7 +104,7 @@ public class TokenFactoryImpl extends SymbolFactoryImpl
             int line, int column, int offset
     ) {
         if (lastRightPosWasSet) return;
-        LocationAwareEntity last = (lastComment != null)
+        LocationAwareEntityImpl last = (lastComment != null)
                 ? lastComment
                 : lastSymbol;
 
