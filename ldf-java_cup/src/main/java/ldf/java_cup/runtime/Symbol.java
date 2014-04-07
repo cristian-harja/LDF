@@ -10,7 +10,7 @@ package ldf.java_cup.runtime;
  */
 
 @SuppressWarnings("unused")
-public class Symbol extends LocationAwareEntity {
+public class Symbol extends LocationAwareEntityImpl {
 
     /**
      * Name of this symbol (token name or non-terminal name).

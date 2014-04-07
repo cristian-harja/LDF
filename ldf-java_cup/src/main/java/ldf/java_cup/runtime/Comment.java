@@ -3,7 +3,7 @@ package ldf.java_cup.runtime;
 /**
  * @author Cristian Harja
  */
-public class Comment extends LocationAwareEntity {
+public class Comment extends LocationAwareEntityImpl {
 
     protected Comment prevComment;
 
