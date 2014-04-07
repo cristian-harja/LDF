@@ -12,12 +12,12 @@ package ldf.java_cup.runtime;
  *
  * @author Cristian Harja
  */
-public interface ILocationAwareEntity {
+public interface LocationAwareEntity {
 
-    void setLeftPos(ILocationAwareEntity left);
+    void setLeftPos(LocationAwareEntity left);
     void setLeftPos(int line, int column, int offset);
 
-    void setRightPos(ILocationAwareEntity right);
+    void setRightPos(LocationAwareEntity right);
     void setRightPos(int line, int column, int offset);
 
     int getLineL();

@@ -2,21 +2,21 @@ package ldf.java_cup.runtime;
 
 /**
  * Provided for convenience, allows a sub-class to expose position
- * information from a {@link ILocationAwareEntity}
+ * information from a {@link LocationAwareEntity}
  * object to which it has access.
  *
  * @author Cristian Harja
  */
 public abstract class LocationAwareEntityWrapper
-        implements ILocationAwareEntity {
+        implements LocationAwareEntity {
 
     /**
      * @return the wrapped object whose information is to be exposed
      */
-    protected abstract ILocationAwareEntity getLocationAwareEntity();
+    protected abstract LocationAwareEntity getLocationAwareEntity();
 
     @Override
-    public final void setLeftPos(ILocationAwareEntity left) {
+    public final void setLeftPos(LocationAwareEntity left) {
         getLocationAwareEntity().setLeftPos(left);
     }
 
@@ -26,7 +26,7 @@ public abstract class LocationAwareEntityWrapper
     }
 
     @Override
-    public final void setRightPos(ILocationAwareEntity right) {
+    public final void setRightPos(LocationAwareEntity right) {
         getLocationAwareEntity().setRightPos(right);
     }
 

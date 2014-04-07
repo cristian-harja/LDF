@@ -9,13 +9,13 @@ package ldf.java_cup.runtime;
  */
 @SuppressWarnings("unused")
 public class LocationAwareEntityImpl
-        implements ILocationAwareEntity {
+        implements LocationAwareEntity {
 
     protected int lineL, columnL, offsetL = -1;
     protected int lineR, columnR, offsetR = -1;
 
     @Override
-    public void setLeftPos(ILocationAwareEntity l) {
+    public void setLeftPos(LocationAwareEntity l) {
         setLeftPos(l.getLineL(), l.getColumnL(), l.getOffsetL());
     }
 
@@ -26,7 +26,7 @@ public class LocationAwareEntityImpl
     }
 
     @Override
-    public void setRightPos(ILocationAwareEntity r) {
+    public void setRightPos(LocationAwareEntity r) {
         setRightPos(r.getLineR(), r.getColumnR(), r.getOffsetR());
     }
 
