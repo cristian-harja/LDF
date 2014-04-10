@@ -259,6 +259,12 @@ decl_function
 
 /* Declarative statements (grammar definition) */
 
+decl_nterm
+    ::= NTERM id:id SEMICOLON
+        {:
+            RESULT = new DeclNonTerminal(id, null, null);
+        :}
+    ;
 decl_nterm          // nterm id ::= ... [where ...] ;
     ::= NTERM id:id
         COLON_COLON_EQ bnf_syntax:bnf

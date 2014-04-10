@@ -39,7 +39,7 @@ public final class Check_LiteralString
             Result r = new Result();
             r.fileName = ctx.getFilename();
             r.type = Result.Type.ERROR;
-            r.pos = f.getSymbol();
+            r.pos = f;
             r.msg = "Illegal escape sequence";
             ctx.report(r);
             ran = true;

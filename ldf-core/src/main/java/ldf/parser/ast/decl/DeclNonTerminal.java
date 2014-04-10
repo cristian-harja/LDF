@@ -8,6 +8,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
+import static ldf.parser.decl.SymbolType.*;
+
 /**
  * Declaration of a <em>non-terminal</em>.
  * Example {@code nterm MyNterm ::= ... }.
@@ -20,7 +22,7 @@ public final class DeclNonTerminal extends Declaration {
     @Nonnull
     private AstIdentifier identifier;
 
-    @Nonnull
+    @Nullable
     private BnfSyntax syntax;
 
     @Nullable
@@ -33,7 +35,7 @@ public final class DeclNonTerminal extends Declaration {
      */
     public DeclNonTerminal(
             @Nonnull AstIdentifier identifier,
-            @Nonnull BnfSyntax syntax,
+            @Nullable BnfSyntax syntax,
             @Nullable DeclWhereClause whereClause
     ) {
         this.identifier = identifier;
@@ -42,7 +44,7 @@ public final class DeclNonTerminal extends Declaration {
         addAstChildren(identifier, syntax, whereClause);
     }
 
-    @Nonnull
+    @Nullable
     public BnfSyntax getSyntax() {
         return syntax;
     }
@@ -62,6 +64,11 @@ public final class DeclNonTerminal extends Declaration {
         return true;
     }
 
+    @Override
+    protected int getAcceptedTypes() {
+        return NTERM_LABEL.bitMask | PLACEHOLDER.bitMask;
+    }
+
     @Nonnull
     @Override
     public AstIdentifier getDeclaredSymbolName() {
@@ -74,6 +81,6 @@ public final class DeclNonTerminal extends Declaration {
     @Nonnull
     @Override
     public SymbolType getDeclaredSymbolType() {
-        return SymbolType.NTERM;
+        return NTERM;
     }
 }

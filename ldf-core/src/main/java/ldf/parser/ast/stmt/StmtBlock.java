@@ -1,6 +1,7 @@
 package ldf.parser.ast.stmt;
 
 import ldf.parser.ast.decl.DeclFunction;
+import ldf.parser.decl.SymbolType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
@@ -33,5 +34,10 @@ public final class StmtBlock extends Statement {
     @Override
     public boolean hasOwnScope() {
         return getAstParent() instanceof DeclFunction;
+    }
+
+    @Override
+    protected int getAcceptedTypes() {
+        return SymbolType.VARIABLE.bitMask;
     }
 }

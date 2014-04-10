@@ -34,7 +34,7 @@ public final class Check_BnfQuantifier
         Result res = new Result();
         res.fileName = ctx.getFilename();
         res.type = Result.Type.WARN; // most of them are warnings
-        res.pos = q.getSymbol();
+        res.pos = q;
 
         Number min = q.getMin();
         Number max = q.getMax();

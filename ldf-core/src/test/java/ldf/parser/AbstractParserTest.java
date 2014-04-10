@@ -8,7 +8,7 @@ public abstract class AbstractParserTest {
     private long start;
 
     protected void beginTest() throws InterruptedException {
-        Thread.sleep(50);
+        Thread.sleep(500);
         start = System.currentTimeMillis();
     }
 
@@ -17,7 +17,7 @@ public abstract class AbstractParserTest {
         System.out.println(
                 "Completed in " + (stop - start) + " milliseconds."
         );
-        Thread.sleep(50);
+        Thread.sleep(500);
     }
 
     protected LdfParser initParser(String example) throws Exception {

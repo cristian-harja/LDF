@@ -1,6 +1,7 @@
 package ldf.parser.ast.expr;
 
 import ldf.parser.ast.AstNode;
+import ldf.parser.decl.SymbolType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
@@ -59,6 +60,11 @@ public final class FormalParamList extends AstNode {
     @Override
     public boolean hasOwnScope() {
         return true;
+    }
+
+    @Override
+    protected int getAcceptedTypes() {
+        return SymbolType.FUNCTION_FORMAL_PARAM.bitMask;
     }
 
     /**

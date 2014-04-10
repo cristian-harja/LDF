@@ -4,7 +4,8 @@ import ldf.parser.ast.AstSourceFile;
 import ldf.parser.inspect.Result;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author Cristian Harja
@@ -19,6 +20,12 @@ public class LdfParserTest extends AbstractParserTest{
         AstSourceFile result = parser.getAbstractSyntaxTree();
         assertNotNull(result);
 
+        /*
+        parser.scopeCheck();
+        DeclGrammar example1 = result.getGrammar("Example1");
+        DeclNonTerminal nterm = example1.getNterm("stmt_forever");
+        BnfSyntaxDag.DagHandle handle = nterm.getSyntax().getDag();
+        */
         endTest();
     }
 
@@ -29,8 +36,11 @@ public class LdfParserTest extends AbstractParserTest{
         LdfParser parser = initParser("example2.txt");
         AstSourceFile result = parser.getAbstractSyntaxTree();
         assertNotNull(result);
-        parser.scopeCheck();
+        parser.syntaxCheck();
 
+        for(Result r: parser.getResults()) {
+            System.out.println(r);
+        }
         endTest();
     }
 
@@ -42,11 +52,10 @@ public class LdfParserTest extends AbstractParserTest{
         assertNull(parser.getParseError());
         parser.syntaxCheck();
 
-        endTest();
-
         for(Result r: parser.getResults()) {
             System.out.println(r);
         }
+        endTest();
     }
 
     @Test
@@ -57,6 +66,9 @@ public class LdfParserTest extends AbstractParserTest{
         assertNull(parser.getParseError());
         parser.scopeCheck();
 
+        for(Result r: parser.getResults()) {
+            System.out.println(r);
+        }
         endTest();
     }
 

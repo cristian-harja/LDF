@@ -10,6 +10,8 @@ import javax.annotation.concurrent.ThreadSafe;
 import java.util.Collections;
 import java.util.List;
 
+import static ldf.parser.decl.SymbolType.*;
+
 /**
  * Declaration of a <em>grammar</em>. Backed by the {@code decl_grammar}
  * non-terminal.
@@ -69,6 +71,11 @@ public final class DeclGrammar extends Declaration {
         return true;
     }
 
+    @Override
+    protected int getAcceptedTypes() {
+        return NTERM.bitMask;
+    }
+
     @Nonnull
     @Override
     public AstIdentifier getDeclaredSymbolName() {
@@ -81,7 +88,18 @@ public final class DeclGrammar extends Declaration {
     @Nonnull
     @Override
     public SymbolType getDeclaredSymbolType() {
-        return SymbolType.GRAMMAR;
+        return GRAMMAR;
     }
 
+    public DeclNonTerminal getNterm(String name) {
+        for (Declaration decl : declarations.getItems()) {
+            if (!(decl instanceof DeclNonTerminal)) {
+                continue;
+            }
+            if (decl.getDeclaredSymbolName().getName().equals(name)) {
+                return (DeclNonTerminal) decl;
+            }
+        }
+        return null;
+    }
 }

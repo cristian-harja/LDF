@@ -1,8 +1,11 @@
 package ldf.parser.ast;
 
+import ldf.java_cup.runtime.LocationAwareEntity;
+import ldf.java_cup.runtime.LocationAwareEntityWrapper;
 import ldf.java_cup.runtime.Symbol;
 import ldf.parser.Util;
 import ldf.parser.decl.Scope;
+import ldf.parser.decl.SymbolType;
 import ldf.parser.util.Predicate;
 
 import javax.annotation.Nonnull;
@@ -33,7 +36,8 @@ import static java.util.Collections.synchronizedMap;
  */
 @ThreadSafe
 @SuppressWarnings("unused")
-public abstract class AstNode implements Iterable<AstNode> {
+public abstract class AstNode extends LocationAwareEntityWrapper
+        implements Iterable<AstNode> {
 
     private Symbol  symbol;
     private AstNode astParent;
@@ -44,6 +48,11 @@ public abstract class AstNode implements Iterable<AstNode> {
 
     private Scope ownScope, nearestScope;
     private Map<Object, Object> extraInfo;
+
+    @Override
+    protected final LocationAwareEntity getLocationAwareEntity() {
+        return symbol;
+    }
 
     /**
      * Retrieves extra information associated with this node.
@@ -442,6 +451,20 @@ public abstract class AstNode implements Iterable<AstNode> {
         return false;
     }
 
+    /**
+     * <p>Returns the types of symbols which are accepted by this node's
+     * <em>own scope</em>.
+     * </p>
+     * <p><b>Only queried if {@link #hasOwnScope} returns {@code true}.</b>
+     * </p>
+     * <p>It is called by {@link #initScopes} to configure new instances
+     * of {@link Scope}. The set of symbol types are returned as a bit
+     * mask (see {@link ldf.parser.decl.SymbolType#bitMask}).</p>
+     */
+    protected int getAcceptedTypes() {
+        return SymbolType.bitMaskAll;
+    }
+
     public final Scope getOwnScope() {
         return ownScope; // only if hasOwnScope()
     }
@@ -465,7 +488,7 @@ public abstract class AstNode implements Iterable<AstNode> {
             nearestScope = astParent.getNearestScope();
         }
         if (hasOwnScope()) {
-            ownScope = new Scope(nearestScope);
+            ownScope = new Scope(nearestScope, getAcceptedTypes(), this);
         }
         for (AstNode node: this) {
             node.initScopes();

@@ -1,8 +1,7 @@
 package ldf.parser.ast.bnf;
 
 import ldf.parser.ast.AstIdentifier;
-import ldf.parser.ast.decl.Declaration;
-import ldf.parser.decl.SymbolType;
+import ldf.parser.ast.AstNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
@@ -14,7 +13,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @author Cristian Harja
  */
 @ThreadSafe
-public final class BnfPlaceholder extends Declaration
+public final class BnfPlaceholder extends AstNode
         implements BnfAbstractAction{
 
     @Nonnull
@@ -44,18 +43,8 @@ public final class BnfPlaceholder extends Declaration
         return BnfAtomType.PLACEHOLDER;
     }
 
-    @Nonnull
     @Override
-    public AstIdentifier getDeclaredSymbolName() {
-        return getId();
-    }
-
-    /**
-     * @return {@link SymbolType#PLACEHOLDER}
-     */
-    @Nonnull
-    @Override
-    public SymbolType getDeclaredSymbolType() {
-        return SymbolType.PLACEHOLDER;
+    public boolean hasOwnScope() {
+        return true;
     }
 }

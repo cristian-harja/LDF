@@ -44,7 +44,7 @@ public final class Check_BnfAbstractAction
         if (quantifier != null) {
             Result res = new Result();
             res.fileName = ctx.getFilename();
-            res.pos = quantifier.getSymbol();
+            res.pos = quantifier;
             res.type = Result.Type.ERROR;
             res.msg = "Syntax error: " +
                     "Quantifier on grammar action is not allowed";
@@ -54,7 +54,7 @@ public final class Check_BnfAbstractAction
         if (label != null) {
             Result res = new Result();
             res.fileName = ctx.getFilename();
-            res.pos = label.getSymbol();
+            res.pos = label;
             res.type = Result.Type.ERROR;
             res.msg = "Syntax error: " +
                     "Label on grammar action is not allowed";

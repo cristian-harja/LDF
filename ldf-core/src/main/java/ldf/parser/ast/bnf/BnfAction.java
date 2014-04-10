@@ -2,6 +2,7 @@ package ldf.parser.ast.bnf;
 
 import ldf.parser.ast.AstNode;
 import ldf.parser.ast.stmt.StmtList;
+import ldf.parser.decl.SymbolType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
@@ -41,5 +42,15 @@ public final class BnfAction extends AstNode
     @Override
     public final BnfAtomType getBnfAtomType() {
         return BnfAtomType.ACTION;
+    }
+
+    @Override
+    public boolean hasOwnScope() {
+        return true;
+    }
+
+    @Override
+    protected int getAcceptedTypes() {
+        return SymbolType.VARIABLE.bitMask;
     }
 }

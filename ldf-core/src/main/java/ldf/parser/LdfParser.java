@@ -6,7 +6,7 @@ import ldf.java_cup.runtime.Symbol;
 import ldf.java_cup.runtime.TokenFactory;
 import ldf.parser.ast.AstNode;
 import ldf.parser.ast.AstSourceFile;
-import ldf.parser.decl.Inspect_Declaration;
+import ldf.parser.decl.*;
 import ldf.parser.gen.Lexer;
 import ldf.parser.gen.parser;
 import ldf.parser.inspect.InspectionSet;
@@ -213,13 +213,63 @@ public final class LdfParser implements Context {
 
         @SuppressWarnings("ALL")
         InspectionSet<Object, AstNode>
-                inspections = new InspectionSet<Object, AstNode>();
+                inspectionSet1 = new InspectionSet<Object, AstNode>();
 
-        inspections.addAll(Arrays.asList(
-                Inspect_Declaration.getInstance()
+        inspectionSet1.addAll(Arrays.asList(
+                Inspect_Declaration.getInstance(),
+                Inspect_ExprIdentifier.getInstance(),
+                Inspect_BnfItem_Reference.getInstance(),
+                Inspect_BnfItem_Placeholder.getInstance(),
+                Inspect_BnfSyntax.getInstance()
         ));
 
-        inspections.runAllOnIterator(null, astRoot.findAllByDFS());
+        inspectionSet1.runAllOnIterator(null, astRoot.findAllByDFS());
+
+        @SuppressWarnings("ALL")
+        InspectionSet<Context, AstNode>
+                inspectionSet1b = new InspectionSet<Context, AstNode>();
+
+        inspectionSet1b.add(Inspect_GrammarExtends.getInstance());
+
+        inspectionSet1b.runAllOnIterator(this, astRoot.findAllByDFS());
+
+        astRoot.getOwnScope().resolveReferences();
+
+        @SuppressWarnings("ALL")
+        InspectionSet<Object, AstNode>
+                inspectionSet2 = new InspectionSet<Object, AstNode>();
+
+        inspectionSet2.addAll(Arrays.asList(
+                Inspect_BnfItem_Placeholder2.getInstance()
+        ));
+
+        inspectionSet2.runAllOnIterator(null, astRoot.findAllByDFS());
+
+        astRoot.getOwnScope().resolveReferences();
+
+        @SuppressWarnings("ALL")
+        InspectionSet<Context, AstNode>
+                inspectionSet3 = new InspectionSet<Context, AstNode>();
+
+        inspectionSet3.add(
+                Inspect_ShadowedParameter.getInstance()
+        );
+
+        inspectionSet3.runAllOnIterator(this, astRoot.findAllByDFS());
+
+        @SuppressWarnings("ALL")
+        InspectionSet<Context, Scope>
+                inspectionSet4 = new InspectionSet<Context, Scope>();
+
+        inspectionSet4.addAll(Arrays.asList(
+                Inspect_SymbolUsage.getInstance(),
+                Inspect_DuplicateDeclaration.getInstance()
+        ));
+
+        inspectionSet4.runAllOnIterator(this,
+                astRoot.getOwnScope().iterateAll()
+        );
+
 
     }
 

@@ -3,6 +3,7 @@ package ldf.parser.ast.decl;
 import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.AstNode;
 import ldf.parser.ast.bnf.BnfAbstractAction;
+import ldf.parser.decl.SymbolType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -61,17 +62,12 @@ public final class DeclWhereClause extends AstNode {
         return duplicates;
     }
 
-    @Override
-    public boolean hasOwnScope() {
-        return true;
-    }
-
     /**
      * An entry in the {@code where} clause. Example usage: {@code @label
      * = {: ... :} }.
      */
     @Immutable
-    public static final class Entry extends AstNode {
+    public static final class Entry extends Declaration {
         @Nonnull
         private AstIdentifier identifier;
 
@@ -95,6 +91,18 @@ public final class DeclWhereClause extends AstNode {
         @Nonnull
         public BnfAbstractAction getAction() {
             return action;
+        }
+
+        @Nonnull
+        @Override
+        public AstIdentifier getDeclaredSymbolName() {
+            return getId();
+        }
+
+        @Nonnull
+        @Override
+        public SymbolType getDeclaredSymbolType() {
+            return SymbolType.PLACEHOLDER;
         }
     }
 

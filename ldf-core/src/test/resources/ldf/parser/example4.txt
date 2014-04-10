@@ -1,5 +1,7 @@
 grammar Example4a {
 
+    nterm expr_primary; // declare it now, but define it in `Example4b`
+
     nterm expr ::= _@expr_add;
 
     nterm expr_add
