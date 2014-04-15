@@ -12,12 +12,12 @@
     <taskdef
             name="cup"
             classname="ldf.java_cup.anttask.CUPTask"
-            classpath="../fork-java_cup/dist/ldf-java_cup-cc.jar"/>
+            classpath="../ldf-java_cup/dist/ldf-java_cup-cc.jar"/>
 
     <taskdef
             name="jflex"
             classname="JFlex.anttask.JFlexTask"
-            classpath="../fork-java_cup/bin/JFlex.jar"/>
+            classpath="../ldf-java_cup/bin/JFlex.jar"/>
 
     <target name="clean">
         <!-- Delete folders -->
