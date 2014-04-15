@@ -41,8 +41,7 @@ public abstract class AstNode implements Iterable<AstNode> {
     private AstNode astSiblingL;
     private AstNode astSiblingR;
 
-    private final Map<Object, Object> extraInfo = synchronizedMap(
-            new TreeMap<Object, Object>(Util.NATIVE_HASH_COMPARATOR));
+    private Map<Object, Object> extraInfo;
 
     /**
      * Retrieves extra information associated with this node.
@@ -50,7 +49,7 @@ public abstract class AstNode implements Iterable<AstNode> {
      * chosen by whichever class originated that information.
      */
     public final Object getExtra(Object key) {
-        return extraInfo.get(key);
+        return getExtraInfo().get(key);
     }
 
     /**
@@ -59,7 +58,7 @@ public abstract class AstNode implements Iterable<AstNode> {
      * chosen by whichever class originated that information.
      */
     public final Object putExtra(Object key, Object value) {
-        return extraInfo.put(key, value);
+        return getExtraInfo().put(key, value);
     }
 
     /**
@@ -67,6 +66,17 @@ public abstract class AstNode implements Iterable<AstNode> {
      *         extra information associated with this node.
      */
     public final Map<Object, Object> getExtraInfo() {
+        if (extraInfo != null) {
+            return extraInfo;
+        }
+        synchronized (this) {
+            if (extraInfo != null) {
+                return extraInfo;
+            }
+            extraInfo = synchronizedMap(new TreeMap<Object, Object>(
+                    Util.NATIVE_HASH_COMPARATOR
+            ));
+        }
         return extraInfo;
     }
 
@@ -94,14 +104,24 @@ public abstract class AstNode implements Iterable<AstNode> {
         if (this.symbol != null) {
             throw new IllegalStateException(
                     "setSymbol() must only be called ONCE, upon " +
-                    "object initialization"
+                            "object initialization"
             );
         }
         this.symbol = stNode;
     }
 
+    @Nullable
     public final AstNode getAstParent() {
         return astParent;
+    }
+
+    @Nonnull
+    public final AstNode assertGetAstParent() {
+        AstNode parent = astParent;
+        if (parent == null) {
+            throw new RuntimeException("assertGetAstParent() failed");
+        }
+        return parent;
     }
 
     /**

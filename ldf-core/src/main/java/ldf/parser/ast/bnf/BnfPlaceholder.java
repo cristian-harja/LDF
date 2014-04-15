@@ -15,13 +15,13 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class BnfPlaceholder extends BnfAbstractAction {
 
     @Nonnull
-    private AstIdentifier label;
+    private AstIdentifier id;
 
     /**
      * @param label the name of this placeholder
      */
     public BnfPlaceholder(@Nonnull AstIdentifier label) {
-        this.label = label;
+        this.id = label;
         addAstChildren(label);
     }
 
@@ -29,8 +29,8 @@ public final class BnfPlaceholder extends BnfAbstractAction {
      * @return name of this placeholder
      */
     @Nonnull
-    public AstIdentifier getLabel() {
-        return label;
+    public AstIdentifier getId() {
+        return id;
     }
 
     /**

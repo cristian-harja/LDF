@@ -11,16 +11,17 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * AST node for a variable being declared. Not a declaration by itself,
- * but used as part of a list (see {@link DeclVars}). Backed by the
- * {@code decl_var__} non-terminal.
+ * but used as part of a list. Backed by the {@code decl_var__}
+ * non-terminal.
  *
+ * @see ldf.parser.ast.stmt.StmtDeclLocalVars
  * @author Cristian Harja
  */
 @ThreadSafe
 public final class DeclVariable extends AstNode {
 
     @Nonnull
-    private AstIdentifier name;
+    private AstIdentifier id;
 
     @Nullable
     private TypeExpression type;
@@ -38,15 +39,15 @@ public final class DeclVariable extends AstNode {
             @Nullable TypeExpression type,
             @Nullable Expression initializer
     ) {
-        this.name = name;
+        this.id = name;
         this.type = type;
         this.initializer = initializer;
         addAstChildren(name, type, initializer);
     }
 
     @Nonnull
-    public AstIdentifier getName() {
-        return name;
+    public AstIdentifier getId() {
+        return id;
     }
 
     @Nullable

@@ -1,5 +1,6 @@
 package ldf.parser.ast.stmt;
 
+import ldf.parser.ast.expr.ExprList;
 import ldf.parser.ast.expr.Expression;
 
 import javax.annotation.Nonnull;
@@ -20,7 +21,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class StmtFor extends Statement {
 
     @Nullable
-    private Expression exprInit;
+    private ExprList exprInit;
 
     @Nullable
     private Expression exprCond;
@@ -35,7 +36,7 @@ public final class StmtFor extends Statement {
     private Statement  stmtElse;
 
     public StmtFor(
-            @Nullable Expression exprInit,
+            @Nullable ExprList   exprInit,
             @Nullable Expression exprCond,
             @Nullable Expression exprNext,
             @Nonnull  Statement  stmtLoop,
@@ -49,7 +50,7 @@ public final class StmtFor extends Statement {
     }
 
     @Nullable
-    public Expression getExprInit() {
+    public ExprList getExprInit() {
         return exprInit;
     }
 

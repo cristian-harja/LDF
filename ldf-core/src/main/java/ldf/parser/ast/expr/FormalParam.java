@@ -19,23 +19,23 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class FormalParam extends AstNode {
 
     @Nonnull
-    private AstIdentifier identifier;
+    private AstIdentifier id;
 
     @Nullable
     private TypeExpression type;
 
     public FormalParam(
-            @Nonnull AstIdentifier identifier,
+            @Nonnull AstIdentifier name,
             @Nullable TypeExpression type
     ) {
-        this.identifier = identifier;
+        this.id = name;
         this.type = type;
-        addAstChildren(identifier, type);
+        addAstChildren(name, type);
     }
 
     @Nonnull
-    public AstIdentifier getIdentifier() {
-        return identifier;
+    public AstIdentifier getId() {
+        return id;
     }
 
     @Nullable

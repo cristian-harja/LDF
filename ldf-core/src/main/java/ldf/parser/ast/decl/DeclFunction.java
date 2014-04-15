@@ -18,7 +18,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class DeclFunction extends Declaration {
 
     @Nonnull
-    private AstIdentifier name;
+    private AstIdentifier id;
 
     @Nonnull
     private FormalParamList args;
@@ -40,7 +40,7 @@ public final class DeclFunction extends Declaration {
             @Nonnull FormalParamList args,
             @Nullable TypeExpression type,
             @Nonnull StmtBlock body) {
-        this.name = name;
+        this.id = name;
         this.args = args;
         this.type = type;
         this.body = body;
@@ -48,8 +48,8 @@ public final class DeclFunction extends Declaration {
     }
 
     @Nonnull
-    public AstIdentifier getName() {
-        return name;
+    public AstIdentifier getId() {
+        return id;
     }
 
     @Nonnull

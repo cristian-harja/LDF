@@ -5,6 +5,7 @@ import ldf.java_cup.runtime.Scanner;
 import ldf.java_cup.runtime.Symbol;
 import ldf.java_cup.runtime.TokenFactory;
 import ldf.parser.ast.AstNode;
+import ldf.parser.ast.AstSourceFile;
 import ldf.parser.gen.Lexer;
 import ldf.parser.gen.parser;
 import ldf.parser.inspect.InspectionSet;
@@ -12,8 +13,9 @@ import ldf.parser.inspect.Result;
 import ldf.parser.st.LdfTokenFactory;
 import ldf.parser.st.StNode;
 import ldf.parser.st.StNodeFactory;
-import ldf.parser.syntax.BnfQuantifierCheck;
-import ldf.parser.syntax.BnfQuantifierOnActionCheck;
+import ldf.parser.syntax.Check_BnfAbstractAction;
+import ldf.parser.syntax.Check_BnfQuantifier;
+import ldf.parser.syntax.Check_LiteralString;
 import ldf.parser.util.StreamRecorder;
 import ldf.parser.util.SubSequenceImpl;
 
@@ -41,8 +43,8 @@ public final class LdfParser implements Context {
     private boolean success;
     private Exception parseError;
 
-    private StNode  stRoot;
-    private AstNode astRoot;
+    private StNode        stRoot;
+    private AstSourceFile astRoot;
 
     private String fileName;
 
@@ -139,7 +141,7 @@ public final class LdfParser implements Context {
         try {
             Symbol parseResult;
             parseResult = parser.parse(); // invoke the parser
-            astRoot = (AstNode) parseResult.value;
+            astRoot = (AstSourceFile) parseResult.value;
             if (syntaxTree) {
                 stRoot = (StNode) parseResult;
             }
@@ -164,7 +166,7 @@ public final class LdfParser implements Context {
     /**
      * If the parser completed successfully, returns the root AST node.
      */
-    public AstNode getAbstractSyntaxTree() {
+    public AstSourceFile getAbstractSyntaxTree() {
         parseInput();
         return astRoot;
     }
@@ -188,14 +190,16 @@ public final class LdfParser implements Context {
         }
 
         @SuppressWarnings("ALL")
-        InspectionSet<AstNode> inspections = new InspectionSet<AstNode>();
+        InspectionSet<Context, AstNode>
+                inspections = new InspectionSet<Context, AstNode>();
 
         inspections.addAll(Arrays.asList(
-                BnfQuantifierCheck.getInstance(),
-                BnfQuantifierOnActionCheck.getInstance()
+                Check_BnfQuantifier.getInstance(),
+                Check_BnfAbstractAction.getInstance(),
+                Check_LiteralString.getInstance()
         ));
 
-        inspections.runAllOnIterator(this, astRoot.findAllByDFS(null));
+        inspections.runAllOnIterator(this, astRoot.findAllByDFS());
 
     }
 

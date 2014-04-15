@@ -62,13 +62,13 @@ public final class DeclWhereClause extends AstNode {
     }
 
     /**
-     * An entry in the {@code where} clause. Example usage: {@code {@label}
+     * An entry in the {@code where} clause. Example usage: {@code @label
      * = {: ... :} }.
      */
     @Immutable
-    public static class Entry extends AstNode {
+    public static class Entry extends Declaration {
         @Nonnull
-        private AstIdentifier identifier;
+        private AstIdentifier id;
 
         @Nonnull
         private BnfAbstractAction action;
@@ -77,14 +77,14 @@ public final class DeclWhereClause extends AstNode {
                 @Nonnull AstIdentifier identifier,
                 @Nonnull BnfAbstractAction action
         ) {
-            this.identifier = identifier;
+            this.id = identifier;
             this.action = action;
             addAstChildren(action);
         }
 
         @Nonnull
-        public AstIdentifier getIdentifier() {
-            return identifier;
+        public AstIdentifier getId() {
+            return id;
         }
 
         @Nonnull

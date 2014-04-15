@@ -17,7 +17,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class DeclNonTerminal extends Declaration {
     @Nonnull
-    private AstIdentifier name;
+    private AstIdentifier id;
 
     @Nonnull
     private BnfSyntax syntax;
@@ -26,19 +26,19 @@ public final class DeclNonTerminal extends Declaration {
     private DeclWhereClause whereClause;
 
     /**
-     * @param name name of the non-terminal
+     * @param identifier name of the non-terminal
      * @param syntax right-hand side of the declaration
      * @param whereClause optional {@code where} clause
      */
     public DeclNonTerminal(
-            @Nonnull AstIdentifier name,
+            @Nonnull AstIdentifier identifier,
             @Nonnull BnfSyntax syntax,
             @Nullable DeclWhereClause whereClause
     ) {
-        this.name = name;
+        this.id = identifier;
         this.syntax = syntax;
         this.whereClause = whereClause;
-        addAstChildren(name, syntax, whereClause);
+        addAstChildren(identifier, syntax, whereClause);
     }
 
     @Nonnull
@@ -52,7 +52,7 @@ public final class DeclNonTerminal extends Declaration {
     }
 
     @Nonnull
-    public AstIdentifier getName() {
-        return name;
+    public AstIdentifier getId() {
+        return id;
     }
 }

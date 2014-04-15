@@ -37,11 +37,11 @@ public abstract class Inspection<ContextT, TargetT> {
      *
      * @return whether the inspection has been executed
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
     public final boolean run(ContextT ctx, @Nonnull Object obj) {
         if (clazz.isAssignableFrom(obj.getClass())) {
             TargetT checked = (TargetT) obj;
-            return filter(null, checked) && inspect(ctx, checked);
+            return filter(ctx, checked) && inspect(ctx, checked);
         } else {
             return false;
         }
@@ -57,10 +57,9 @@ public abstract class Inspection<ContextT, TargetT> {
     }
 
     /**
-     * Performs the actual inspection, passing its results (0 or more) to
-     * {@link ldf.parser.Context#report(Result) ctx.report()}.
+     * Performs the actual inspection.
      *
-     * @param ctx context information & receiver of the inspection results
+     * @param ctx context information
      * @param obj object being inspected; {@link #filter filter()}
      *            already returned {@code true} on it.
      * @return whether the inspection has been executed (it can still skip

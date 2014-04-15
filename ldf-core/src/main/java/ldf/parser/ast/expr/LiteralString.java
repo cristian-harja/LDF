@@ -1,5 +1,6 @@
 package ldf.parser.ast.expr;
 
+import ldf.parser.ast.AstNode;
 import ldf.parser.ast.bnf.BnfAtom;
 import ldf.parser.ast.bnf.BnfAtomType;
 
@@ -63,10 +64,27 @@ public final class LiteralString extends ExprLiteral
             :   BnfAtomType.LITERAL_STRING;
     }
 
+    /**
+     * A portion of a string which can be flagged as invalid,
+     * or hightlighted differently in an IDE (escape sequence).
+     */
     @Immutable
-    private static class Fragment {
-        public String fragment;
-        public boolean isValid = true;
+    public static class Fragment extends AstNode{
+        private String fragment;
+        private boolean isValid;
+
+        public Fragment(String fragment, boolean isValid) {
+            this.fragment = fragment;
+            this.isValid = isValid;
+        }
+
+        public String getString() {
+            return fragment;
+        }
+
+        public boolean isValid() {
+            return isValid;
+        }
     }
 
     /**
@@ -77,12 +95,9 @@ public final class LiteralString extends ExprLiteral
         private List<Fragment> frags = new ArrayList<Fragment>();
         private List<Fragment> invalid = new ArrayList<Fragment>();
 
-        public Builder add(String f, boolean valid) {
-            Fragment frag = new Fragment();
-            frag.fragment = f;
-            frag.isValid = valid;
+        public Builder add(Fragment frag) {
             frags.add(frag);
-            if (!valid) {
+            if (!frag.isValid()) {
                 invalid.add(frag);
             }
             return this;
@@ -95,6 +110,7 @@ public final class LiteralString extends ExprLiteral
             literal.invalid = invalid.size() != 0
                     ? unmodifiableList(invalid)
                     : Collections.<Fragment>emptyList();
+            literal.addAstChildren(frags);
             return literal;
         }
     }

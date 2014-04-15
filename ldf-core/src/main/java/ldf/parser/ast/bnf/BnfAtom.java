@@ -9,8 +9,8 @@ package ldf.parser.ast.bnf;
  * <ul>
  * <li>a  <b>{@link ldf.parser.ast.expr.LiteralString string literal}</b>
  * </li>
- * <li>a  <b>{@link ldf.parser.ast.expr.ExprReference reference}</b> (ex:
- *        identifier)
+ * <li>a  <b>{@link ldf.parser.ast.Reference reference}</b> like a
+ *        non-terminal or a fully qualified name.
  * </li>
  * <li>an <b>{@link ldf.parser.ast.bnf.BnfAlternation alternation}</b>
  * </li>

@@ -56,6 +56,9 @@ public final class FormalParamList extends AstNode {
         return duplicates;
     }
 
+    /**
+     * Builds {@link FormalParamList} objects.
+     */
     public static class Builder extends ListBuilder<FormalParam, Builder> {
 
         public FormalParamList build() {
@@ -69,7 +72,7 @@ public final class FormalParamList extends AstNode {
             duplicates = new LinkedHashMap<String, List<FormalParam>>();
 
             for (FormalParam p: list) {
-                String id = p.getIdentifier().getName();
+                String id = p.getId().getName();
                 if (duplicates.containsKey(id)) {
                     duplicates.get(id).add(p);
                 } else if (map.containsKey(id)) {

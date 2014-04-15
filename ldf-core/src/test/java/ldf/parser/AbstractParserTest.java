@@ -5,6 +5,20 @@ package ldf.parser;
  */
 public abstract class AbstractParserTest {
 
+    private long start;
+
+    protected void beginTest() throws InterruptedException {
+        Thread.sleep(100);
+        start = System.currentTimeMillis();
+    }
+
+    protected void endTest() throws InterruptedException {
+        long stop = System.currentTimeMillis();
+        System.out.println(
+                "Completed in " + (stop - start) + " milliseconds."
+        );
+    }
+
     protected LdfParser initParser(String example) throws Exception {
         LdfParserSettings settings;
 

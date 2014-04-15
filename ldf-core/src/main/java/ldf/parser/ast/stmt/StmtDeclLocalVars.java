@@ -1,4 +1,6 @@
-package ldf.parser.ast.decl;
+package ldf.parser.ast.stmt;
+
+import ldf.parser.ast.decl.DeclVariable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -14,12 +16,12 @@ import static ldf.parser.Util.ListBuilder;
  * @author Cristian Harja
  */
 @ThreadSafe
-public final class DeclVars extends Declaration {
+public final class StmtDeclLocalVars extends Statement {
 
     @Nonnull
     private List<DeclVariable> items;
 
-    private DeclVars(
+    private StmtDeclLocalVars(
             @Nonnull List<DeclVariable> items
     ) {
         this.items = items;
@@ -32,13 +34,13 @@ public final class DeclVars extends Declaration {
     }
 
     /**
-     * Builds {@link DeclVars} objects.
+     * Builds {@link StmtDeclLocalVars} objects.
      */
     @NotThreadSafe
     public static class Builder extends ListBuilder<DeclVariable, Builder> {
-        public DeclVars build() {
+        public StmtDeclLocalVars build() {
             assertNotBuilt();
-            return new DeclVars(buildList());
+            return new StmtDeclLocalVars(buildList());
         }
     }
 

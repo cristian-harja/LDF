@@ -66,7 +66,7 @@ public final class StmtTry extends Statement {
         private TypeExpression typeExpression;
 
         @Nonnull
-        private AstIdentifier identifier;
+        private AstIdentifier id;
 
         @Nonnull
         private StmtBlock code;
@@ -77,7 +77,7 @@ public final class StmtTry extends Statement {
                 @Nonnull StmtBlock code
         ) {
             this.typeExpression = typeExpression;
-            this.identifier = identifier;
+            this.id = identifier;
             this.code = code;
             addAstChildren(typeExpression, code);
         }
@@ -89,7 +89,7 @@ public final class StmtTry extends Statement {
 
         @Nonnull
         public AstIdentifier getIdName() {
-            return identifier;
+            return id;
         }
 
         @Nonnull
