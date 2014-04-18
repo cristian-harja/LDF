@@ -1,6 +1,9 @@
 package ldf.parser;
 
+import ldf.parser.ags.AgsNode;
+import ldf.parser.ags.AgsNodeUnion;
 import ldf.parser.ast.AstSourceFile;
+import ldf.parser.ast.decl.DeclGrammar;
 import ldf.parser.inspect.Result;
 import org.junit.Test;
 
@@ -35,7 +38,7 @@ public class LdfParserTest extends AbstractParserTest{
     }
 
     @Test
-    public void testAnalysis1() throws Exception {
+    public void testParse3() throws Exception {
         beginTest();
 
         LdfParser parser = initParser("example3.txt");
@@ -52,7 +55,7 @@ public class LdfParserTest extends AbstractParserTest{
     }
 
     @Test
-    public void testAnalysis2() throws Exception {
+    public void testParse4() throws Exception {
         beginTest();
 
         LdfParser parser = initParser("example4.txt");
@@ -63,6 +66,31 @@ public class LdfParserTest extends AbstractParserTest{
 
         for(Result r: parser.getResults()) {
             System.out.println(r);
+        }
+
+        Thread.sleep(100);
+    }
+
+    @Test
+    public void testParse5() throws Exception {
+        beginTest();
+
+        LdfParser parser = initParser("example5.txt");
+        assertNull(parser.getParseError());
+        parser.syntaxCheck();
+
+        AstSourceFile root = parser.getAbstractSyntaxTree();
+        DeclGrammar g = root.findGrammar("Example5");
+        AgsNodeUnion nterm = g.findNonTerm("A");
+
+        endTest();
+
+        for(Result r: parser.getResults()) {
+            System.out.println(r);
+        }
+
+        for (AgsNode abstractProduction : nterm) {
+            System.out.println(abstractProduction);
         }
 
         Thread.sleep(100);

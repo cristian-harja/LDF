@@ -1,6 +1,7 @@
 package ldf.parser.ast;
 
 import ldf.parser.Util.ListBuilder;
+import ldf.parser.ags.AgsNode;
 import ldf.parser.ast.bnf.BnfAtom;
 import ldf.parser.ast.bnf.BnfAtomType;
 import ldf.parser.ast.expr.Expression;
@@ -19,14 +20,18 @@ import java.util.List;
 @ThreadSafe
 public final class Reference extends Expression
         implements BnfAtom {
+
     @Nonnull
     private List<AstIdentifier> path;
+
+    private AgsNode agsNode;
 
     private Reference(
             @Nonnull List<AstIdentifier> path
     ) {
         this.path = path;
         addAstChildren(path);
+        agsNode = AgsNode.agsInit(this);
     }
 
     @Nonnull
@@ -40,6 +45,12 @@ public final class Reference extends Expression
     @Override
     public final BnfAtomType getBnfAtomType() {
         return BnfAtomType.REFERENCE;
+    }
+
+    @Nonnull
+    @Override
+    public AgsNode getAbstractGrammarSpec() {
+        return agsNode;
     }
 
     /**

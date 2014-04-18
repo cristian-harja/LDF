@@ -1,6 +1,7 @@
 package ldf.parser.ast.bnf;
 
 import ldf.parser.Util.ListBuilder;
+import ldf.parser.ags.AgsNode;
 import ldf.parser.ast.AstNode;
 
 import javax.annotation.Nonnull;
@@ -24,12 +25,16 @@ public final class BnfUnion extends AstNode
     @Nonnull
     private List<BnfConcat> items;
 
+    @Nonnull
+    private AgsNode agsNode;
+
     /**
      * @param items items in the union
      */
     private BnfUnion(@Nonnull List<BnfConcat> items) {
         this.items = items;
         addAstChildren(items);
+        agsNode = AgsNode.agsInit(this);
     }
 
     /**
@@ -46,6 +51,12 @@ public final class BnfUnion extends AstNode
     @Override
     public final BnfAtomType getBnfAtomType() {
         return BnfAtomType.UNION;
+    }
+
+    @Nonnull
+    @Override
+    public AgsNode getAbstractGrammarSpec() {
+        return agsNode;
     }
 
     /**

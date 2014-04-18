@@ -1,5 +1,6 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ags.AgsNode;
 import ldf.parser.ast.AstNode;
 
 import javax.annotation.Nonnull;
@@ -29,6 +30,9 @@ public final class BnfItem extends AstNode
     @Nullable
     private BnfQuantifier quantifier;
 
+    @Nonnull
+    private AgsNode agsNode;
+
     /**
      * @param label optional label
      * @param atom kernel
@@ -43,6 +47,7 @@ public final class BnfItem extends AstNode
         this.atom = atom;
         this.quantifier = quantifier;
         addAstChildren(label, (AstNode) atom, quantifier);
+        agsNode = AgsNode.agsInit(this);
     }
 
     /**
@@ -77,5 +82,11 @@ public final class BnfItem extends AstNode
     @Override
     public final BnfAtomType getBnfAtomType() {
         return BnfAtomType.ITEM;
+    }
+
+    @Nonnull
+    @Override
+    public AgsNode getAbstractGrammarSpec() {
+        return agsNode;
     }
 }

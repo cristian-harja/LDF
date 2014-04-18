@@ -1,5 +1,6 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ags.AgsNode;
 import ldf.parser.ast.AstNode;
 
 import javax.annotation.Nonnull;
@@ -32,6 +33,9 @@ public final class BnfAlternation extends AstNode
     @Nonnull
     private BnfUnion separatorSyntax;
 
+    @Nonnull
+    private AgsNode agsNode;
+
     /**
      * @param elementSyntax syntax of the element being repeated
      * @param separatorSyntax syntax of the separator symbol
@@ -43,6 +47,7 @@ public final class BnfAlternation extends AstNode
         this.elementSyntax = elementSyntax;
         this.separatorSyntax = separatorSyntax;
         addAstChildren(elementSyntax, separatorSyntax);
+        agsNode = AgsNode.agsInit(this);
     }
 
     /**
@@ -67,5 +72,11 @@ public final class BnfAlternation extends AstNode
     @Override
     public final BnfAtomType getBnfAtomType() {
         return BnfAtomType.ALTERNATION;
+    }
+
+    @Nonnull
+    @Override
+    public AgsNode getAbstractGrammarSpec() {
+        return agsNode;
     }
 }

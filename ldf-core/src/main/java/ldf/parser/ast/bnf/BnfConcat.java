@@ -1,5 +1,6 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ags.AgsNode;
 import ldf.parser.ast.AstNode;
 
 import javax.annotation.Nonnull;
@@ -25,12 +26,16 @@ public final class BnfConcat extends AstNode
     @Nonnull
     private List<BnfItem> items;
 
+    @Nonnull
+    private AgsNode agsNode;
+
     /**
      * @param items elements being concatenated
      */
     private BnfConcat(@Nonnull List<BnfItem> items) {
         this.items = items;
         addAstChildren(items);
+        agsNode = AgsNode.agsInit(this);
     }
 
     @Nonnull
@@ -44,6 +49,12 @@ public final class BnfConcat extends AstNode
     @Override
     public final BnfAtomType getBnfAtomType() {
         return BnfAtomType.CONCATENATION;
+    }
+
+    @Nonnull
+    @Override
+    public AgsNode getAbstractGrammarSpec() {
+        return agsNode;
     }
 
     /**

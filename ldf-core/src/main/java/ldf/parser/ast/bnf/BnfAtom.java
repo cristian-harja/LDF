@@ -1,5 +1,7 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ags.AgsNode;
+
 /**
  * <p>Common interface for BNF "atoms", which are the kernel of {@link
  * BnfItem BnfItem}s. These are, in turn, the building blocks of BNF
@@ -34,4 +36,12 @@ public interface BnfAtom {
      * Returns a value indicating the actual type of this atom object.
      */
     BnfAtomType getBnfAtomType();
+
+    /**
+     * Returns an `Abstract Grammar Specification` node, equivalent to
+     * this node's AST.
+     *
+     * @see ldf.parser.ags.AgsNode
+     */
+    AgsNode getAbstractGrammarSpec();
 }

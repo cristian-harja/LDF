@@ -1,5 +1,6 @@
 package ldf.parser.ast.expr;
 
+import ldf.parser.ags.AgsNode;
 import ldf.parser.ast.AstNode;
 import ldf.parser.ast.bnf.BnfAtom;
 import ldf.parser.ast.bnf.BnfAtomType;
@@ -32,11 +33,15 @@ public final class LiteralString extends ExprLiteral
 
     private boolean isCharLiteral;
 
+    private AgsNode agsNode;
+
     public boolean hasInvalidFragments() {
         return invalid.size() != 0;
     }
 
-    private LiteralString() {}
+    private LiteralString() {
+        agsNode = AgsNode.agsInit(this);
+    }
 
     @Nonnull
     public List<Fragment> getFragments() {
@@ -62,6 +67,12 @@ public final class LiteralString extends ExprLiteral
         return isCharLiteral
             ?   BnfAtomType.LITERAL_CHAR
             :   BnfAtomType.LITERAL_STRING;
+    }
+
+    @Nonnull
+    @Override
+    public AgsNode getAbstractGrammarSpec() {
+        return agsNode;
     }
 
     /**

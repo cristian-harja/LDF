@@ -1,6 +1,9 @@
 package ldf.parser.ast.bnf;
 
+import ldf.parser.ags.AgsNode;
 import ldf.parser.ast.AstNode;
+
+import javax.annotation.Nonnull;
 
 /**
  * A common interface for: {@link BnfAction}, {@link BnfGuard} and {@link
@@ -10,4 +13,16 @@ import ldf.parser.ast.AstNode;
  */
 public abstract class BnfAbstractAction extends AstNode
         implements BnfAtom {
+
+    protected AgsNode agsNode;
+
+    public BnfAbstractAction() {
+        agsNode = AgsNode.agsInit(this);
+    }
+
+    @Nonnull
+    @Override
+    public AgsNode getAbstractGrammarSpec() {
+        return agsNode;
+    }
 }

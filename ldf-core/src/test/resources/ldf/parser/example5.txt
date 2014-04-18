@@ -1,0 +1,55 @@
+/*
+    This file is used when manually debugging the different scenarios
+    that occur in the `ldf.parser.ags.AgsNode` class.
+*/
+grammar Example5 {
+
+    // parenthesis is removed, leaving "a a a a"
+    nterm A ::= a (a a) a;
+
+    // parenthesis not removed, because we would lose the label
+    nterm A ::= b x@(b b) b;
+
+    // parenthesis not removed, because we would lose the quantifier
+    nterm A ::= c (c c)? c;
+
+    // the empty parenthesis is discarded, leaving "d d"
+    nterm A ::= d () d;
+
+    // all parentheses are discarded, leaving "e e"
+    nterm A ::= ((e)) e;
+
+    // all parentheses are discarded, leaving just "e"
+    nterm A ::= (()) e;
+
+    // parenthesis is discarded, leaving "a|a|a|a"
+    nterm B ::= a|(a|a)|a;
+
+    // parenthesis not removed, because we would lose the label
+    nterm B ::= b| x@(b|b) | b;
+
+    // parenthesis not removed, because we would lose the quantifier
+    nterm B ::= c | (c|c)? | c;
+
+    // empty branch is moved towards the end, leaving: "d|d|"
+    nterm B ::= d| |d; // note: lexer sees "||" as boolean "OR"
+
+    // all empty branches (except the first) are discarded, leaving: "e|e|"
+    nterm B ::= e | | | | | e;
+
+    // all parentheses are discarded, leaving ""
+    nterm B ::= ((|))|;
+
+    // x can't be discarded, leaving: "x@()|"
+    nterm B ::= ((|))|x@();
+
+    // nested labels
+    nterm C ::= x@(y@(z@a));
+
+    // nested quantifiers
+    nterm C ::= ((a?)*)+;
+
+    // nested labels and quantifiers
+    nterm C ::= x@(y@(z@a?)*)+;
+
+}

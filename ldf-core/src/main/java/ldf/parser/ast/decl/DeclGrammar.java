@@ -1,11 +1,14 @@
 package ldf.parser.ast.decl;
 
+import ldf.parser.ags.AgsNodeUnion;
 import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.Reference;
+import ldf.parser.ast.bnf.BnfSyntax;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -61,5 +64,18 @@ public final class DeclGrammar extends Declaration {
     @Nonnull
     public DeclList getDeclarations() {
         return declarations;
+    }
+
+    public AgsNodeUnion findNonTerm(String name) {
+        List<BnfSyntax> syntax = new ArrayList<BnfSyntax>();
+        for (Declaration d : declarations.getItems()) {
+            if (d instanceof DeclNonTerminal) {
+                DeclNonTerminal nterm = (DeclNonTerminal) d;
+                if (nterm.getId().getName().equals(name)) {
+                    syntax.add(nterm.getSyntax());
+                }
+            }
+        }
+        return new AgsNodeUnion(syntax);
     }
 }
