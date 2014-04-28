@@ -24,6 +24,7 @@ public class LdfParserTest extends AbstractParserTest{
         assertNotNull(result);
 
         endTest();
+        Thread.sleep(100);
     }
 
     @Test
@@ -35,6 +36,7 @@ public class LdfParserTest extends AbstractParserTest{
         assertNotNull(result);
 
         endTest();
+        Thread.sleep(100);
     }
 
     @Test
@@ -95,6 +97,25 @@ public class LdfParserTest extends AbstractParserTest{
 
         Thread.sleep(100);
     }
+
+    @Test
+    public void testParse6() throws Exception {
+        beginTest();
+
+        LdfParser parser = initParser("example6.txt");
+        assertNull(parser.getParseError());
+        parser.parseInput();
+
+        endTest();
+
+        for(Result r: parser.getResults()) {
+            System.out.println(r);
+        }
+
+        Thread.sleep(100);
+    }
+
+
 
 
 }

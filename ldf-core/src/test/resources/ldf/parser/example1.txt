@@ -101,7 +101,7 @@ nterm stmt_forever
         )
 
         {: new ForeverLoop(myLabel); :}
-     ;
+;
 
 
 /*
@@ -124,8 +124,8 @@ nterm stmt_forever
 nterm decl_var ::=
     {@init} "var" [vars@IDENTIFIER {@guard}, ',']+ ';' {@action}
 where
-    @init   = {: var n; :}
-    @guard  = {? n++ < 10 ?}
+    @init   = {: var n; :},
+    @guard  = {? n++ < 10 ?},
     @action = {: new StmtVarDecl(vars); :}
 ;
 
@@ -136,6 +136,6 @@ where
 nterm decl_var
     ::= "var" [vars@IDENTIFIER, ',']{,10} ';'
         {: new StmtVarDecl(vars); :}
-     ;
+;
 
 }

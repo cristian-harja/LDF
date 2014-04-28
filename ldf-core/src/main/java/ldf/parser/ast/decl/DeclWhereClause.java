@@ -2,7 +2,9 @@ package ldf.parser.ast.decl;
 
 import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.AstNode;
+import ldf.parser.ast.Reference;
 import ldf.parser.ast.bnf.BnfAbstractAction;
+import ldf.parser.ast.type.TypeExpression;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -10,11 +12,8 @@ import javax.annotation.concurrent.NotThreadSafe;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableMap;
 import static ldf.parser.Util.assertNotBuilt;
 
 /**
@@ -27,53 +26,57 @@ import static ldf.parser.Util.assertNotBuilt;
 public final class DeclWhereClause extends AstNode {
 
     @Nonnull
-    private List<Entry> actionList;
+    private List<Entry> entryList;
 
     @Nonnull
-    private Map<String, Entry> actionMap;
+    private List<ActionEntry> actionList;
 
     @Nonnull
-    private Map<String, List<Entry>> duplicates;
+    private List<LabelTypeEntry> labelList;
 
     private DeclWhereClause(
-            @Nonnull List<Entry> actionList,
-            @Nonnull Map<String, Entry> actionMap,
-            @Nonnull Map<String, List<Entry>> duplicates
+            @Nonnull List<Entry> entryList,
+            @Nonnull List<ActionEntry> actionList,
+            @Nonnull List<LabelTypeEntry> labelList
     ) {
+        this.entryList = entryList;
         this.actionList = actionList;
-        this.actionMap = actionMap;
-        this.duplicates = duplicates;
-        addAstChildren(actionList);
+        this.labelList = labelList;
+        addAstChildren(entryList);
     }
 
     @Nonnull
-    public List<Entry> getActionList() {
+    public List<ActionEntry> getActionList() {
         return actionList;
     }
 
     @Nonnull
-    public Map<String, Entry> getActionMap() {
-        return actionMap;
+    public List<Entry> getEntryList() {
+        return entryList;
     }
 
     @Nonnull
-    public Map<String, List<Entry>> getDuplicates() {
-        return duplicates;
+    public List<LabelTypeEntry> getLabelList() {
+        return labelList;
+    }
+
+    public static class Entry extends AstNode {
+        private Entry() {}
     }
 
     /**
-     * An entry in the {@code where} clause. Example usage: {@code @label
-     * = {: ... :} }.
+     * An entry in the {@code where} clause.
+     * Example usage: {@code @label = {: ... :} }.
      */
     @Immutable
-    public static class Entry extends Declaration {
+    public static class ActionEntry extends Entry {
         @Nonnull
         private AstIdentifier id;
 
         @Nonnull
         private BnfAbstractAction action;
 
-        public Entry(
+        public ActionEntry(
                 @Nonnull AstIdentifier identifier,
                 @Nonnull BnfAbstractAction action
         ) {
@@ -93,59 +96,81 @@ public final class DeclWhereClause extends AstNode {
         }
     }
 
+    public static class LabelTypeEntry extends Entry {
+        @Nonnull
+        private Reference label;
+
+        @Nonnull
+        private TypeExpression type;
+
+
+        public LabelTypeEntry(
+                @Nonnull Reference label,
+                @Nonnull TypeExpression type
+        ) {
+            this.label = label;
+            this.type = type;
+        }
+
+        @Nonnull
+        public Reference getLabel() {
+            return label;
+        }
+
+        @Nonnull
+        public TypeExpression getType() {
+            return type;
+        }
+    }
+
     /**
      * Builds {@link DeclWhereClause} objects.
      */
     @NotThreadSafe
     public static class Builder {
         private boolean built;
-        private List<Entry> actionList;
-        private Map<String, List<Entry>> actionMap;
+
+        private List<Entry> entryList;
+        private List<LabelTypeEntry> labelList;
+        private List<ActionEntry> actionList;
 
         public Builder() {
-            actionList = new ArrayList<Entry>();
-            actionMap = new TreeMap<String, List<Entry>>();
+            entryList = new ArrayList<Entry>();
+            labelList = new ArrayList<LabelTypeEntry>();
+            actionList = new ArrayList<ActionEntry>();
         }
 
-        public Builder add(AstIdentifier id, BnfAbstractAction action) {
-            List<Entry> entries;
+        public Builder add(Reference ref, TypeExpression type) {
 
             assertNotBuilt(built, DeclWhereClause.class);
 
-            if ((entries = actionMap.get(id.getName())) == null) {
-                entries = new ArrayList<Entry>();
-                actionMap.put(id.getName(), entries);
-            }
+            LabelTypeEntry e = new LabelTypeEntry(ref, type);
+            entryList.add(e);
+            labelList.add(e);
 
-            Entry e = new Entry(id, action);
-            entries.add(e);
+            return this;
+
+        }
+
+        public Builder add(AstIdentifier id, BnfAbstractAction action) {
+
+            assertNotBuilt(built, DeclWhereClause.class);
+
+            ActionEntry e = new ActionEntry(id, action);
+            entryList.add(e);
             actionList.add(e);
 
             return this;
         }
 
         public DeclWhereClause build() {
-            Map<String, Entry> actionMap;
-            Map<String, List<Entry>> duplicates;
 
             assertNotBuilt(built, DeclWhereClause.class);
 
-            actionMap  = new TreeMap<String, Entry>();
-            duplicates = new TreeMap<String, List<Entry>>();
-
-            for (Map.Entry<String, List<Entry>> e: this.actionMap.entrySet()) {
-                String id = e.getKey();
-                List<Entry> a = e.getValue();
-                if (a.size() <= 1) {
-                    actionMap.put(id, a.get(0));
-                } else {
-                    duplicates.put(id, a);
-                }
-            }
             DeclWhereClause whereClause = new DeclWhereClause(
+                    unmodifiableList(entryList),
                     unmodifiableList(actionList),
-                    unmodifiableMap(actionMap),
-                    unmodifiableMap(duplicates)
+                    unmodifiableList(labelList)
             );
             built = true;
             return whereClause;

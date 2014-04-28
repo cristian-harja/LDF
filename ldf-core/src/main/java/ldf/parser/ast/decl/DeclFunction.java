@@ -1,7 +1,7 @@
 package ldf.parser.ast.decl;
 
 import ldf.parser.ast.AstIdentifier;
-import ldf.parser.ast.TypeExpression;
+import ldf.parser.ast.type.TypeExpression;
 import ldf.parser.ast.expr.FormalParamList;
 import ldf.parser.ast.stmt.StmtBlock;
 

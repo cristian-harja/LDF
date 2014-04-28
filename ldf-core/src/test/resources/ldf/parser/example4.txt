@@ -1,10 +1,41 @@
+/*
+    This example should actually compile in a working version of LDF.
+*/
 grammar Example4a {
 
-    nterm expr ::= _@expr_add;
+    /*
+        This grammar contains references to `expr_primary`, which is only
+        expected to exist in derived grammars.
 
-    nterm expr_add
+        Here we declare `expr_primary` as a non-terminal of type `int`.
+    */
+    nterm expr_primary : int;
+
+    /*
+        When a production contains exactly one symbol, its semantic value
+        is automatically propagated to the non-terminal.
+    */
+    nterm expr ::= expr_add;
+
+    /*
+        "v" and "op" are labels placed inside an iteration (the [x, y]+
+        alternation). In a situation like this, the grammar action at the
+        end of the production will see them as arrays.
+
+        If there were a grammar action right after "v@expr_multiply", it
+        wouldn't see "v" as an array, but rather as a single element. That
+        action would get executed after each occurrence of "expr_multiply",
+        treating them individually.
+    */
+    nterm expr_add : int
         ::= [v@expr_multiply, op@('+'|'-')]+
         {:
+            /*
+                When the type of a variable is not known at compile time,
+                it should default to "Variant", which basically emulates
+                the loose typing mechanisms present in common scripting
+                languages.
+            */
             var i, n, value = op[0];
             for (i = 1, n = v.length; i < n; ++i) {
                 switch (op[i]) {
@@ -20,16 +51,21 @@ grammar Example4a {
         :}
     ;
 
-    nterm expr_multiply
+    /*
+        Because `{@decl}` is located before `{@action}`, the latter has
+        access to the variables of the former (as if it were merely a
+        continuation of its code).
+    */
+    nterm expr_multiply : int
         ::= {@decl}
             [v@expr_primary, op@('*'|'%'|'/')]+
             {@action}
     where
-        @decl = {: var i, n, value; :}
+        @decl = {: var i, n, value; :},
         @action = {:
             value = op[0];
             for (i = 1, n = op.length; i < n; ++i) {
-                switch (op[i]) {
+                switch (op[i-1]) {
                 case '*': value = value * v[i]; break;
                 case '%': value = value % v[i]; break;
                 case '/': value = value / v[i]; break;
@@ -40,14 +76,22 @@ grammar Example4a {
 
 }
 
+/*
+    `Example4b` inherits all declarations from `Example4a`.
+*/
 grammar Example4b : Example4a {
 
+    /*
+        "_" is a special label, which propagates the value of the labeled
+        symbol up one level (in this example, to the `expr_primary`
+        non-terminal).
+    */
     nterm expr_primary
-        ::= _@INT
+        ::= INT
         |   '(' _@expr ')'
         |   '-' e@expr      {: return -e; :}
         |   '+' _@expr
-        |   _@fn_call
+        |   fn_call
     ;
 
     nterm fn_call
@@ -56,7 +100,5 @@ grammar Example4b : Example4a {
             __external.call(id, args);
         :}
     ;
-
-
 
 }

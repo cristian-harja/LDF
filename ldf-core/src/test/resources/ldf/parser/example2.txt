@@ -1,4 +1,4 @@
-grammar Example2: Example1{
+grammar Example2 {
 
 /*
     The following examples deal with the contents of grammar actions. They
@@ -18,8 +18,8 @@ grammar Example2: Example1{
 nterm decl_var ::=
     {@init} "var" [vars@IDENTIFIER {@guard}, ',']+ ';' {@action}
 where
-    @init   = {: var n = 0; :}
-    @guard  = {? n++ < 10 ?}
+    @init   = {: var n = 0; :},
+    @guard  = {? n++ < 10 ?},
     @action = {: new StmtVarDecl(vars); :}
 ;
 
@@ -76,9 +76,8 @@ def myFunction(x, y, z: T) {
             break;
 
         default:
-            continue hello; // this is obviously incorrect but nevertheless,
-                            // it's syntactically valid
-            break kitty;
+            continue hello; // the parser allows "continue" and "break" on
+            break kitty;    // labels, but I will probably forbid them
 
     }
 

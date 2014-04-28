@@ -54,6 +54,9 @@ public final class AgsNodeUnion extends AgsNode {
     public AgsNodeUnion(List<BnfSyntax> syntax) {
         super(Type.UNION);
         for (BnfSyntax s : syntax) {
+            // DeclNonTerminal#syntax is @Nullable, because
+            // an nterm declaration can have a missing body
+            if (s == null) continue;
             items.add(s.getAstRoot().getAbstractGrammarSpec());
         }
     }

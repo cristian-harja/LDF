@@ -27,7 +27,7 @@ grammar Example3: Example1, Example1, Example2, Example3 {
         |   {@placeholder} *     // error: quantifier not allowed
         |   label@{@placeholder} // error: label not allowed
     where
-        @placeholder = {@placeholder}          // circular reference
+        @placeholder = {@placeholder},         // circular reference
         @placeholder = {: /* some action */ :} // duplicate definition
     ;
 

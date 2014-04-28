@@ -2,6 +2,7 @@ package ldf.parser.ast.decl;
 
 import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.bnf.BnfSyntax;
+import ldf.parser.ast.type.TypeExpression;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,6 +21,9 @@ public final class DeclNonTerminal extends Declaration {
     private AstIdentifier id;
 
     @Nonnull
+    private TypeExpression type;
+
+    @Nullable
     private BnfSyntax syntax;
 
     @Nullable
@@ -32,16 +36,18 @@ public final class DeclNonTerminal extends Declaration {
      */
     public DeclNonTerminal(
             @Nonnull AstIdentifier identifier,
-            @Nonnull BnfSyntax syntax,
+            @Nonnull TypeExpression type,
+            @Nullable BnfSyntax syntax,
             @Nullable DeclWhereClause whereClause
     ) {
         this.id = identifier;
+        this.type = type;
         this.syntax = syntax;
         this.whereClause = whereClause;
         addAstChildren(identifier, syntax, whereClause);
     }
 
-    @Nonnull
+    @Nullable
     public BnfSyntax getSyntax() {
         return syntax;
     }
@@ -54,5 +60,10 @@ public final class DeclNonTerminal extends Declaration {
     @Nonnull
     public AstIdentifier getId() {
         return id;
+    }
+
+    @Nonnull
+    public TypeExpression getType() {
+        return type;
     }
 }

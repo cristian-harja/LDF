@@ -1,0 +1,442 @@
+/*
+    This example deals with type expressions, nested labels and how semantic
+    values are passed around.
+*/
+grammar Example6 {
+
+    /*
+        Labeled items become visible within subsequent grammar actions.
+        They are seen as variables having certain types (which are inferred
+        from the types of the labeled symbols).
+    */
+    nterm X ::= x@a y@b z@c {:
+        // do something with x, y, z
+        // x has the type of a
+        // y has the type of b
+        // z has the type of c
+    :};
+
+    nterm X ::= x@a y@b {@action1} z@c {@action2}
+    where
+        @action1 = {: /* do something with x and y */ :},
+        @action2 = {: /* do something with x, y and z */ :}
+    ;
+
+    /*
+        Sometimes the type of a label can't be inferred from the symbols
+        in the BNF syntax. For this reason, the `where` clause has been
+        introduced to allows us to explicitly state the type of some labels.
+
+        In the following examples we'll be using this syntactic feature
+        to indicate the types of labels. We'll assume that `a` has a type
+        `Ta`, `b` has type `Tb`, etc.
+    */
+    nterm X ::= x@a y@b z@c
+    where
+        x : Ta,
+        y : Tb,
+        z : Tc
+    ;
+
+    /*
+        Labels can be nested when a labeled parenthesis contains other
+        labeled items.
+
+        The type of `x` in the following example is "an object, with a
+        field `y` of type `Ta` and a field `z` of type `Tb`". You see
+        how the type itself has information about the structure of `x`
+        (and the syntax is somewhat similar to JSON objects).
+    */
+    nterm X ::= x@( y@a z@b )
+    where
+        x   : { y : Ta, z : Tb },
+        x.y : Ta,
+        x.z : Tb
+    ;
+
+    /*
+        Now let's assume that we have a class `MyType`, having the fields:
+            - `y` of type `Ty`, with `Ta` being a subtype of `Ty`
+            - `z` of type `Tz`, with `Tb` being a subtype of `Tz`
+
+        We can make use of the `where` clause to set the type of `x` to
+        `MyType`. When confronted with this situation, LDF will populate
+        the `y` and `z` fields of `MyType` automatically, with the values
+        from the (identically named) labels found under `x`.
+    */
+    nterm X ::= x@( y@a z@b )
+    where
+        x   : MyType,
+        x.y : Ta,
+        x.z : Tb
+    ;
+
+    /*
+        Labels are nested by labeled parentheses. Unlabeled parentheses
+        have no effect on nesting. For example, the following expressions
+        produce exactly the same labels:
+            - x@a y@b z@c
+            - x@a ( y@b z@c )
+            - ( x@a y@b ) z@c
+            - x@a (((y@b))) z@c
+
+        When a label is nested, it is no longer visible after the closing
+        parenthesis of the enclosing label. In the following examples, the
+        action {@A} can access `y` and `z`, but {@B} can only access them
+        as `x.y` and `x.z` respectively.
+            - x@(  y@a z@b  {@A} ) {@B}
+            - x@( (y@a z@b) {@A} ) {@B}
+            - x@( y@a (z@b) {@A} ) {@B}
+    */
+    nterm X ::= x@( y@a z@b ) y@(z@c) z@d
+    where
+        x   : {y: Ta, z: Tb},
+        x.y : Ta,
+        x.z : Tb,
+        y   : {z: Tc},
+        y.z : Tc,
+        z   : Td
+    ;
+
+    /*
+        The declarations of two labels will conflict when trying to
+        redefine a previously defined label that's still visible.
+
+        In the previous example, `y` and `z` didn't conflict with `x.y` and
+        `x.z` because they were no longer visible as `y` and `z`.
+    */
+    nterm X ::= ( x@a y@b ) x@c ; // error on `x@c`: `x` already defined
+
+    /*
+        When expressing a union ( a|b|c|... ), the same label may be
+        defined on each branch of the union, as long as it wasn't visible
+        before the union.
+    */
+    nterm X ::= x@a | x@b | x@c ;
+    nterm X ::= x@a ( y@b | y@c ); // valid: `y` was not defined before "("
+    nterm X ::= x@a ( x@b | x@c ); // error on `x@b`: `x` already defined
+
+    /*
+        After a union, the labels defined in it will still be visible, but
+        their type may differ. If a label was defined on two or more
+        branches, its type after the union will be the Least Upper Bound
+        (LUB) of the types of those occurrences.
+
+        This is because the actual value of that label may come from either
+        one of those branches, so the only safe assumption to make is that
+        it must be a sub-type of the LUB.
+
+        LUB(T1, T2) is a type T, which is a super-type of both T1 and T2;
+        moreover, no other sub-type of T can also satisfy this property.
+
+        Example of a LUB:
+            `Number`  is a sub-type of `Object`
+            `Integer` is a sub-type of `Number`
+            `Float`   is a sub-type of `Number`
+            `LUB(Integer, Float)` = `Number`
+
+        `Object` is also an upper bound for `Integer` and `Float`, but it's
+        not the "lowest" one.
+
+        A Least Upper Bound for two types might not be applicable in some
+        type systems. A situation like this would be reported to the user
+        as an error, requiring him to deal with this situation.
+    */
+    nterm X ::= x@a ( y@b {@A1} | y@c {@A2} ) z@d {@A3}
+    where
+        @A1 = {:
+            // x : Ta
+            // y : Tb
+        :},
+
+        @A2 = {:
+            // x : Ta
+            // y : Tc
+        :},
+
+        @A3 = {:
+            // x : Ta
+            // y : LUB(Tb, Tc)
+            // z : Td
+        :}
+    ;
+
+    /*
+        The "_" label has a special meaning, propagating the semantic value
+        (and type) of the labeled item up one level, to the enclosing
+        non-terminal or labeled parenthesis.
+
+        This eliminates the need for grammar actions which only return the
+        semantic value of one of the symbols in a production.
+    */
+    nterm X ::= '(' _@expr ')' ;  // the value of `expr` propagates to `X`
+    nterm X ::= y@( '(' _@expr ')' ); // value of `expr` propagates to `y`
+
+    /*
+        It doesn't make much sense to nest "_" beside other labels. The
+        enclosing label would have to contain the nested labels, but also
+        whatever value/fields may be contained in the item labeled by "_".
+
+        For this reason, the following line is invalid. The type of `x`
+        would have to be a mixture of `Tb` and `{y: Ta}`, which doesn't
+        make a lot of sense (at least not to me).
+    */
+    nterm X ::= x@( y@a _@b ); // error: `y` conflicts with `_`
+
+    /*
+        You also can't use "_" beside grammar actions, as the value
+        `return`ed by them is propagated to the enclosing non-terminal or
+        labeled parenthesis.
+    */
+    nterm X ::= '(' e@expr ')' {: return e; :}; // e propagates to `X`
+    nterm X ::= '(' _@expr ')' {: return 0; :}; // error: conflicting `_`
+
+    /*
+        Grammar actions behave somewhat as if they were labeled with a "_"
+        themselves (in the sense that you can't reuse "_" and the returned
+        value gets propagated), but they won't cause a conflict when used
+        beside other labels. Instead, these labels remain visible only
+        to the grammar action.
+    */
+    nterm X ::= y@( '-' e@expr {@A1} ) {@A2}
+    where
+        @A1 = {: return -e; :},  // `-e` propagates to `y`
+        @A2 = {:
+            // `y` = whatever was returned from A1 (in this case, `-e`)
+            // `e` is no longer accessible as a label (`y.e` doesn't exist)
+        :}
+    ;
+
+    /*
+        While you can think of grammar actions as being labeled with "_",
+        using several of them won't cause conflicts for reusing "_". I have
+        not yet fully decided on their semantics, but I think `return`
+        statements will be translated into an assignment to a shared "_",
+        which will get propagated afterwards.
+    */
+
+
+    /*
+        If a production only contains one symbol, its semantic value is
+        automatically propagated to the non-terminal. If due to various
+        factors (such as type restrictions) the symbols' semantic value
+        is not assignable to the non-terminal, a warning will be issued,
+        stating that the user should assess the situation.
+
+        The semantic value of other symbols which find themselves alone in
+        BNF sub-expressions are also propagated to their parent.
+    */
+    nterm X ::= a ;
+    nterm X ::= ((a)) ; // `a` is propagated to its enclosing parentheses,
+                        // which are then propagated to the `X` non-terminal
+
+    // A union, for example, is a subject to this rule:
+    nterm X ::= _@(a | b | c);
+
+    // Each branch in a union is also subject to this rule. Example:
+    nterm X ::= a | b | c; // Values of `a`, `b` and `c` are propagated.
+                           // The type of `X` is `LUB(Ta, Tb, Tc)`.
+
+    /*
+        The "_" label and grammar actions work well with unions. Each branch
+        in a union can have its own actions or "_" label. The result is
+        first propagated at branch-level, then to the whole union. Example:
+    */
+    nterm X
+        ::= '(' _@expr ')'
+        |   '+' _@expr
+        |   expr // equivalent to _@expr (automatically propagated)
+        ;
+
+    /*
+        To sum up the rules about propagation, the following 4 lines are
+        equivalent:
+    */
+    nterm X ::= a | b | c;
+    nterm X ::= _@(a | b | c);
+    nterm X ::= _@a | _@b | _@c ;
+    nterm X ::= _@(_@a | _@b | _@c);
+
+    /*
+        A label can be used to tag something inside an iteration, and then
+        access it from outside. To any grammar action situated within the
+        iteration, the label will have the same type as the tagged item.
+
+        To a grammar action outside the iteration, the label will appear as
+        an array. In LDF, the type of an array of `T` is denoted as `[T]`.
+    */
+    nterm X ::= ( x@a b c {@A1} )* {@A2}
+    where
+        @A1 = {:
+            // x: Ta
+        :},
+        @A2 = {:
+            // x: [Ta]
+        :}
+    ;
+
+    /*
+        The `?` quantifier doesn't cause the enclosed labels to be seen as
+        arrays. In the future, it may be the case that the type of those
+        labels be decorated with a "nullable" attribute.
+
+        As of right now, the labels in the following two lines have
+        exactly the same types, though the user should check for null
+        values in the second case.
+    */
+    nterm X ::= x@a  y@b z@c   ;
+    nterm X ::= x@a (y@b z@c)? ;
+
+    /*
+        If an item in the BNF syntax has both a label and a quantifier,
+        you should view the quantifier as having a higher precedence,
+        though, in many cases, it wouldn't make a difference:
+
+            (x@a)+   -- Within the iteration, `x` is of type `Ta`, while
+                        seen from the outside, its type is `[Ta]`.
+
+            x@(a+)   -- Within the iteration there is no `x`. However,
+                        `a+` has type `[Ta]`, which gets propagated to `x`.
+
+        It does make a difference, however, when `a` is a BNF sub-expression
+        having some labels of its own.
+    */
+
+    /*
+        When you have multiple labels within an iteration, each will be
+        seen from the outside as a separate array.
+    */
+    nterm X ::= x@( ( y@a z@b )* )  where x: {y: [Ta], z: [Tb]} ;
+
+    /*
+        If you wish to see the whole iteration as a single array of
+        objects, you can nest the labels under a labeled parenthesis,
+        which will then be treated as an array.
+    */
+    nterm X ::= ( x@( y@a z@b ) )*  where x: [{y: Ta, z: Tb}] ;
+
+    /*
+        The type of an alternation `[e1, e2]+` (and any label involved)
+        can be easily understood by studying this expression: `((e1|e2)+)`.
+
+        We can assume that an alternation is nothing more than an iteration
+        of `e1|e2`, but it just so happens that the two will occur
+        alternatively in the parser's input. This simplification is enough
+        for understanding how types are being inferred.
+
+        Any label placed inside `e1` and `e2` will become visible from the
+        outside as an array.
+    */
+    nterm X ::= '(' [ items@a , ',' ]+ ')' where items : [Ta] ;
+    nterm X ::= '(' ( items@a | ',' )+ ')' where items : [Ta] ;
+
+    /*
+        If a label occurs in both `e1` and `e2`, it will be visible from
+        the outside as `[LUB(...)]` (array of the Least Upper Bound of the
+        types of those occurrences). This is because after the hypothetical
+        union of `e1` and `e2`, the type of that label would be LUB(...),
+        but then the whole union is iterated, making the label an array.
+    */
+    nterm X ::= [ x@a , x@b ]+ {: /* `x` is of type `[LUB(Ta, Tb)]`  */ :};
+    nterm X ::= ( x@a | x@b )+ {: /* `x` is of type `[LUB(Ta, Tb)]`  */ :};
+
+    /*
+        If you place a label on the alternation, the labels defined within
+        will be nested under it. The resulting type of that label would be
+        an object whose nested labels would all be arrays.
+
+        This is consistent with imagining that `[e1,e2]+` is the same as
+        `((e1|e2)+)` because placing a label on the alternation would be
+        the same as placing a label on the outer parenthesis of that
+        equivalent expression.
+    */
+    nterm X ::= x@ [ y@a , z@b ]+  where x : { y: [Ta] , z: [Tb] } ;
+    nterm X ::= x@(( y@a | z@b )+) where x : { y: [Ta] , z: [Tb] } ;
+
+    /*
+        Unfortunately, if either `e1` or `e2` contains a grammar action,
+        you must wrap that whole expression inside a labeled parenthesis,
+        in order to be able to reference the value returned by that action.
+    */
+    nterm X ::= [ a {: return rand()%7; :} , b] {:
+        // there's no way to reference the values returned from
+        // the grammar action
+    :};
+
+    nterm X ::= [ x@(a {: return rand()%7; :}) , b ] {:
+        // `x` will be seen from the outside as an array of
+        // values returned by the grammar action
+    :};
+
+    /*
+        Below is one last example, which combines almost everything that's
+        been discussed above. This `nterm` declaration defines algebraic
+        expressions with the basic operations (+, -, *, /, %) and operator
+        precedence.
+
+        An expression is seen as a sum of terms. Terms are separated by
+        either '+' or '-'. Each term is a product of some factors. These
+        factors are separated by '*', '/' or '%'.
+
+        Each factor can be one of a list of possible indivisible expression
+        (such as a parenthesized algebraic sub-expression or a negated
+        value).
+
+        The `expr_primary` is a hypothetical user-defined non-terminal,
+        which defines the syntax of the atomic values used in algebraic
+        expressions.
+    */
+    nterm primary_expr : T ; // to be expanded by the user
+    nterm algebraic_expr : T ::=
+        sum@[
+            terms@[
+                factors@
+                (   '(' _@algebraic_expr ')'
+                |   '+' _@primary_expr
+                |   '-' e@primary_expr {: return -e; :}
+                |   primary_expr
+                ),
+                ops@( '*' | '/' | '%' )
+            ]+,
+            ops@( '+' | '-' )
+        ]+
+        {@action}
+    where
+        sum.terms.factors   : T,
+        sum.terms.ops       : char,
+        sum.terms           : { factors: [T], ops: [char] },
+        sum.ops             : char,
+        sum: {
+            terms   : [{ factors: [T], ops: [char] }],
+            ops     : [char]
+        },
+
+        @action = {:
+            var result = 0, i, j, n, m, op;
+
+            for (i = 0, n = sum.length; i < n; ++i) {
+                var terms = sum[i].terms;
+                var product = terms[0];
+                for (j = 1, m = terms.length;  j < m; ++j) {
+                    var term = terms[j];
+                    switch (terms[j-1].op) {
+                        case '*': product = product * term; break;
+                        case '/': product = product / term; break;
+                        case '%': product = product % term; break;
+                    }
+                }
+                if (i == 0) {
+                    result = product;
+                } else {
+                    switch (sum[i-1].op) {
+                        case '+': result = result + product; break;
+                        case '-': result = result - product; break;
+                    }
+                }
+            }
+
+            return result;
+        :}
+    ;
+
+}

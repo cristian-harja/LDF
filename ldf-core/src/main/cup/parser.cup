@@ -5,6 +5,7 @@ import ldf.parser.ast.bnf.*;
 import ldf.parser.ast.decl.*;
 import ldf.parser.ast.expr.*;
 import ldf.parser.ast.stmt.*;
+import ldf.parser.ast.type.*;
 
 import java.util.*;
 
@@ -101,11 +102,10 @@ non terminal StmtTry.Builder        stmt_catch_;
 non terminal Statement
     matched, unmatched; //for solving the dangling else problem
 
-non terminal TypeExpression
-    type_expr;
+non terminal TypeExpression         type_expr, optional_type;
+non terminal ObjectTypeExpr.Builder type_object_;
 
-non terminal Expression
-    expr;
+non terminal Expression             expr;
 
 // various expressions, sorter by precedence (low to high)
 non terminal ExprCompound.Builder
@@ -128,9 +128,7 @@ non terminal ExprList.Builder           expr_list_;
 
 non terminal FormalParamList            formal_params;
 non terminal FormalParamList.Builder    formal_params_;
-
-non terminal FormalParam
-    formal_params__;
+non terminal FormalParam                formal_params__;
 
 non terminal AstSourceFile main;
 non terminal DeclList.Builder grammar_list_;
@@ -261,11 +259,20 @@ decl_function
 
 decl_nterm          // nterm id ::= ... [where ...] ;
     ::= NTERM id:id
+        optional_type:t
         COLON_COLON_EQ bnf_syntax:bnf
         decl_nterm_where_:where_clause
         SEMICOLON
         {:
-            RESULT = new DeclNonTerminal(id, bnf, where_clause);
+            RESULT = new DeclNonTerminal(id, t, bnf, where_clause);
+        :}
+
+    |   NTERM id:id
+        optional_type:t
+        decl_nterm_where_:where_clause
+        SEMICOLON
+        {:
+            RESULT = new DeclNonTerminal(id, t, null, where_clause);
         :}
     ;
 
@@ -276,11 +283,17 @@ decl_nterm_where_   // where @id = {: action code :} ...
     ;
 
 decl_nterm_where__
-    ::= decl_nterm_where__:list AT_SIGN id:id EQ bnf_action:a
+    ::= decl_nterm_where__:list COMMA AT_SIGN id:id EQ bnf_action:a
         {:  RESULT = list.add(id, a);  :}
 
-    |   /* empty */
-        {:  RESULT = new DeclWhereClause.Builder(); :}
+    |   decl_nterm_where__:list COMMA expr_reference:ref COLON type_expr:t
+        {:  RESULT = list.add(ref, t);  :}
+
+    |   AT_SIGN id:id EQ bnf_action:a
+        {:  RESULT = new DeclWhereClause.Builder().add(id, a); :}
+
+    |   expr_reference:ref COLON type_expr:t
+        {:  RESULT = new DeclWhereClause.Builder().add(ref, t); :}
     ;
 
 /* BNF syntax */
@@ -550,10 +563,36 @@ stmt_catch_
         {:  RESULT = new StmtTry.Builder();  :}
     ;
 
-/* Type expressions (needs expanding) */
+/* Type expressions */
+
+optional_type
+    ::= COLON type_expr:t {:  RESULT = t; :}
+    |   /* empty */
+    ;
+
 
 type_expr
-    ::= id;
+    ::= expr_reference:ref
+        {:  RESULT = new ClassTypeExpr(ref);    :}
+
+    |   LSQUARE type_expr:t RSQUARE
+        {:  RESULT = new ArrayTypeExpr(t); :}
+
+    |   LCURLY type_object_:b RCURLY
+        {:  RESULT = b.build(); :}
+    ;
+
+type_object_
+    ::= type_object_:b COMMA id:id COLON type_expr:t
+        {:  RESULT = b.add(id, t);  :}
+
+    |   id:id COLON type_expr:t
+        {:  RESULT = new ObjectTypeExpr.Builder().add(id, t);  :}
+
+    |   /* empty */
+        {:  RESULT = new ObjectTypeExpr.Builder();  :}
+    ;
+
 
 /* Lists: (a, b, c) or (a: int, b: char, c: T) */
 

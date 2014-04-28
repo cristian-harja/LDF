@@ -212,6 +212,9 @@ public class AgsNode implements Iterable<AgsNode> {
     @Nonnull
     public static AgsNode agsInit(@Nonnull BnfItem item) {
         AgsNode node = item.getAtom().getAbstractGrammarSpec();
+        if (item.getLabel() != null && !node.quantifiers().isEmpty()) {
+            node = new AgsNode(Type.ITEM, node, node);
+        }
         node.addLabel(item.getLabel());
         node.addQuantifier(item.getQuantifier());
         return node;

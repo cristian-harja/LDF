@@ -3,7 +3,7 @@ package ldf.parser.ast.stmt;
 import ldf.parser.Util.ListBuilder;
 import ldf.parser.ast.AstIdentifier;
 import ldf.parser.ast.AstNode;
-import ldf.parser.ast.TypeExpression;
+import ldf.parser.ast.type.TypeExpression;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
