@@ -1,26 +1,24 @@
 package ldf.compiler.ast.stmt;
 
-import ldf.compiler.Util;
 import ldf.compiler.ast.AstNode;
 import ldf.compiler.ast.expr.Expression;
+import ldf.compiler.util.Util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
-import static ldf.compiler.Util.ListBuilder;
+import static ldf.compiler.util.Util.ListBuilder;
 
 /**
  * {@code switch} statement. Has features which help detect syntax errors.
  *
  * @author Cristian Harja
  */
-@Immutable
 public final class StmtSwitch extends Statement {
 
     @Nonnull
@@ -63,7 +61,6 @@ public final class StmtSwitch extends Statement {
     /**
      * {@code case ...: ...} (or {@code default: ...} ).
      */
-    @Immutable
     public static final class Case extends AstNode {
 
         @Nullable

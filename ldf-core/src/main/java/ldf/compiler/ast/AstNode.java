@@ -4,8 +4,8 @@ import com.google.common.base.Predicate;
 import ldf.java_cup.runtime.LocationAwareEntity;
 import ldf.java_cup.runtime.LocationAwareEntityWrapper;
 import ldf.java_cup.runtime.Symbol;
-import ldf.compiler.ParserContext;
-import ldf.compiler.Util;
+import ldf.compiler.context.ParserContext;
+import ldf.compiler.util.Util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

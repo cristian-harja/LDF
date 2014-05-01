@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import static ldf.compiler.Util.NATIVE_HASH_COMPARATOR;
+import static ldf.compiler.util.Util.NATIVE_HASH_COMPARATOR;
 
 /**
  * Provided for convenience; a {@link java.util.Set} of {@link

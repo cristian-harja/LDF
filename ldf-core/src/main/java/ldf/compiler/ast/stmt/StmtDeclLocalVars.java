@@ -7,7 +7,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
 
-import static ldf.compiler.Util.ListBuilder;
+import static ldf.compiler.util.Util.ListBuilder;
 
 /**
  * A list of variables (ex: {@code var a, b, ...;}). Backed by the {@code

@@ -2,7 +2,7 @@ package ldf.compiler.syntax.tree;
 
 import ldf.java_cup.runtime.Symbol;
 import ldf.java_cup.runtime.TokenFactoryImpl;
-import ldf.compiler.ParserContext;
+import ldf.compiler.context.ParserContext;
 import ldf.compiler.ast.AstNode;
 
 /**

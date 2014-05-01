@@ -1,6 +1,6 @@
 package ldf.compiler.syntax;
 
-import ldf.compiler.ParserContext;
+import ldf.compiler.context.ParserContext;
 import ldf.compiler.ast.expr.LiteralString;
 import ldf.compiler.inspect.Inspection;
 

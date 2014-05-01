@@ -6,13 +6,18 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import static java.text.MessageFormat.format;
+
 /**
+ * A class for collecting (and formatting) error messages reported by
+ * various parts of the compiler. The messages are sorted by their
+ * filename and position information (when possible).
+ *
  * @author Cristian Harja
  */
 public class CompilerLog {
@@ -25,6 +30,13 @@ public class CompilerLog {
         @Override
         public int compare(Entry o1, Entry o2) {
             int x1, x2;
+
+            if (o1.fileName != null || o2.fileName != null) {
+                if (o1.fileName == null) return -1;
+                if (o2.fileName == null) return +1;
+                x1 = o1.fileName.compareTo(o2.fileName);
+                if (x1 != 0) return x1;
+            }
 
             x1 = (o1.pos == null) ? -1 : o1.pos.getOffsetL();
             x2 = (o2.pos == null) ? -1 : o2.pos.getOffsetL();
@@ -105,8 +117,11 @@ public class CompilerLog {
         ERROR, WARN
     }
 
+    /**
+     * An entry in the compiler log -- an error / warning message.
+     */
     @SuppressWarnings("unused")
-    public class Entry {
+    public static class Entry {
         @Nullable
         private LocationAwareEntity pos;
 
@@ -175,7 +190,7 @@ public class CompilerLog {
                 if (formattedMessage != null) {
                     return formattedLocation;
                 }
-                formattedMessage = MessageFormat.format(msgFormat, msgArgs);
+                formattedMessage = format(msgFormat, msgArgs);
             }
             return formattedMessage;
         }

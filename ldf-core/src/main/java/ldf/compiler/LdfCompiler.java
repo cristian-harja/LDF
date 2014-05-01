@@ -1,5 +1,7 @@
 package ldf.compiler;
 
+import ldf.compiler.context.CompilerContext;
+import ldf.compiler.context.ContextImpl;
 import ldf.compiler.phases.Check_DeclaredSymbols;
 import ldf.compiler.phases.Phase_CollectDeclarations;
 import ldf.compiler.semantics.symbols.NsNode;
@@ -88,7 +90,7 @@ public final class LdfCompiler extends ContextImpl
             params.setI18n(i18n());
 
             parser = new LdfParser(params);
-            parser.parseInput();
+            parser.syntaxCheck();
             if (parser.successful()) {
                 parsedFiles.put(f, parser);
             }

@@ -7,14 +7,13 @@ import ldf.compiler.ast.bnf.BnfAbstractAction;
 import ldf.compiler.ast.type.TypeExpression;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
-import static ldf.compiler.Util.assertNotBuilt;
+import static ldf.compiler.util.Util.assertNotBuilt;
 
 /**
  * Implements the {@code where} clause of an {@code nterm} declaration.
@@ -68,7 +67,6 @@ public final class DeclWhereClause extends AstNode {
      * An entry in the {@code where} clause.
      * Example usage: {@code @label = {: ... :} }.
      */
-    @Immutable
     public static class ActionEntry extends Entry {
         @Nonnull
         private AstIdentifier id;

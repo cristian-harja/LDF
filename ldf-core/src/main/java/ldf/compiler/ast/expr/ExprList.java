@@ -8,7 +8,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import java.util.Collections;
 import java.util.List;
 
-import static ldf.compiler.Util.ListBuilder;
+import static ldf.compiler.util.Util.ListBuilder;
 
 /**
  * A list of expressions separated by commas. This is not an expression

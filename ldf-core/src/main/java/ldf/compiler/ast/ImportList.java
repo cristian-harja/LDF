@@ -1,6 +1,6 @@
 package ldf.compiler.ast;
 
-import ldf.compiler.Util;
+import ldf.compiler.util.Util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

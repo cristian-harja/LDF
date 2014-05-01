@@ -1,13 +1,12 @@
 package ldf.compiler.ast.stmt;
 
-import ldf.compiler.Util.ListBuilder;
 import ldf.compiler.ast.AstIdentifier;
 import ldf.compiler.ast.AstNode;
 import ldf.compiler.ast.type.TypeExpression;
+import ldf.compiler.util.Util.ListBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
@@ -60,7 +59,6 @@ public final class StmtTry extends Statement {
     /**
      * {@code catch(...) {...} }
      */
-    @Immutable
     public static class CatchClause extends AstNode {
         @Nonnull
         private TypeExpression typeExpression;

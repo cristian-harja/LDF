@@ -7,7 +7,6 @@ import ldf.compiler.ast.bnf.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -57,7 +56,6 @@ import static java.util.Collections.*;
  * @see #iterateAs iterateAs
  */
 @SuppressWarnings("unused")
-@Immutable
 public class AgsNode implements Iterable<AgsNode> {
 
     // for representing the syntax

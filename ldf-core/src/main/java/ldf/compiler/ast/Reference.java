@@ -1,6 +1,6 @@
 package ldf.compiler.ast;
 
-import ldf.compiler.Util.ListBuilder;
+import ldf.compiler.util.Util.ListBuilder;
 import ldf.compiler.ags.AgsNode;
 import ldf.compiler.ast.bnf.BnfAtom;
 import ldf.compiler.ast.bnf.BnfAtomType;

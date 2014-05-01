@@ -1,6 +1,6 @@
 package ldf.compiler.semantics.types;
 
-import ldf.compiler.Util;
+import ldf.compiler.util.Util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;

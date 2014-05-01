@@ -1,5 +1,6 @@
-package ldf.compiler;
+package ldf.compiler.context;
 
+import ldf.compiler.CompilerLog;
 import ldf.java_cup.runtime.LocationAwareEntity;
 
 import javax.annotation.Nonnull;

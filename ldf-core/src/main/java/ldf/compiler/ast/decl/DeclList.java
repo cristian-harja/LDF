@@ -1,6 +1,6 @@
 package ldf.compiler.ast.decl;
 
-import ldf.compiler.Util.ListBuilder;
+import ldf.compiler.util.Util.ListBuilder;
 import ldf.compiler.ast.AstNode;
 
 import javax.annotation.Nonnull;

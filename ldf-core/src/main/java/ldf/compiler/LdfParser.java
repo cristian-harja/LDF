@@ -1,5 +1,7 @@
 package ldf.compiler;
 
+import ldf.compiler.context.ContextImpl;
+import ldf.compiler.context.ParserContext;
 import ldf.java_cup.runtime.LocationAwareEntity;
 import ldf.java_cup.runtime.Scanner;
 import ldf.java_cup.runtime.Symbol;

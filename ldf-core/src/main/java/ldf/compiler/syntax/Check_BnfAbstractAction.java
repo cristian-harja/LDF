@@ -1,6 +1,6 @@
 package ldf.compiler.syntax;
 
-import ldf.compiler.ParserContext;
+import ldf.compiler.context.ParserContext;
 import ldf.compiler.ast.bnf.BnfAbstractAction;
 import ldf.compiler.ast.bnf.BnfItem;
 import ldf.compiler.ast.bnf.BnfLabel;

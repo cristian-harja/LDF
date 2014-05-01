@@ -1,6 +1,6 @@
 package ldf.compiler.ast.type;
 
-import ldf.compiler.Util;
+import ldf.compiler.util.Util;
 import ldf.compiler.ast.AstIdentifier;
 
 import javax.annotation.Nonnull;

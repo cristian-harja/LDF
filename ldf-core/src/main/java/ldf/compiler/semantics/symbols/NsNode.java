@@ -18,7 +18,7 @@ import static java.util.Collections.*;
  */
 @SuppressWarnings("unused")
 @ThreadSafe
-public abstract class NsNode {
+public final class NsNode {
 
     private final NsNodeType type;
     private final NsNode parent;
@@ -35,8 +35,8 @@ public abstract class NsNode {
     private List<NsNode> anonChildren;
     private List<NsNode> readOnlyAnonChildren = emptyList();
 
-    private List<AstIdentifier> astBackRefIds;
-    private List<AstIdentifier> readOnlyAstBackRefIds;
+    private AstIdentifier astIdentifier;
+    private AstNode associatedAstNode;
 
     protected NsNode(
             NsNodeType type,
@@ -46,12 +46,10 @@ public abstract class NsNode {
         this.parent = parent;
         this.type = type;
         this.name = name;
-        astBackRefIds = new LinkedList<AstIdentifier>();
-        readOnlyAstBackRefIds = unmodifiableList(astBackRefIds);
     }
 
     public static NsNode initGlobalNS() {
-        return NsNodeFactory.create(NsNodeType.PACKAGE, null, null, null);
+        return new NsNode(NsNodeType.PACKAGE, null, null);
     }
 
     public final NsNodeType getType() {
@@ -134,10 +132,11 @@ public abstract class NsNode {
         if (!nodes.isEmpty() && !type.isSealed()) {
             result = nodes.iterator().next();
         } else {
-            result = NsNodeFactory.create(type, this, name, astNode);
+            result = new NsNode(type, this, name);
             symbols.put(type, result);
         }
-        result.astBackRefIds.add(id);
+        result.astIdentifier = id;
+        result.associatedAstNode = astNode;
         return result;
     }
 
@@ -146,12 +145,13 @@ public abstract class NsNode {
             @Nonnull NsNodeType type,
             @Nonnull AstNode astNode
     ) {
-        NsNode result = NsNodeFactory.create(type, this, name, astNode);
+        NsNode result = new NsNode(type, this, name);
         if (anonChildren == null) {
             anonChildren = new ArrayList<NsNode>();
             readOnlyAnonChildren = unmodifiableList(anonChildren);
         }
         anonChildren.add(result);
+        result.associatedAstNode = astNode;
         return result;
     }
 
@@ -160,8 +160,12 @@ public abstract class NsNode {
     }
 
     @Nonnull
-    public List<AstIdentifier> getIdentifiers() {
-        return readOnlyAstBackRefIds;
+    public AstIdentifier getIdentifier() {
+        return astIdentifier;
+    }
+
+    public AstNode getAssociatedAstNode() {
+        return associatedAstNode;
     }
 
 }

@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
 
-import static ldf.compiler.Util.ListBuilder;
+import static ldf.compiler.util.Util.ListBuilder;
 
 /**
  * <p>AST node for <em>concatenations</em> in the BFN syntax. Syntax:

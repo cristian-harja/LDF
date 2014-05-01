@@ -1,4 +1,4 @@
-package ldf.compiler;
+package ldf.compiler.util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;

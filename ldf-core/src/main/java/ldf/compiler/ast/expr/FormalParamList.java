@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.*;
-import static ldf.compiler.Util.ListBuilder;
+import static ldf.compiler.util.Util.ListBuilder;
 
 /**
  * A list of formal parameters. Has features which can help detect errors
