@@ -3,8 +3,8 @@ package ldf.compiler.phases;
 import com.google.common.collect.Multimap;
 import ldf.compiler.semantics.symbols.NsNode;
 import ldf.compiler.semantics.symbols.NsNodeType;
-import ldf.parser.ParserContext;
-import ldf.parser.ast.AstIdentifier;
+import ldf.compiler.ParserContext;
+import ldf.compiler.ast.AstIdentifier;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;

@@ -1,6 +1,6 @@
 package ldf.compiler.semantics.symbols;
 
-import ldf.parser.ast.decl.DeclFunction;
+import ldf.compiler.ast.decl.DeclFunction;
 
 import javax.annotation.Nonnull;
 

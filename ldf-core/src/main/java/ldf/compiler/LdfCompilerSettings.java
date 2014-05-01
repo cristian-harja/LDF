@@ -1,6 +1,5 @@
 package ldf.compiler;
 
-import ldf.CompilerLog;
 import ldf.compiler.semantics.types.TypeEnv;
 import ldf.compiler.targets.java.types.JavaTypeEnv;
 

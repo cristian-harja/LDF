@@ -1,11 +1,11 @@
-package ldf.parser.gen;
+package ldf.compiler.gen;
 import ldf.java_cup.runtime.*;
-import ldf.parser.ast.*;
-import ldf.parser.ast.bnf.*;
-import ldf.parser.ast.decl.*;
-import ldf.parser.ast.expr.*;
-import ldf.parser.ast.stmt.*;
-import ldf.parser.ast.type.*;
+import ldf.compiler.ast.*;
+import ldf.compiler.ast.bnf.*;
+import ldf.compiler.ast.decl.*;
+import ldf.compiler.ast.expr.*;
+import ldf.compiler.ast.stmt.*;
+import ldf.compiler.ast.type.*;
 
 import java.util.*;
 
@@ -41,7 +41,7 @@ terminal
     IF, ELSE, SWITCH, CASE, DEFAULT,       // branching
     FOR, DO, WHILE, BREAK, CONTINUE,       // looping
     RETURN, TRY, CATCH, FINALLY,           // jumps
-    NEW, PACKAGE;                          // other
+    NEW, PACKAGE, IMPORT;                  // other
 
 /* Punctuation */
 
@@ -144,26 +144,30 @@ non terminal FormalParamList.Builder    formal_params_;
 non terminal FormalParam                formal_params__;
 
 non terminal AstSourceFile main;
-non terminal DeclList.Builder grammar_list_;
+non terminal ImportList.Builder import_list_;
 
 /* -------------- Productions -------------- */
 
 start with main;
 
 main
-    ::= PACKAGE expr_reference:pkg SEMICOLON decl_list:list
-        {:  RESULT = new AstSourceFile(pkg, list);  :}
+    ::= PACKAGE expr_reference:pkg SEMICOLON
+        import_list_:imp decl_list:list
+        {:  RESULT = new AstSourceFile(pkg, imp.build(), list);  :}
 
-    |   decl_list:list
-        {:  RESULT = new AstSourceFile(null, list);  :}
+    |   import_list_:imp decl_list:list
+        {:  RESULT = new AstSourceFile(null, imp.build(), list);  :}
     ;
 
-grammar_list_
-    ::= grammar_list_:b decl_grammar:gram
-        {:  RESULT = b.add(gram); :}
+import_list_
+    ::= import_list_:b IMPORT expr_reference:ref EQ_GT id:id
+        {:  RESULT = b.add(ref, id); :}
 
-    |   decl_grammar:gram
-        {:  RESULT = new DeclList.Builder().add(gram);  :}
+    |   import_list_:b IMPORT expr_reference:ref
+        {:  RESULT = b.add(ref, null); :}
+
+    |   /* empty */
+        {:  RESULT = new ImportList.Builder();  :}
     ;
 
 id  ::= IDENTIFIER:id

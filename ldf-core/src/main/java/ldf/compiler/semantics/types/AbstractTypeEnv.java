@@ -1,9 +1,9 @@
 package ldf.compiler.semantics.types;
 
-import ldf.parser.ast.type.ArrayTypeExpr;
-import ldf.parser.ast.type.ClassTypeExpr;
-import ldf.parser.ast.type.ObjectTypeExpr;
-import ldf.parser.ast.type.TypeExpression;
+import ldf.compiler.ast.type.ArrayTypeExpr;
+import ldf.compiler.ast.type.ClassTypeExpr;
+import ldf.compiler.ast.type.ObjectTypeExpr;
+import ldf.compiler.ast.type.TypeExpression;
 
 import java.util.HashMap;
 import java.util.Map;

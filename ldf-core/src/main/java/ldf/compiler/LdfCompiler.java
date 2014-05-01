@@ -1,12 +1,9 @@
 package ldf.compiler;
 
-import ldf.ContextImpl;
 import ldf.compiler.phases.Check_DeclaredSymbols;
 import ldf.compiler.phases.Phase_CollectDeclarations;
 import ldf.compiler.semantics.symbols.NsNode;
 import ldf.compiler.semantics.types.TypeEnv;
-import ldf.parser.LdfParser;
-import ldf.parser.LdfParserSettings;
 
 import java.io.File;
 import java.io.FileNotFoundException;

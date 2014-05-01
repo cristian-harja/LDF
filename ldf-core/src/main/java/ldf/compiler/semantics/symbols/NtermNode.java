@@ -1,6 +1,6 @@
 package ldf.compiler.semantics.symbols;
 
-import ldf.parser.ast.decl.DeclNonTerminal;
+import ldf.compiler.ast.decl.DeclNonTerminal;
 
 /**
  * @author Cristian Harja

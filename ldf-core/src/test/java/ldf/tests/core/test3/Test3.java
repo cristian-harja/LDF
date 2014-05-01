@@ -1,8 +1,8 @@
 package ldf.tests.core.test3;
 
 import ldf.java_cup.runtime.Scanner;
-import ldf.parser.st.StNode;
-import ldf.parser.st.StNodeFactory;
+import ldf.compiler.syntax.tree.StNode;
+import ldf.compiler.syntax.tree.StNodeFactory;
 import org.junit.Test;
 
 import java.io.InputStream;

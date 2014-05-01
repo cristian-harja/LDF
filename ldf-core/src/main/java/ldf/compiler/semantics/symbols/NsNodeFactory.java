@@ -1,7 +1,7 @@
 package ldf.compiler.semantics.symbols;
 
-import ldf.parser.ast.AstNode;
-import ldf.parser.ast.decl.*;
+import ldf.compiler.ast.AstNode;
+import ldf.compiler.ast.decl.*;
 
 import javax.annotation.Nonnull;
 

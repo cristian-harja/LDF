@@ -1,13 +1,13 @@
 package ldf.compiler.phases;
 
+import ldf.compiler.LdfParser;
+import ldf.compiler.ast.AstIdentifier;
+import ldf.compiler.ast.AstNode;
+import ldf.compiler.ast.AstSourceFile;
+import ldf.compiler.ast.Reference;
+import ldf.compiler.ast.decl.*;
 import ldf.compiler.semantics.symbols.NsNode;
 import ldf.compiler.semantics.symbols.NsNodeType;
-import ldf.parser.LdfParser;
-import ldf.parser.ast.AstIdentifier;
-import ldf.parser.ast.AstNode;
-import ldf.parser.ast.AstSourceFile;
-import ldf.parser.ast.Reference;
-import ldf.parser.ast.decl.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

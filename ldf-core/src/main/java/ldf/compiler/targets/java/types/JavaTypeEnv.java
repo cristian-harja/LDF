@@ -3,8 +3,8 @@ package ldf.compiler.targets.java.types;
 import ldf.compiler.semantics.types.AbstractTypeEnv;
 import ldf.compiler.semantics.types.DataType;
 import ldf.compiler.semantics.types.NoType;
-import ldf.parser.ast.AstIdentifier;
-import ldf.parser.ast.type.ClassTypeExpr;
+import ldf.compiler.ast.AstIdentifier;
+import ldf.compiler.ast.type.ClassTypeExpr;
 
 import java.util.List;
 

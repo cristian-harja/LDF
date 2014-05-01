@@ -1,8 +1,8 @@
-package ldf.parser.gen;
+package ldf.compiler.gen;
 import ldf.java_cup.runtime.TokenFactory;
 import ldf.java_cup.runtime.Symbol;
-import ldf.parser.ast.AstNode;
-import ldf.parser.ast.expr.LiteralString;
+import ldf.compiler.ast.AstNode;
+import ldf.compiler.ast.expr.LiteralString;
 
 import java.io.Reader;
 import java.io.IOException;
@@ -169,6 +169,7 @@ InvalidTokens = {LiteralInvalidInt}|{IdentifierInvalid}
 <YYINITIAL> {
 
     "package"            { return symbol(PACKAGE);              }
+    "import"             { return symbol(IMPORT);               }
     "grammar"            { return symbol(GRAMMAR);              }
     "nterm"              { return symbol(NTERM);                }
     "class"              { return symbol(CLASS);                }

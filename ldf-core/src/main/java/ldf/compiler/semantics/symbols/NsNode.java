@@ -3,8 +3,8 @@ package ldf.compiler.semantics.symbols;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import ldf.parser.ast.AstIdentifier;
-import ldf.parser.ast.AstNode;
+import ldf.compiler.ast.AstIdentifier;
+import ldf.compiler.ast.AstNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

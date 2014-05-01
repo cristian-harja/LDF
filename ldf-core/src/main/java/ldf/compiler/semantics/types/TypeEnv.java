@@ -1,6 +1,6 @@
 package ldf.compiler.semantics.types;
 
-import ldf.parser.ast.type.TypeExpression;
+import ldf.compiler.ast.type.TypeExpression;
 
 /**
  * @author Cristian Harja
