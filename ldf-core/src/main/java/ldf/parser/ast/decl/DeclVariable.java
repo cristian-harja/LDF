@@ -1,24 +1,22 @@
 package ldf.parser.ast.decl;
 
 import ldf.parser.ast.AstIdentifier;
-import ldf.parser.ast.AstNode;
-import ldf.parser.ast.type.TypeExpression;
 import ldf.parser.ast.expr.Expression;
+import ldf.parser.ast.type.TypeExpression;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * AST node for a variable being declared. Not a declaration by itself,
- * but used as part of a list. Backed by the {@code decl_var__}
+ * AST node for a variable being declared. Backed by the {@code decl_var__}
  * non-terminal.
  *
  * @see ldf.parser.ast.stmt.StmtDeclLocalVars
  * @author Cristian Harja
  */
 @ThreadSafe
-public final class DeclVariable extends AstNode {
+public final class DeclVariable extends Declaration {
 
     @Nonnull
     private AstIdentifier id;

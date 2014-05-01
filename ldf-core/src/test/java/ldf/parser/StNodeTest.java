@@ -32,6 +32,7 @@ public class StNodeTest {
         assertFalse(n1.isDescendantOf(n3));
         assertFalse(n2.isDescendantOf(n3));
 
+        Thread.sleep(200);
     }
 
     @Test
@@ -49,6 +50,8 @@ public class StNodeTest {
         assertTrue(n1.isDescendantOf(n4));
         assertTrue(n2.isDescendantOf(n4));
         assertTrue(n3.isDescendantOf(n4));
+
+        Thread.sleep(200);
     }
 
     @Test
@@ -78,6 +81,8 @@ public class StNodeTest {
         assertTrue(n121.isDescendantOf(n1));
         assertTrue(n122.isDescendantOf(n1));
         assertTrue(n123.isDescendantOf(n1));
+
+        Thread.sleep(200);
     }
 
     @Test
@@ -137,6 +142,8 @@ public class StNodeTest {
         assertFalse(n121.contains(n12));
         assertFalse(n122.contains(n12));
         assertFalse(n123.contains(n12));
+
+        Thread.sleep(200);
     }
 
 }

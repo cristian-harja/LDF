@@ -168,8 +168,10 @@ InvalidTokens = {LiteralInvalidInt}|{IdentifierInvalid}
 
 <YYINITIAL> {
 
+    "package"            { return symbol(PACKAGE);              }
     "grammar"            { return symbol(GRAMMAR);              }
     "nterm"              { return symbol(NTERM);                }
+    "class"              { return symbol(CLASS);                }
     "where"              { return symbol(WHERE);                }
     "if"                 { return symbol(IF);                   }
     "else"               { return symbol(ELSE);                 }

@@ -2,12 +2,15 @@ package ldf.parser.st;
 
 import ldf.java_cup.runtime.Symbol;
 import ldf.java_cup.runtime.TokenFactoryImpl;
+import ldf.parser.ParserContext;
 import ldf.parser.ast.AstNode;
 
 /**
  * @author Cristian Harja
  */
-public class LdfTokenFactory extends TokenFactoryImpl{
+public class LdfTokenFactory extends TokenFactoryImpl {
+
+    private ParserContext parserContext;
 
     private Symbol addAstBackReference(Symbol sym) {
         Object value = sym.value;
@@ -16,8 +19,15 @@ public class LdfTokenFactory extends TokenFactoryImpl{
             if (astNode.getSymbol() == null) {
                 astNode.setSymbol(sym);
             }
+            if (astNode.getParserContext() == null) {
+                astNode.setParserContext(parserContext);
+            }
         }
         return sym;
+    }
+
+    public void setParserContext(ParserContext parserContext) {
+        this.parserContext = parserContext;
     }
 
     @Override

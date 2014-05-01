@@ -1,6 +1,9 @@
 package ldf.parser.ast;
 
+import ldf.java_cup.runtime.LocationAwareEntity;
+import ldf.java_cup.runtime.LocationAwareEntityWrapper;
 import ldf.java_cup.runtime.Symbol;
+import ldf.parser.ParserContext;
 import ldf.parser.Util;
 import ldf.parser.util.Predicate;
 
@@ -32,7 +35,8 @@ import static java.util.Collections.synchronizedMap;
  */
 @ThreadSafe
 @SuppressWarnings("unused")
-public abstract class AstNode implements Iterable<AstNode> {
+public abstract class AstNode extends LocationAwareEntityWrapper
+        implements Iterable<AstNode> {
 
     private Symbol  symbol;
     private AstNode astParent;
@@ -42,6 +46,7 @@ public abstract class AstNode implements Iterable<AstNode> {
     private AstNode astSiblingR;
 
     private Map<Object, Object> extraInfo;
+    private ParserContext parserContext;
 
     /**
      * Retrieves extra information associated with this node.
@@ -80,6 +85,11 @@ public abstract class AstNode implements Iterable<AstNode> {
         return extraInfo;
     }
 
+    @Override
+    protected LocationAwareEntity getLocationAwareEntity() {
+        return symbol;
+    }
+
     /**
      * @return a reference to the {@link ldf.java_cup.runtime.Symbol}
      *         object whose semantic value is the current AST node. This
@@ -87,6 +97,10 @@ public abstract class AstNode implements Iterable<AstNode> {
      */
     public final Symbol getSymbol() {
         return symbol;
+    }
+
+    public ParserContext getParserContext() {
+        return parserContext;
     }
 
     /**
@@ -108,6 +122,16 @@ public abstract class AstNode implements Iterable<AstNode> {
             );
         }
         this.symbol = stNode;
+    }
+
+    public void setParserContext(ParserContext parserContext) {
+        if (this.parserContext != null) {
+            throw new IllegalStateException(
+                    "setParserContext() must only be called ONCE, upon " +
+                            "object initialization"
+            );
+        }
+        this.parserContext = parserContext;
     }
 
     @Nullable

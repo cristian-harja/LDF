@@ -9,6 +9,19 @@ import ldf.parser.ast.type.*;
 
 import java.util.*;
 
+parser code {:
+
+    public boolean failed;
+    public Symbol unrecoveredErrorPosition;
+
+    public void report_fatal_error(String message, Object info) {
+        failed = true;
+        unrecoveredErrorPosition = cur_token;
+        done_parsing();
+    }
+
+:}
+
 /* -------------- Terminals ---------------- */
 
 terminal String  IDENTIFIER;
@@ -24,11 +37,11 @@ terminal LiteralString.Fragment
 /* Keywords: */
 
 terminal
-    GRAMMAR, NTERM, WHERE, VAR, DEF,       // declarations
+    CLASS, GRAMMAR, NTERM, WHERE, VAR, DEF,// declarations
     IF, ELSE, SWITCH, CASE, DEFAULT,       // branching
     FOR, DO, WHILE, BREAK, CONTINUE,       // looping
     RETURN, TRY, CATCH, FINALLY,           // jumps
-    NEW;                                   // other
+    NEW, PACKAGE;                          // other
 
 /* Punctuation */
 
@@ -70,7 +83,7 @@ non terminal DeclList           decl_list;
 non terminal DeclList.Builder   decl_list_;
 non terminal DeclVariable       decl_var__;
 non terminal DeclFunction       decl_function;
-
+non terminal DeclClass          decl_class;
 non terminal DeclGrammar        decl_grammar;
 
 non terminal List<Reference>
@@ -138,8 +151,11 @@ non terminal DeclList.Builder grammar_list_;
 start with main;
 
 main
-    ::= grammar_list_:b
-        {:  RESULT = new AstSourceFile(b.build());  :}
+    ::= PACKAGE expr_reference:pkg SEMICOLON decl_list:list
+        {:  RESULT = new AstSourceFile(pkg, list);  :}
+
+    |   decl_list:list
+        {:  RESULT = new AstSourceFile(null, list);  :}
     ;
 
 grammar_list_
@@ -172,6 +188,11 @@ string_contents_    // sequence of valid (and invalid) bits of a string
     ;
 
 /* Declarations */
+
+decl_class
+    ::= CLASS id:id LCURLY decl_list:decl RCURLY
+        {:  RESULT = new DeclClass(id, decl);   :}
+    ;
 
 decl_grammar
     ::= GRAMMAR id:id decl_grammar_extend_:ext
@@ -215,6 +236,10 @@ decl_list_
 decl
     ::= decl_function:fn    {:  RESULT = fn;    :}
     |   decl_nterm:nterm    {:  RESULT = nterm; :}
+    |   decl_class:cls      {:  RESULT = cls;   :}
+    |   decl_grammar:gram   {:  RESULT = gram;  :}
+    |   VAR decl_var__:var SEMICOLON
+        {:  RESULT = var;   :} // fixme (single var)
     ;
 
 stmt_decl_vars   // var ...;

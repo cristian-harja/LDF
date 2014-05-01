@@ -1,14 +1,14 @@
 package ldf.parser;
 
+import ldf.CompilerLog;
 import ldf.parser.ags.AgsNode;
 import ldf.parser.ags.AgsNodeUnion;
 import ldf.parser.ast.AstSourceFile;
 import ldf.parser.ast.decl.DeclGrammar;
-import ldf.parser.inspect.Result;
+import ldf.parser.ast.decl.Declaration;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Cristian Harja
@@ -20,10 +20,11 @@ public class LdfParserTest extends AbstractParserTest{
         beginTest();
 
         LdfParser parser = initParser("example1.txt");
-        AstSourceFile result = parser.getAbstractSyntaxTree();
-        assertNotNull(result);
+        parser.parseInput();
+        parser.getLogger().printLog(System.out);
 
         endTest();
+        assertTrue(parser.successful());
         Thread.sleep(100);
     }
 
@@ -32,10 +33,11 @@ public class LdfParserTest extends AbstractParserTest{
         beginTest();
 
         LdfParser parser = initParser("example2.txt");
-        AstSourceFile result = parser.getAbstractSyntaxTree();
-        assertNotNull(result);
+        parser.parseInput();
+        parser.getLogger().printLog(System.out);
 
         endTest();
+        assertTrue(parser.successful());
         Thread.sleep(100);
     }
 
@@ -44,15 +46,11 @@ public class LdfParserTest extends AbstractParserTest{
         beginTest();
 
         LdfParser parser = initParser("example3.txt");
-        assertNull(parser.getParseError());
         parser.syntaxCheck();
+        parser.getLogger().printLog(System.out);
 
         endTest();
-
-        for(Result r: parser.getResults()) {
-            System.out.println(r);
-        }
-
+        assertTrue(parser.successful());
         Thread.sleep(100);
     }
 
@@ -61,16 +59,27 @@ public class LdfParserTest extends AbstractParserTest{
         beginTest();
 
         LdfParser parser = initParser("example4.txt");
-        assertNull(parser.getParseError());
         parser.syntaxCheck();
+        parser.getLogger().printLog(System.out);
 
         endTest();
-
-        for(Result r: parser.getResults()) {
-            System.out.println(r);
-        }
-
+        assertTrue(parser.successful());
         Thread.sleep(100);
+    }
+
+    // moved from `AstSourceFile`
+    private static DeclGrammar findGrammar(
+            AstSourceFile src, String name
+    ) {
+        for (Declaration d : src.getDeclarations().getItems()) {
+            if (d instanceof DeclGrammar) {
+                DeclGrammar g = (DeclGrammar) d;
+                if (g.getId().getName().equals(name)) {
+                    return g;
+                }
+            }
+        }
+        return null;
     }
 
     @Test
@@ -78,16 +87,17 @@ public class LdfParserTest extends AbstractParserTest{
         beginTest();
 
         LdfParser parser = initParser("example5.txt");
-        assertNull(parser.getParseError());
         parser.syntaxCheck();
+        parser.getLogger().printLog(System.out);
 
         AstSourceFile root = parser.getAbstractSyntaxTree();
-        DeclGrammar g = root.findGrammar("Example5");
+        DeclGrammar g = findGrammar(root, "Example5");
         AgsNodeUnion nterm = g.findNonTerm("A");
 
         endTest();
+        assertTrue(parser.successful());
 
-        for(Result r: parser.getResults()) {
+        for (CompilerLog.Entry r : parser.getResults()) {
             System.out.println(r);
         }
 
@@ -103,15 +113,12 @@ public class LdfParserTest extends AbstractParserTest{
         beginTest();
 
         LdfParser parser = initParser("example6.txt");
-        assertNull(parser.getParseError());
         parser.parseInput();
+        parser.syntaxCheck();
+        parser.getLogger().printLog(System.out);
 
         endTest();
-
-        for(Result r: parser.getResults()) {
-            System.out.println(r);
-        }
-
+        assertTrue(parser.successful());
         Thread.sleep(100);
     }
 

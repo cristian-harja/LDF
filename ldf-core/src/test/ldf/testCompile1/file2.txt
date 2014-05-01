@@ -1,0 +1,30 @@
+package Ex1;
+
+grammar Ex2 {
+    // multiple `nterm` declarations don't yield an error
+    nterm A;
+    nterm A ::= ;
+    nterm A ::= ;
+    nterm B;
+    nterm B;
+
+    // doesn't clash with nterm
+    class B {
+
+        // nested classes not allowed (right now)
+        class C {
+            var x : T;
+
+            // methods not allowed (right now)
+            def meth(a : T1, b : T2) : T { return 0; }
+        }
+
+        var y : T;
+    }
+
+    // no conflict with B.C
+    class C {
+        var z : T;
+    }
+
+}

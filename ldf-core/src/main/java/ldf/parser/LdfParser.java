@@ -1,15 +1,15 @@
 package ldf.parser;
 
+import ldf.CompilerLog;
+import ldf.ContextImpl;
 import ldf.java_cup.runtime.LocationAwareEntity;
 import ldf.java_cup.runtime.Scanner;
 import ldf.java_cup.runtime.Symbol;
-import ldf.java_cup.runtime.TokenFactory;
 import ldf.parser.ast.AstNode;
 import ldf.parser.ast.AstSourceFile;
 import ldf.parser.gen.Lexer;
 import ldf.parser.gen.parser;
 import ldf.parser.inspect.InspectionSet;
-import ldf.parser.inspect.Result;
 import ldf.parser.st.LdfTokenFactory;
 import ldf.parser.st.StNode;
 import ldf.parser.st.StNodeFactory;
@@ -20,17 +20,17 @@ import ldf.parser.util.StreamRecorder;
 import ldf.parser.util.SubSequenceImpl;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.*;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * @author Cristian Harja
  */
-public final class LdfParser implements Context {
+public final class LdfParser extends ContextImpl
+        implements ParserContext {
 
     private boolean syntaxTree;
     private boolean recordInput;
@@ -41,23 +41,19 @@ public final class LdfParser implements Context {
 
     private boolean parsed;
     private boolean success;
-    private Exception parseError;
 
     private StNode        stRoot;
     private AstSourceFile astRoot;
 
     private String fileName;
 
-    private SortedSet<Result> results =
-            new TreeSet<Result>(Result.COMPARATOR);
-
-    private SortedSet<Result> readOnlyResults =
-            Collections.unmodifiableSortedSet(results);
+    private boolean hasErrors;
 
     public LdfParser(LdfParserSettings settings)
             throws FileNotFoundException {
         initInputMethod(settings);
         initParser(settings);
+        initLogger(settings);
     }
 
     private void initInputMethod(LdfParserSettings settings)
@@ -110,14 +106,24 @@ public final class LdfParser implements Context {
 
         syntaxTree = settings.syntaxTree;
 
-        TokenFactory symbolFactory = syntaxTree
+        LdfTokenFactory symbolFactory = syntaxTree
                 ? new StNodeFactory()
                 : new LdfTokenFactory();
+
+        symbolFactory.setParserContext(this);
 
         Scanner scanner = new Lexer(reader, symbolFactory);
 
         parser  = new parser(scanner, symbolFactory);
 
+    }
+
+    private void initLogger(LdfParserSettings settings) {
+        initLogger(
+                settings.locale,
+                settings.i18n,
+                settings.logger
+        );
     }
 
     /**
@@ -145,22 +151,18 @@ public final class LdfParser implements Context {
             if (syntaxTree) {
                 stRoot = (StNode) parseResult;
             }
-            success = true;
+            if (parser.failed) {
+                reportError(
+                        parser.unrecoveredErrorPosition,
+                        i18n().getString("syntax.unrecovered_error")
+                );
+            }
+            success = !parser.failed;
         } catch (Exception e) {
             e.printStackTrace();
-            parseError = e;
         } finally {
             parsed = true;
         }
-    }
-
-    /**
-     * Currently, the LALR(1) parser throws an exception when the input
-     * can't be parsed. This should be fixed soon.
-     */
-    public Exception getParseError() {
-        parseInput();
-        return parseError;
     }
 
     /**
@@ -190,8 +192,8 @@ public final class LdfParser implements Context {
         }
 
         @SuppressWarnings("ALL")
-        InspectionSet<Context, AstNode>
-                inspections = new InspectionSet<Context, AstNode>();
+        InspectionSet<ParserContext, AstNode>
+                inspections = new InspectionSet<ParserContext, AstNode>();
 
         inspections.addAll(Arrays.asList(
                 Check_BnfQuantifier.getInstance(),
@@ -204,21 +206,49 @@ public final class LdfParser implements Context {
     }
 
     @Override
-    public void report(@Nonnull Result result) {
-        results.add(result);
+    public void reportError(
+            @Nullable LocationAwareEntity loc,
+            @Nonnull String format,
+            Object... args
+    ) {
+        hasErrors = true;
+        getLogger().logMessage(
+                getFileName(), format,
+                CompilerLog.EntryType.ERROR,
+                loc, args
+        );
+    }
+
+    @Override
+    public void reportWarn(
+            @Nullable LocationAwareEntity loc,
+            @Nonnull String format,
+            Object... args
+    ) {
+        getLogger().logMessage(
+                getFileName(), format,
+                CompilerLog.EntryType.WARN,
+                loc, args
+        );
     }
 
     /**
      * @return a list of errors/warnings, sorted by their position in the
      *         input
      */
-    public SortedSet<Result> getResults() {
-        return readOnlyResults;
+    public SortedSet<CompilerLog.Entry> getResults() {
+        return getLogger().getMessages();
     }
 
-    @Override
-    public String getFilename() {
+    public boolean hasErrors() {
+        return hasErrors;
+    }
+
+    public String getFileName() {
         return fileName;
     }
 
+    public boolean successful() {
+        return success;
+    }
 }

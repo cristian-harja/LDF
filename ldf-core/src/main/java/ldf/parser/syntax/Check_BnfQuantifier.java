@@ -1,9 +1,8 @@
 package ldf.parser.syntax;
 
-import ldf.parser.Context;
+import ldf.parser.ParserContext;
 import ldf.parser.ast.bnf.BnfQuantifier;
 import ldf.parser.inspect.Inspection;
-import ldf.parser.inspect.Result;
 
 import javax.annotation.Nonnull;
 
@@ -13,7 +12,7 @@ import javax.annotation.Nonnull;
  * @author Cristian Harja
  */
 public final class Check_BnfQuantifier
-        extends Inspection<Context, BnfQuantifier> {
+        extends Inspection<ParserContext, BnfQuantifier> {
 
     private static final Check_BnfQuantifier
             instance = new Check_BnfQuantifier();
@@ -28,13 +27,9 @@ public final class Check_BnfQuantifier
 
     @Override
     protected boolean inspect(
-            @Nonnull Context ctx,
+            @Nonnull ParserContext ctx,
             @Nonnull BnfQuantifier q
     ) {
-        Result res = new Result();
-        res.fileName = ctx.getFilename();
-        res.type = Result.Type.WARN; // most of them are warnings
-        res.pos = q.getSymbol();
 
         Number min = q.getMin();
         Number max = q.getMax();
@@ -43,51 +38,67 @@ public final class Check_BnfQuantifier
         if (min != null) {
             if (pat.equals("{n}")) {
                 if (min.intValue() == 0) {
-                    res.type = Result.Type.ERROR;
-                    res.msg = "A quantity of zero is not allowed";
+                    ctx.reportError(q, ctx.i18n().getString(
+                            "syntax.quantifier.zero"
+                    ));
                 } else if(min.intValue() == 1) {
-                    res.msg = "Redundant: {1} can be omitted";
+                    ctx.reportWarn(q, ctx.i18n().getString(
+                            "syntax.quantifier.redundant"
+                    ), "{1}");
                 }
             } else if (pat.equals("{n,}")) {
                 if (min.intValue() == 0) {
-                    res.msg = "Redundant: {0,} can be replaced with `*`";
+                    ctx.reportWarn(q, ctx.i18n().getString(
+                            "syntax.quantifier.can_replace"
+                    ), "{0,}", "*");
                 } else if (min.intValue() == 1) {
-                    res.msg = "Redundant: {1,} can be replaced with `+`";
+                    ctx.reportWarn(q, ctx.i18n().getString(
+                            "syntax.quantifier.can_replace"
+                    ), "{1,}", "+");
                 }
             } else if (pat.equals("{n,m}") && max != null) {
                 int minVal = min.intValue();
                 int maxVal = max.intValue();
                 if (minVal == 0) {
                     if (maxVal == 1) {
-                        res.msg = "Redundant: {0,1} can be replaced with `?`";
+                        ctx.reportWarn(q, ctx.i18n().getString(
+                                "syntax.quantifier.can_replace"
+                        ), "{0,1}", "?");
                     } else {
-                        res.msg = "Redundant: {0,m} can be replaced with {,m}";
+                        ctx.reportWarn(q, ctx.i18n().getString(
+                                "syntax.quantifier.can_replace"
+                        ), "{0,m}", "{,m}");
                     }
                 } else if (minVal == maxVal) {
                     if (minVal == 1) {
-                        res.msg = "Redundant: {1,1} can be omitted";
+                        ctx.reportWarn(q, ctx.i18n().getString(
+                                "syntax.quantifier.redundant"
+                        ), "{1,1}");
                     } else {
-                        res.msg = "Redundant: {n,n} can be replaced with {n}";
+                        ctx.reportWarn(q, ctx.i18n().getString(
+                                "syntax.quantifier.can_replace"
+                        ), "{n,n}", "{n}");
                     }
                 } else if (minVal > maxVal) {
-                    res.type = Result.Type.ERROR;
-                    res.msg = "Lower bound greater than upper bound";
+                    ctx.reportError(q, ctx.i18n().getString(
+                            "syntax.quantifier.n_gt_m"
+                    ));
                 }
             }
         } else if (max != null) {
             if (pat.equals("{,n}")) {
                 if (max.intValue() == 0) {
-                    res.type = Result.Type.ERROR;
-                    res.msg = "An upper bound of zero is not allowed";
+                    ctx.reportError(q, ctx.i18n().getString(
+                            "syntax.quantifier.m_is_0"
+                    ));
                 } else if (max.intValue() == 1) {
-                    res.msg = "Redundant: {,1} can be replaced with `?`";
+                    ctx.reportWarn(q, ctx.i18n().getString(
+                            "syntax.quantifier.can_replace"
+                    ), "{,1}", "?");
                 }
             }
         }
 
-        if (res.msg != null) {
-            ctx.report(res);
-        }
         return true;
     }
 

@@ -10,6 +10,29 @@ public class StNodeFactory extends LdfTokenFactory {
     private StNode lastToken;
 
     @Override
+    public Symbol startSymbol(String symName, int symCode, int parse_state) {
+        StNode s = (StNode) super.startSymbol(
+                symName, symCode, parse_state
+        );
+
+        /*
+            It may be the case that CUP called `scanner.next_token()`
+            (which in turn called `StNodeFactory.newToken()`) *before*
+            `startSymbol()`.
+
+            As a result, the `START` and first input token will not be
+            linked as leaves in the syntax tree, which causes a bug in
+            `StNode.insertEmptySymbol()` (called by `newEmptySymbol()`)
+            when the LR(1) algorithm begins with a *reduce* action.
+
+            The following call to `linkTokens` fixes this issue.
+        */
+        s.setRightPos(lastToken);
+        StNode.linkTokens(s, lastToken);
+        return s;
+    }
+
+    @Override
     protected Symbol newSymbol(
             String symName, int symCode, int parse_state
     ) {

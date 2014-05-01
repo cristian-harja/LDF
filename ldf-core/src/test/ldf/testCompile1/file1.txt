@@ -1,0 +1,3 @@
+// this should yield a "duplicate declaration" error
+grammar Ex1 {}
+grammar Ex1 {}

@@ -1,38 +1,42 @@
 package ldf.parser.ast;
 
-import ldf.parser.ast.decl.DeclGrammar;
 import ldf.parser.ast.decl.DeclList;
-import ldf.parser.ast.decl.Declaration;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Root of the AST; represents a source file.
  *
  * @author Cristian Harja
  */
+@ThreadSafe
 public final class AstSourceFile extends AstNode {
+
+    @Nullable
+    private Reference packageName;
+
+    @Nonnull
     private DeclList declarations;
 
-    public AstSourceFile(@Nonnull DeclList declarations) {
+    public AstSourceFile(
+            @Nullable Reference packageName,
+            @Nonnull DeclList declarations
+    ) {
+        this.packageName = packageName;
         this.declarations = declarations;
-        addAstChildren(declarations);
+        addAstChildren(packageName, declarations);
     }
 
+    @Nullable
+    public Reference getPackageName() {
+        return packageName;
+    }
+
+    @Nonnull
     public DeclList getDeclarations() {
         return declarations;
-    }
-
-    public DeclGrammar findGrammar(String name) {
-        for (Declaration d : declarations.getItems()) {
-            if (d instanceof DeclGrammar) {
-                DeclGrammar g = (DeclGrammar) d;
-                if (g.getId().getName().equals(name)) {
-                    return g;
-                }
-            }
-        }
-        return null;
     }
 
 }

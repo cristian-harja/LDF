@@ -1,12 +1,11 @@
 package ldf.parser.syntax;
 
-import ldf.parser.Context;
+import ldf.parser.ParserContext;
 import ldf.parser.ast.bnf.BnfAbstractAction;
 import ldf.parser.ast.bnf.BnfItem;
 import ldf.parser.ast.bnf.BnfLabel;
 import ldf.parser.ast.bnf.BnfQuantifier;
 import ldf.parser.inspect.Inspection;
-import ldf.parser.inspect.Result;
 
 import javax.annotation.Nonnull;
 
@@ -17,7 +16,7 @@ import javax.annotation.Nonnull;
  * @author Cristian Harja
  */
 public final class Check_BnfAbstractAction
-        extends Inspection<Context, BnfItem> {
+        extends Inspection<ParserContext, BnfItem> {
 
     private static final Check_BnfAbstractAction
             instance = new Check_BnfAbstractAction();
@@ -31,34 +30,26 @@ public final class Check_BnfAbstractAction
     }
 
     @Override
-    protected boolean filter(Context ctx, @Nonnull BnfItem obj) {
+    protected boolean filter(ParserContext ctx, @Nonnull BnfItem obj) {
         return obj.getAtom() instanceof BnfAbstractAction;
     }
 
     @Override
     protected boolean inspect(
-            @Nonnull Context ctx,
+            @Nonnull ParserContext ctx,
             @Nonnull BnfItem item
     ) {
         BnfQuantifier quantifier = item.getQuantifier();
         if (quantifier != null) {
-            Result res = new Result();
-            res.fileName = ctx.getFilename();
-            res.pos = quantifier.getSymbol();
-            res.type = Result.Type.ERROR;
-            res.msg = "Syntax error: " +
-                    "Quantifier on grammar action is not allowed";
-            ctx.report(res);
+            ctx.reportError(quantifier, ctx.i18n().getString(
+                    "syntax.action.has_quantifier"
+            ));
         }
         BnfLabel label = item.getLabel();
         if (label != null) {
-            Result res = new Result();
-            res.fileName = ctx.getFilename();
-            res.pos = label.getSymbol();
-            res.type = Result.Type.ERROR;
-            res.msg = "Syntax error: " +
-                    "Label on grammar action is not allowed";
-            ctx.report(res);
+            ctx.reportError(label, ctx.i18n().getString(
+                    "syntax.action.has_label"
+            ));
         }
         return true;
     }

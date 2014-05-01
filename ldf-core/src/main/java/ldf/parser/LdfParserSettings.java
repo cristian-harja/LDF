@@ -1,6 +1,10 @@
 package ldf.parser;
 
+import ldf.CompilerLog;
+
 import java.io.*;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Provides the means for setting up an instance of the {@link LdfParser}.
@@ -17,6 +21,9 @@ public class LdfParserSettings {
 
     boolean syntaxTree;
     boolean recordInput;
+    Locale locale;
+    CompilerLog logger;
+    ResourceBundle i18n;
 
 
     public void setInput(Reader reader) {
@@ -59,5 +66,15 @@ public class LdfParserSettings {
         recordInput = b;
     }
 
+    public void setLocale(Locale locale) {
+        this.locale = locale;
+    }
 
+    public void setLogger(CompilerLog logger) {
+        this.logger = logger;
+    }
+
+    public void setI18n(ResourceBundle i18n) {
+        this.i18n = i18n;
+    }
 }

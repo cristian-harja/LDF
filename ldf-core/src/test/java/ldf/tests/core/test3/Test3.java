@@ -1,7 +1,6 @@
 package ldf.tests.core.test3;
 
 import ldf.java_cup.runtime.Scanner;
-import ldf.java_cup.runtime.Symbol;
 import ldf.parser.st.StNode;
 import ldf.parser.st.StNodeFactory;
 import org.junit.Test;
@@ -18,7 +17,7 @@ public class Test3 {
 
     static class MyTokenFactory extends StNodeFactory {
         @Override
-        protected Symbol newSymbol(
+        protected StNode newSymbol(
                 String symName, int symCode, int parse_state
         ) {
             return new StNode(symName, symCode, parse_state) {
@@ -56,5 +55,6 @@ public class Test3 {
 
         assertEquals("(1,2,(3),())", s.toString());
 
+        Thread.sleep(200);
     }
 }
