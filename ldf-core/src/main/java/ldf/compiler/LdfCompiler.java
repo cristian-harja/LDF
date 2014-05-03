@@ -2,11 +2,12 @@ package ldf.compiler;
 
 import ldf.compiler.context.CompilerContext;
 import ldf.compiler.context.ContextImpl;
-import ldf.compiler.phases.Check_DeclaredSymbols;
-import ldf.compiler.phases.Phase_CollectDeclarations;
+import ldf.compiler.phases.*;
 import ldf.compiler.semantics.symbols.NsNode;
+import ldf.compiler.semantics.symbols.Scope;
 import ldf.compiler.semantics.types.TypeEnv;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -16,12 +17,14 @@ import java.util.TreeMap;
 /**
  * @author Cristian Harja
  */
+@NotThreadSafe
 public final class LdfCompiler extends ContextImpl
         implements CompilerContext {
 
     final List<File> sources;
     final TypeEnv typeEnv;
     final NsNode globalNS;
+    final Scope globalScope;
 
     final Map<File, LdfParser> parsedFiles;
 
@@ -29,6 +32,7 @@ public final class LdfCompiler extends ContextImpl
         sources = settings.sources;
         typeEnv = settings.typeEnv.newInstance();
         globalNS = NsNode.initGlobalNS();
+        globalScope = new Scope();
 
         initLogger(
                 settings.locale,
@@ -37,6 +41,36 @@ public final class LdfCompiler extends ContextImpl
         );
 
         parsedFiles = new TreeMap<File, LdfParser>();
+    }
+
+    public void compileParsedFiles() {
+
+        for (LdfParser parser: parsedFiles.values()) {
+
+            // create `Scope` objects
+            Phase_InitScopes.initScopes(
+                    this, parser.getAbstractSyntaxTree()
+            );
+
+            // catalog declared symbols which are visible from the global scope
+            Phase_CollectDeclarations.collectSymbols(
+                    this, parser.getAbstractSyntaxTree()
+            );
+        }
+
+        // report clashing / duplicate declarations
+        Check_DeclaredSymbols.checkSymbols(globalNS);
+
+        // populate scopes with imported/declared symbols
+        for (LdfParser parser: parsedFiles.values()) {
+            Phase_ResolveImports.resolveImports(
+                    this, parser.getAbstractSyntaxTree()
+            );
+        }
+
+        // report cyclic dependencies in grammars
+        Check_GrammarExtendsCycles.checkExtends(globalNS);
+
     }
 
     @Override
@@ -49,6 +83,11 @@ public final class LdfCompiler extends ContextImpl
         return globalNS;
     }
 
+    @Override
+    public Scope getGlobalScope() {
+        return globalScope;
+    }
+
     public synchronized void parseAllFiles() {
         for (File f : sources) {
             if (f.isFile()) {
@@ -59,15 +98,6 @@ public final class LdfCompiler extends ContextImpl
                 }
             }
         }
-    }
-
-    public synchronized void compileParsedFiles() {
-        for (LdfParser parser: parsedFiles.values()) {
-            Phase_CollectDeclarations.collectSymbols(
-                    parser, globalNS
-            );
-        }
-        Check_DeclaredSymbols.checkSymbols(globalNS);
     }
 
     private LdfParser parseSourceCode(File f) throws FileNotFoundException {

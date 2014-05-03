@@ -1,6 +1,7 @@
 package ldf.compiler.context;
 
 import ldf.compiler.semantics.symbols.NsNode;
+import ldf.compiler.semantics.symbols.Scope;
 import ldf.compiler.semantics.types.TypeEnv;
 
 /**
@@ -10,5 +11,6 @@ public interface CompilerContext extends Context {
 
     TypeEnv getTypeEnvironment();
     NsNode getGlobalNamespace();
+    Scope getGlobalScope();
 
 }

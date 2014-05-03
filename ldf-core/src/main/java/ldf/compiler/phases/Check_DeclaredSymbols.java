@@ -1,17 +1,19 @@
 package ldf.compiler.phases;
 
 import com.google.common.collect.Multimap;
+import ldf.compiler.ast.AstIdentifier;
+import ldf.compiler.context.ParserContext;
 import ldf.compiler.semantics.symbols.NsNode;
 import ldf.compiler.semantics.symbols.NsNodeType;
-import ldf.compiler.context.ParserContext;
-import ldf.compiler.ast.AstIdentifier;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
+ * Runs after {@link Phase_CollectDeclarations} to detect conflicting
+ * declarations.
+ *
  * @author Cristian Harja
  */
 public final class Check_DeclaredSymbols {
@@ -47,12 +49,11 @@ public final class Check_DeclaredSymbols {
 
     private static void reportDuplicates(Collection<NsNode> nodes) {
         for (NsNode node : nodes) {
-            for (AstIdentifier id : node.getIdentifiers()) {
-                ParserContext ctx = id.getParserContext();
-                ctx.reportError(id, ctx.i18n().getString(
-                        "declaration.duplicate"
-                ), node.getType(), id.getName());
-            }
+            AstIdentifier id = node.getIdentifier();
+            ParserContext ctx = id.getParserContext();
+            ctx.reportError(id, ctx.i18n().getString(
+                    "declaration.duplicate"
+            ), node.getType(), id.getName());
         }
     }
 
@@ -61,14 +62,11 @@ public final class Check_DeclaredSymbols {
             NsNodeType type
     ) {
         for (NsNode node : nodes) {
-            Iterator<AstIdentifier> it = node.getIdentifiers().iterator();
-            if (it.hasNext()) {
-                AstIdentifier id = it.next();
-                ParserContext ctx = id.getParserContext();
-                ctx.reportError(id, ctx.i18n().getString(
-                        "declaration.clash"
-                ), id.getName(), type.toString());
-            }
+            AstIdentifier id = node.getIdentifier();
+            ParserContext ctx = id.getParserContext();
+            ctx.reportError(id, ctx.i18n().getString(
+                    "declaration.clash"
+            ), id.getName(), type.toString());
         }
     }
 
@@ -77,15 +75,14 @@ public final class Check_DeclaredSymbols {
             NsNode parentNode
     ) {
         for (NsNode node : nodes) {
-            for (AstIdentifier id : node.getIdentifiers()) {
-                ParserContext ctx = id.getParserContext();
-                ctx.reportError(id,
-                        ctx.i18n().getString("declaration.cant_contain"),
-                        node.getType(), id.getName(),
-                        parentNode.getType().toString(),
-                        parentNode.getName()
-                );
-            }
+            AstIdentifier id = node.getIdentifier();
+            ParserContext ctx = id.getParserContext();
+            ctx.reportError(id,
+                    ctx.i18n().getString("declaration.cant_contain"),
+                    node.getType(), id.getName(),
+                    parentNode.getType().toString(),
+                    parentNode.getName()
+            );
         }
     }
 

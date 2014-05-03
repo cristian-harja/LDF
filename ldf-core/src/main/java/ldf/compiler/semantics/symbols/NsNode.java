@@ -1,8 +1,7 @@
 package ldf.compiler.semantics.symbols;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.base.Predicate;
+import com.google.common.collect.*;
 import ldf.compiler.ast.AstIdentifier;
 import ldf.compiler.ast.AstNode;
 
@@ -11,9 +10,15 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.*;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.util.Collections.*;
 
 /**
+ * <p>Represents a global tree-like namespace of symbols. Used by the
+ * compiler to index packages, classes and grammars, and then resolve
+ * import statements and other references.
+ * </p>
+ *
  * @author Cristian Harja
  */
 @SuppressWarnings("unused")
@@ -36,7 +41,7 @@ public final class NsNode {
     private List<NsNode> readOnlyAnonChildren = emptyList();
 
     private AstIdentifier astIdentifier;
-    private AstNode associatedAstNode;
+    private AstNode astNode;
 
     protected NsNode(
             NsNodeType type,
@@ -106,12 +111,18 @@ public final class NsNode {
         return mm.get(type);
     }
 
+    /**
+     *
+     * @param id the name of the declared symbol
+     * @param type the type of the declared symbol
+     * @param astNode AST node corresponding to the entire declaration
+     */
     @SuppressWarnings("unchecked")
     @Nonnull
-    public synchronized NsNode newChild(
+    public synchronized NsNode declareChild(
             @Nonnull AstIdentifier id,
             @Nonnull NsNodeType type,
-            @Nonnull AstNode astNode
+            @Nullable AstNode astNode
     ) {
         String name = id.getName();
         if (children == null) {
@@ -130,13 +141,22 @@ public final class NsNode {
         Collection<NsNode> nodes = symbols.get(type);
         NsNode result;
         if (!nodes.isEmpty() && !type.isSealed()) {
-            result = nodes.iterator().next();
+            result = getOnlyElement(nodes);
         } else {
             result = new NsNode(type, this, name);
             symbols.put(type, result);
         }
+
+        // create references between these objects
         result.astIdentifier = id;
-        result.associatedAstNode = astNode;
+        id.setReferencedNsNode(result);
+        id.setDeclaredNsNode(result);
+
+        if (astNode != null) {
+            result.astNode = astNode;
+            astNode.setDeclaredNsNode(result);
+        }
+
         return result;
     }
 
@@ -151,7 +171,7 @@ public final class NsNode {
             readOnlyAnonChildren = unmodifiableList(anonChildren);
         }
         anonChildren.add(result);
-        result.associatedAstNode = astNode;
+        result.astNode = astNode;
         return result;
     }
 
@@ -164,8 +184,51 @@ public final class NsNode {
         return astIdentifier;
     }
 
-    public AstNode getAssociatedAstNode() {
-        return associatedAstNode;
+    public AstNode getAstNode() {
+        return astNode;
+    }
+
+    public Iterator<NsNode> findAllByDFS(
+            @Nullable final Predicate<NsNode> P
+    ) {
+        Iterator<NsNode> it = new UnmodifiableIterator<NsNode>() {
+
+            Stack<NsNode> q;
+
+            {
+                q = new Stack<NsNode>();
+                q.add(NsNode.this);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return !q.isEmpty();
+            }
+
+            @Override
+            public NsNode next() {
+                NsNode n = q.pop();
+                if (n.children != null) {
+                    for (Multimap<NsNodeType, NsNode> mm :
+                            n.children.values()) {
+                        q.addAll(mm.values());
+                    }
+                }
+                return n;
+            }
+        };
+
+        return P == null ? it : Iterators.filter(it, P);
+    }
+
+    public Iterator<NsNode> findAllByType(final NsNodeType t) {
+        return findAllByDFS(new Predicate<NsNode>() {
+            @Override
+            public boolean apply(@Nullable NsNode input) {
+                assert input != null;
+                return input.type == t;
+            }
+        });
     }
 
 }

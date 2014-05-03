@@ -1,6 +1,8 @@
 package ldf.compiler.ast;
 
 import ldf.compiler.ast.decl.DeclList;
+import ldf.compiler.semantics.symbols.NsNode;
+import ldf.compiler.util.Util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,6 +24,9 @@ public final class AstSourceFile extends AstNode {
 
     @Nonnull
     private DeclList declarations;
+
+    @Nonnull
+    private NsNode packageNsNode;
 
     public AstSourceFile(
             @Nullable Reference packageName,
@@ -47,5 +52,32 @@ public final class AstSourceFile extends AstNode {
     @Nonnull
     public DeclList getDeclarations() {
         return declarations;
+    }
+
+    @Override
+    public boolean hasOwnScope() {
+        return true;
+    }
+
+    /**
+     * <p>INTERNAL; Sets the {@link ldf.compiler.semantics.symbols.NsNode}
+     * object referenced by this AST node.
+     * </p>
+     * <p>Even though this method is public, it is only intended for use
+     * by the compiler (one of the compiler phases in {@code
+     * ldf.compiler.phases.*}).
+     * The first call to this method succeeds; subsequent ones will throw
+     * a {@link java.lang.IllegalStateException}.</p>
+     *
+     * @throws java.lang.IllegalStateException
+     */
+    public void setPackageNsNode(@Nonnull NsNode packageNsNode) {
+        Util.assertSetOnce(this.packageNsNode, "setPackageNsNode");
+        this.packageNsNode = packageNsNode;
+    }
+
+    @Nonnull
+    public NsNode getPackageNsNode() {
+        return packageNsNode;
     }
 }

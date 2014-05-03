@@ -3,6 +3,7 @@ package ldf.compiler.ast.decl;
 import ldf.compiler.ast.AstIdentifier;
 import ldf.compiler.ast.expr.Expression;
 import ldf.compiler.ast.type.TypeExpression;
+import ldf.compiler.semantics.symbols.NsNodeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,5 +57,17 @@ public final class DeclVariable extends Declaration {
     @Nullable
     public Expression getInitializer() {
         return initializer;
+    }
+
+    @Nullable
+    @Override
+    public AstIdentifier getDeclaredSymbolName() {
+        return getId();
+    }
+
+    @Nullable
+    @Override
+    public NsNodeType getDeclaredSymbolType() {
+        return NsNodeType.VARIABLE;
     }
 }

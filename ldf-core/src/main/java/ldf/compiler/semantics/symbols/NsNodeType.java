@@ -9,8 +9,8 @@ public enum NsNodeType {
     PACKAGE,
     GRAMMAR,
     CLASS,
-    FIELD,
-    METHOD,
+    VARIABLE,
+    FUNCTION,
     NTERM;
 
     private int mask = 1 << ordinal();
@@ -24,7 +24,7 @@ public enum NsNodeType {
 
         PACKAGE.childrenMask = PACKAGE.mask | GRAMMAR.mask;
         GRAMMAR.childrenMask = CLASS.mask | NTERM.mask;
-        CLASS.childrenMask   = FIELD.mask;
+        CLASS.childrenMask   = VARIABLE.mask;
 
         int clash =  PACKAGE.mask | CLASS.mask | GRAMMAR.mask;
         PACKAGE.clashingMask = clash;

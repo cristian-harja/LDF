@@ -1,5 +1,7 @@
 package ldf.compiler.util;
 
+import com.google.common.collect.Multimap;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.*;
@@ -26,6 +28,16 @@ public final class Util {
                     "Object already built: " + cls.getName()
             );
         }
+    }
+
+    public static void assertSetOnce(
+            Object currentValue, String functionName
+    ) throws IllegalStateException {
+        if (currentValue == null) return;
+        throw new IllegalStateException(
+                functionName + "() must only be called ONCE, " +
+                        "upon object initialization"
+        );
     }
 
     /**
@@ -146,4 +158,33 @@ public final class Util {
                 }
             };
 
+
+    public static <T> boolean detectCycle(
+            Multimap<T, T> mm, T g
+    ) {
+        Set<T> set;
+        List<T> toAdd1, toAdd2, aux;
+        set = new TreeSet<T>(Util.NATIVE_HASH_COMPARATOR);
+        toAdd1 = new ArrayList<T>();
+        toAdd2 = new ArrayList<T>();
+        toAdd1.addAll(mm.get(g));
+
+        do {
+            for (T item : toAdd1) {
+                if (item == g) {
+                    return true;
+                }
+                if (set.add(item)) {
+                    toAdd2.addAll(mm.get(item));
+                }
+            }
+            toAdd1.clear();
+            aux = toAdd1;
+            toAdd1 = toAdd2;
+            toAdd2 = aux;
+
+        } while (!toAdd1.isEmpty());
+
+        return false;
+    }
 }

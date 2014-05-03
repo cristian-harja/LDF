@@ -1,23 +1,23 @@
 package ldf.compiler;
 
-import ldf.compiler.context.ContextImpl;
-import ldf.compiler.context.ParserContext;
-import ldf.java_cup.runtime.LocationAwareEntity;
-import ldf.java_cup.runtime.Scanner;
-import ldf.java_cup.runtime.Symbol;
 import ldf.compiler.ast.AstNode;
 import ldf.compiler.ast.AstSourceFile;
+import ldf.compiler.context.ContextImpl;
+import ldf.compiler.context.ParserContext;
 import ldf.compiler.gen.Lexer;
 import ldf.compiler.gen.parser;
 import ldf.compiler.inspect.InspectionSet;
-import ldf.compiler.syntax.tree.LdfTokenFactory;
-import ldf.compiler.syntax.tree.StNode;
-import ldf.compiler.syntax.tree.StNodeFactory;
 import ldf.compiler.syntax.Check_BnfAbstractAction;
 import ldf.compiler.syntax.Check_BnfQuantifier;
 import ldf.compiler.syntax.Check_LiteralString;
+import ldf.compiler.syntax.tree.LdfTokenFactory;
+import ldf.compiler.syntax.tree.StNode;
+import ldf.compiler.syntax.tree.StNodeFactory;
 import ldf.compiler.util.StreamRecorder;
 import ldf.compiler.util.SubSequenceImpl;
+import ldf.java_cup.runtime.LocationAwareEntity;
+import ldf.java_cup.runtime.Scanner;
+import ldf.java_cup.runtime.Symbol;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -96,7 +96,7 @@ public final class LdfParser extends ContextImpl
         if (settings.fileName != null) {
             fileName = settings.fileName;
         } else if (settings.inputFile != null) {
-            fileName = settings.inputFile.getAbsolutePath();
+            fileName = settings.inputFile.getName();
         } else {
             fileName = null;
         }
@@ -153,7 +153,7 @@ public final class LdfParser extends ContextImpl
             }
             if (parser.failed) {
                 reportError(
-                        parser.unrecoveredErrorPosition,
+                        fileName, parser.unrecoveredErrorPosition,
                         i18n().getString("syntax.unrecovered_error")
                 );
             }
@@ -205,33 +205,6 @@ public final class LdfParser extends ContextImpl
 
     }
 
-    @Override
-    public void reportError(
-            @Nullable LocationAwareEntity loc,
-            @Nonnull String format,
-            Object... args
-    ) {
-        hasErrors = true;
-        getLogger().logMessage(
-                getFileName(), format,
-                CompilerLog.EntryType.ERROR,
-                loc, args
-        );
-    }
-
-    @Override
-    public void reportWarn(
-            @Nullable LocationAwareEntity loc,
-            @Nonnull String format,
-            Object... args
-    ) {
-        getLogger().logMessage(
-                getFileName(), format,
-                CompilerLog.EntryType.WARN,
-                loc, args
-        );
-    }
-
     /**
      * @return a list of errors/warnings, sorted by their position in the
      *         input
@@ -246,6 +219,22 @@ public final class LdfParser extends ContextImpl
 
     public String getFileName() {
         return fileName;
+    }
+
+    @Override
+    public void reportError(
+            @Nullable LocationAwareEntity pos,
+            @Nonnull String format, Object... args
+    ) {
+        reportError(getFileName(), pos, format, args);
+    }
+
+    @Override
+    public void reportWarn(
+            @Nullable LocationAwareEntity pos,
+            @Nonnull String format, Object... args
+    ) {
+        reportWarn(getFileName(), pos, format, args);
     }
 
     public boolean successful() {

@@ -3,6 +3,7 @@ package ldf.compiler.ast.decl;
 import ldf.compiler.ast.AstIdentifier;
 import ldf.compiler.ast.bnf.BnfSyntax;
 import ldf.compiler.ast.type.TypeExpression;
+import ldf.compiler.semantics.symbols.NsNodeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -65,5 +66,15 @@ public final class DeclNonTerminal extends Declaration {
     @Nonnull
     public TypeExpression getType() {
         return type;
+    }
+
+    @Override
+    public AstIdentifier getDeclaredSymbolName() {
+        return getId();
+    }
+
+    @Override
+    public NsNodeType getDeclaredSymbolType() {
+        return NsNodeType.NTERM;
     }
 }

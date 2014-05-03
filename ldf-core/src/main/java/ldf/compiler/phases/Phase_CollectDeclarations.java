@@ -1,18 +1,23 @@
 package ldf.compiler.phases;
 
-import ldf.compiler.LdfParser;
 import ldf.compiler.ast.AstIdentifier;
-import ldf.compiler.ast.AstNode;
 import ldf.compiler.ast.AstSourceFile;
 import ldf.compiler.ast.Reference;
-import ldf.compiler.ast.decl.*;
+import ldf.compiler.ast.decl.Declaration;
+import ldf.compiler.context.CompilerContext;
+import ldf.compiler.context.ParserContext;
 import ldf.compiler.semantics.symbols.NsNode;
 import ldf.compiler.semantics.symbols.NsNodeType;
+import ldf.compiler.semantics.symbols.Scope;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
 
 /**
+ * Scans for declared symbols (packages, classes, grammars, functions,
+ * fields); one of the first compiler phases.
+ *
  * @author Cristian Harja
  */
 public final class Phase_CollectDeclarations {
@@ -26,87 +31,53 @@ public final class Phase_CollectDeclarations {
             return root;
         }
         for (AstIdentifier id : ref.getPath()) {
-            root = root.newChild(id, NsNodeType.PACKAGE, id);
+            if (id.getName().equals("_")) {
+                ParserContext ctx = id.getParserContext();
+                ctx.reportError(id, ctx.i18n().getString(
+                        "syntax.wildcard.not_allowed"
+                ));
+                return root;
+            }
+            root = root.declareChild(id, NsNodeType.PACKAGE, null);
         }
         return root;
     }
 
     public static void collectSymbols(
-            LdfParser parser,
-            NsNode nsNode
+            CompilerContext ctx,
+            AstSourceFile file
     ) {
-        AstSourceFile f = parser.getAbstractSyntaxTree();
-        nsNode = getPackage(nsNode, f.getPackageName());
-        for (Declaration d : f.getDeclarations().getItems()) {
-            collectSymbols(nsNode, d);
-        }
-    }
+        NsNode packageNode = getPackage(
+                ctx.getGlobalNamespace(),
+                file.getPackageName()
+        );
+        file.setPackageNsNode(packageNode);
 
-    private static void collectSymbols(
-            NsNode nsNode,
-            AstNode astNode
-    ) {
-        if (astNode instanceof DeclGrammar) {
-            collectSymbols(nsNode, (DeclGrammar) astNode);
-        } else if (astNode instanceof DeclNonTerminal) {
-            collectSymbols(nsNode, (DeclNonTerminal) astNode);
-        } else if (astNode instanceof DeclClass) {
-            collectSymbols(nsNode, (DeclClass) astNode);
-        } else if (astNode instanceof DeclVariable) {
-            collectSymbols(nsNode, (DeclVariable) astNode);
-        } else if (astNode instanceof DeclFunction) {
-            collectSymbols(nsNode, (DeclFunction) astNode);
-        } else {
-            throw new RuntimeException(
-                    "Can't collect symbol declaration from " +
-                            astNode.getClass().getCanonicalName()
+        Iterator<Declaration> it;
+        for (it = file.findAllOfType(Declaration.class); it.hasNext(); ) {
+
+            Declaration decl = it.next();
+            AstIdentifier id = decl.getDeclaredSymbolName();
+            NsNodeType t = decl.getDeclaredSymbolType();
+
+            if (id == null) continue;
+            assert t != null;
+
+            Declaration parentDecl = decl.getParentOfType(
+                    Declaration.class
             );
+
+            NsNode parentNsNode = parentDecl != null
+                    ? parentDecl.getDeclaredNsNode()
+                    : packageNode;
+
+            assert parentNsNode != null;
+
+            parentNsNode.declareChild(id, t, decl);
+
         }
-    }
 
-    private static void collectSymbols(
-            NsNode nsNode,
-            DeclGrammar grammar
-    ) {
-        NsNode grammarNS = nsNode.newChild(
-                grammar.getId(), NsNodeType.GRAMMAR, grammar
-        );
-        for (Declaration d : grammar.getDeclarations().getItems()) {
-            collectSymbols(grammarNS, d);
-        }
+        Scope globalScope = ctx.getGlobalScope();
+        globalScope.importAll(ctx.getGlobalNamespace());
     }
-
-    private static void collectSymbols(
-            NsNode nsNode,
-            DeclNonTerminal nterm
-    ) {
-        nsNode.newChild(nterm.getId(), NsNodeType.NTERM, nterm);
-    }
-
-    private static void collectSymbols(
-            NsNode nsNode,
-            DeclClass declClass
-    ) {
-        NsNode classNS = nsNode.newChild(
-                declClass.getId(), NsNodeType.CLASS, declClass
-        );
-        for (Declaration d : declClass.getDeclarations().getItems()) {
-            collectSymbols(classNS, d);
-        }
-    }
-
-    private static void collectSymbols(
-            NsNode nsNode,
-            DeclVariable declVar
-    ) {
-        nsNode.newChild(declVar.getId(), NsNodeType.FIELD, declVar);
-    }
-
-    private static void collectSymbols(
-            NsNode nsNode,
-            DeclFunction declFunc
-    ) {
-        nsNode.newChild(declFunc.getId(), NsNodeType.METHOD, declFunc);
-    }
-
 }

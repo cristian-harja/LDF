@@ -1,11 +1,14 @@
 package ldf.compiler.ast;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.UnmodifiableIterator;
+import ldf.compiler.context.ParserContext;
+import ldf.compiler.semantics.symbols.NsNode;
+import ldf.compiler.semantics.symbols.Scope;
+import ldf.compiler.util.Util;
 import ldf.java_cup.runtime.LocationAwareEntity;
 import ldf.java_cup.runtime.LocationAwareEntityWrapper;
 import ldf.java_cup.runtime.Symbol;
-import ldf.compiler.context.ParserContext;
-import ldf.compiler.util.Util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,6 +50,8 @@ public abstract class AstNode extends LocationAwareEntityWrapper
 
     private Map<Object, Object> extraInfo;
     private ParserContext parserContext;
+    private NsNode referencedNsNode, declaredNsNode;
+    private Scope scope;
 
     /**
      * Retrieves extra information associated with this node.
@@ -99,39 +104,109 @@ public abstract class AstNode extends LocationAwareEntityWrapper
         return symbol;
     }
 
-    public ParserContext getParserContext() {
+    public final ParserContext getParserContext() {
         return parserContext;
     }
 
+    @Nullable
+    public final NsNode getReferencedNsNode() {
+        return referencedNsNode;
+    }
+
+    @Nullable
+    public final NsNode getDeclaredNsNode() {
+        return declaredNsNode;
+    }
+
+    public final Scope getScope() {
+        return scope;
+    }
+
+    public boolean hasOwnScope() {
+        return false;
+    }
+
     /**
-     * <p>Sets the {@link ldf.java_cup.runtime.Symbol} object for this AST
-     * node. Even though this method is public, it is only intended for use
+     * <p>INTERNAL; Sets the {@link ldf.java_cup.runtime.Symbol}
+     * object for this AST node.
+     * </p>
+     * <p>Even though this method is public, it is only intended for use
      * by the parser (more specifically, by the {@link
-     * ldf.compiler.syntax.tree.StNodeFactory} class).</p>
-     *
-     * <p>The first call to this method succeeds; subsequent ones will
-     * throw a {@link java.lang.IllegalStateException}.</p>
+     * ldf.compiler.syntax.tree.LdfTokenFactory} class).
+     * The first call to this method succeeds; subsequent ones will throw
+     * a {@link java.lang.IllegalStateException}.</p>
      *
      * @throws java.lang.IllegalStateException
      */
-    public final synchronized void setSymbol(@Nonnull Symbol stNode) {
-        if (this.symbol != null) {
-            throw new IllegalStateException(
-                    "setSymbol() must only be called ONCE, upon " +
-                            "object initialization"
-            );
-        }
-        this.symbol = stNode;
+    public final synchronized void setSymbol(@Nonnull Symbol symbol) {
+        Util.assertSetOnce(this.symbol, "setSymbol");
+        this.symbol = symbol;
     }
 
-    public void setParserContext(ParserContext parserContext) {
-        if (this.parserContext != null) {
-            throw new IllegalStateException(
-                    "setParserContext() must only be called ONCE, upon " +
-                            "object initialization"
-            );
-        }
+    /**
+     * <p>INTERNAL; Sets the {@link ldf.compiler.context.ParserContext}
+     * object for this AST node.
+     * </p>
+     * <p>Even though this method is public, it is only intended for use
+     * by the parser (more specifically, by the {@link
+     * ldf.compiler.syntax.tree.LdfTokenFactory} class).
+     * The first call to this method succeeds; subsequent ones will throw
+     * a {@link java.lang.IllegalStateException}.</p>
+     *
+     * @throws java.lang.IllegalStateException
+     */
+    public final void setParserContext(ParserContext parserContext) {
+        Util.assertSetOnce(this.parserContext, "setParserContext");
         this.parserContext = parserContext;
+    }
+
+    /**
+     * <p>INTERNAL; Sets the {@link ldf.compiler.semantics.symbols.Scope}
+     * object for this AST node.
+     * </p>
+     * <p>Even though this method is public, it is only intended for use
+     * by the compiler (more specifically, by the {@link
+     * ldf.compiler.phases.Phase_InitScopes} class).
+     * The first call to this method succeeds; subsequent ones will throw
+     * a {@link java.lang.IllegalStateException}.</p>
+     *
+     * @throws java.lang.IllegalStateException
+     */
+    public final void setScope(Scope scope) {
+        Util.assertSetOnce(this.scope, "setScope");
+        this.scope = scope;
+    }
+
+    /**
+     * <p>INTERNAL; Sets the {@link ldf.compiler.semantics.symbols.NsNode}
+     * object referenced by this AST node.
+     * </p>
+     * <p>Even though this method is public, it is only intended for use
+     * by the compiler (one of the compiler phases in {@code
+     * ldf.compiler.phases.*}).
+     * The first call to this method succeeds; subsequent ones will throw
+     * a {@link java.lang.IllegalStateException}.</p>
+     *
+     * @throws java.lang.IllegalStateException
+     */
+    public final void setReferencedNsNode(NsNode referencedNsNode) {
+        this.referencedNsNode = referencedNsNode;
+    }
+
+    /**
+     * <p>INTERNAL; Sets the {@link ldf.compiler.semantics.symbols.NsNode}
+     * object referenced by this AST node.
+     * </p>
+     * <p>Even though this method is public, it is only intended for use
+     * by the compiler (one of the compiler phases in {@code
+     * ldf.compiler.phases.*}).
+     * The first call to this method succeeds; subsequent ones will throw
+     * a {@link java.lang.IllegalStateException}.</p>
+     *
+     * @throws java.lang.IllegalStateException
+     */
+    public final void setDeclaredNsNode(NsNode declaredNsNode) {
+        this.declaredNsNode = declaredNsNode;
     }
 
     @Nullable
@@ -159,6 +234,9 @@ public abstract class AstNode extends LocationAwareEntityWrapper
             @Nonnull Class<T> type,
             int maxDistance
     ) {
+        if (!AstNode.class.isAssignableFrom(type)) {
+            return null;
+        }
         AstNode cursor = this;
         while (maxDistance-- != 0) {
             cursor = cursor.astParent;
@@ -333,7 +411,7 @@ public abstract class AstNode extends LocationAwareEntityWrapper
     public final Iterator<AstNode> findAllByDFS(
             final @Nullable Predicate<AstNode> P
     ) {
-        return new Iterator<AstNode>() {
+        return new UnmodifiableIterator<AstNode>() {
 
             boolean initialized, consumed;
             AstNode initial = AstNode.this;
@@ -408,11 +486,46 @@ public abstract class AstNode extends LocationAwareEntityWrapper
                 return next;
             }
 
+        };
+    }
+
+    public Iterator<AstNode> findAllByBFS(
+            final @Nullable Predicate<AstNode> P
+    ) {
+        return new UnmodifiableIterator<AstNode>() {
+            private final Queue<AstNode> nodes;
+
+            {
+                nodes = new LinkedList<AstNode>();
+                nodes.add(AstNode.this);
+            }
+
             @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
+            public boolean hasNext() {
+                return !nodes.isEmpty();
+            }
+
+            @Override
+            public AstNode next() {
+                AstNode node = nodes.remove();
+                for (AstNode n : node) {
+                    nodes.add(n);
+                }
+                return node;
             }
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends AstNode> Iterator<T> findAllOfType(
+            final @Nonnull Class<? extends T> clazz
+    ) {
+        return (Iterator<T>) findAllByDFS(new Predicate<AstNode>() {
+            @Override
+            public boolean apply(AstNode input) {
+                return clazz.isAssignableFrom(input.getClass());
+            }
+        });
     }
 
     private void addChild(@Nonnull AstNode node) {

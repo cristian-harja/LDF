@@ -68,13 +68,14 @@ public abstract class ContextImpl implements Context {
      * Used to report an error to the compiler.
      */
     public void reportError(
-            @Nullable LocationAwareEntity loc,
-            @Nonnull String format,  Object... args
+            @Nullable String fileName,
+            @Nullable LocationAwareEntity pos,
+            @Nonnull String format, Object... args
     ) {
         getLogger().logMessage(
-                null, format,
                 CompilerLog.EntryType.ERROR,
-                loc, args
+                fileName, pos,
+                format, args
         );
     }
 
@@ -82,13 +83,14 @@ public abstract class ContextImpl implements Context {
      * Used to report a warning to the compiler.
      */
     public void reportWarn(
-            @Nullable LocationAwareEntity loc,
+            @Nullable String fileName,
+            @Nullable LocationAwareEntity pos,
             @Nonnull String format, Object... args
     ) {
         getLogger().logMessage(
-                null, format,
                 CompilerLog.EntryType.WARN,
-                loc, args
+                fileName, pos,
+                format, args
         );
     }
 }

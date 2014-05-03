@@ -1,10 +1,10 @@
 package ldf.compiler.ast;
 
-import ldf.compiler.util.Util.ListBuilder;
 import ldf.compiler.ags.AgsNode;
 import ldf.compiler.ast.bnf.BnfAtom;
 import ldf.compiler.ast.bnf.BnfAtomType;
 import ldf.compiler.ast.expr.Expression;
+import ldf.compiler.util.Util.ListBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;

@@ -160,10 +160,10 @@ main
     ;
 
 import_list_
-    ::= import_list_:b IMPORT expr_reference:ref EQ_GT id:id
+    ::= import_list_:b IMPORT expr_reference:ref EQ_GT id:id SEMICOLON
         {:  RESULT = b.add(ref, id); :}
 
-    |   import_list_:b IMPORT expr_reference:ref
+    |   import_list_:b IMPORT expr_reference:ref SEMICOLON
         {:  RESULT = b.add(ref, null); :}
 
     |   /* empty */

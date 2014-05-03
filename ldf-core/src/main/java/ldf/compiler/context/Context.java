@@ -26,15 +26,17 @@ public interface Context {
      * Used to report an error to the compiler.
      */
     void reportError(
-            @Nullable LocationAwareEntity loc,
-            @Nonnull String format,  Object... args
+            @Nullable String fileName,
+            @Nullable LocationAwareEntity pos,
+            @Nonnull String format, Object... args
     );
 
     /**
      * Used to report a warning to the compiler.
      */
     void reportWarn(
-            @Nullable LocationAwareEntity loc,
+            @Nullable String fileName,
+            @Nullable LocationAwareEntity pos,
             @Nonnull String format, Object... args
     );
 

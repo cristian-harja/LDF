@@ -69,10 +69,10 @@ public class CompilerLog {
     }
 
     public void logMessage(
-            @Nullable String fileName,
-            @Nonnull String format,
             @Nonnull EntryType type,
+            @Nullable String fileName,
             @Nullable LocationAwareEntity pos,
+            @Nonnull String format,
             @Nonnull Object[] args
     ) {
         Entry res = new Entry();

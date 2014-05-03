@@ -1,3 +1,11 @@
-// this should yield a "duplicate declaration" error
-grammar Ex1 {}
-grammar Ex1 {}
+package Ex1.Demo._;
+import Ex1 => Alias;
+
+grammar Ex1 : Alias.Demo.Ex2 {
+    class A {}
+    class A {}
+}
+
+grammar Ex2 : Ex1 {
+    class A {}
+}

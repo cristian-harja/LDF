@@ -1,9 +1,10 @@
 package ldf.compiler.ast.decl;
 
 import ldf.compiler.ast.AstIdentifier;
-import ldf.compiler.ast.type.TypeExpression;
 import ldf.compiler.ast.expr.FormalParamList;
 import ldf.compiler.ast.stmt.StmtBlock;
+import ldf.compiler.ast.type.TypeExpression;
+import ldf.compiler.semantics.symbols.NsNodeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -67,4 +68,18 @@ public final class DeclFunction extends Declaration {
         return body;
     }
 
+    @Override
+    public boolean hasOwnScope() {
+        return true;
+    }
+
+    @Override
+    public AstIdentifier getDeclaredSymbolName() {
+        return getId();
+    }
+
+    @Override
+    public NsNodeType getDeclaredSymbolType() {
+        return NsNodeType.FUNCTION;
+    }
 }

@@ -1,5 +1,8 @@
 package ldf.compiler.context;
 
+import ldf.java_cup.runtime.LocationAwareEntity;
+
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -14,5 +17,16 @@ public interface ParserContext extends Context {
      */
     @Nullable
     String getFileName();
+
+    void reportError(
+            @Nullable LocationAwareEntity pos,
+            @Nonnull String format, Object... args
+    );
+
+    void reportWarn(
+            @Nullable LocationAwareEntity pos,
+            @Nonnull String format, Object... args
+    );
+
 
 }

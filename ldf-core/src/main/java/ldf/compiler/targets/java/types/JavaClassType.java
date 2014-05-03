@@ -8,6 +8,8 @@ import javax.annotation.concurrent.Immutable;
 import java.io.IOException;
 import java.util.*;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
+
 /**
  * @author Cristian Harja
  */
@@ -45,7 +47,7 @@ public final class JavaClassType extends DataType {
             return NoType.INSTANCE;
         }
 
-        return new JavaClassType(bounds.iterator().next());
+        return new JavaClassType(getOnlyElement(bounds));
     }
 
     public static Collection<Class<?>> getLeastUpperBounds(
