@@ -40,6 +40,7 @@ public final class Check_GrammarExtendsCycles {
             for (Reference r : g.getExtendedGrammars()) {
                 NsNode ex = r.getReferencedNsNode();
                 if (ex == null) continue;
+                if (ex.getType() != NsNodeType.GRAMMAR) continue;
                 mm.put(g, (DeclGrammar) ex.getAstNode());
             }
         }
@@ -54,7 +55,7 @@ public final class Check_GrammarExtendsCycles {
             if (Util.detectCycle(mm, g)) {
                 ParserContext ctx = g.getParserContext();
                 ctx.reportError(g, ctx.i18n().getString(
-                        "cyclic.dependency"
+                        "extends.cyclic_dependency"
                 ), g.getId().getName());
             }
         }

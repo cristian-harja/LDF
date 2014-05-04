@@ -4,8 +4,9 @@ import Ex1 => Alias;
 grammar Ex1 : Alias.Demo.Ex2 {
     class A {}
     class A {}
+    class B {}
 }
 
-grammar Ex2 : Ex1 {
+grammar Ex2 : Ex1, Ex1.B {
     class A {}
 }

@@ -6,11 +6,14 @@ import ldf.compiler.ast.ImportList;
 import ldf.compiler.ast.Reference;
 import ldf.compiler.ast.decl.DeclGrammar;
 import ldf.compiler.context.CompilerContext;
+import ldf.compiler.context.ParserContext;
 import ldf.compiler.semantics.symbols.NsNode;
+import ldf.compiler.semantics.symbols.NsNodeType;
 import ldf.compiler.semantics.symbols.Scope;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Populates {@link Scope} objects with imported symbols (via the {@code
@@ -63,6 +66,7 @@ public final class Phase_ResolveImports {
     private static void resolveGrammarExtends(
             AstSourceFile file
     ) {
+        ParserContext ctx = file.getParserContext();
         Iterator<DeclGrammar> it = file.findAllOfType(DeclGrammar.class);
         while (it.hasNext()) {
             DeclGrammar grammar = it.next();
@@ -75,6 +79,18 @@ public final class Phase_ResolveImports {
                 );
                 //*/
                 if (n == null) continue;
+                if (n.getType() != NsNodeType.GRAMMAR) {
+                    List<AstIdentifier> path = r.getPath();
+                    AstIdentifier id = path.get(path.size() - 1);
+                    ctx.reportError(r,
+                            ctx.i18n().getString(
+                                    "extends.illegal_target"
+                            ),
+                            NsNodeType.GRAMMAR, grammar.getId(),
+                            n.getType(), id
+                    );
+                    continue;
+                }
                 grammar.getScope().importAll(n);
             }
         }
