@@ -1,30 +1,14 @@
 package Ex1;
 
 grammar Ex2 {
-    // multiple `nterm` declarations don't yield an error
-    nterm A;
-    nterm A ::= ;
-    nterm A ::= ;
-    nterm B;
-    nterm B;
+    nterm A ::= x@(y@a z@b) x@(y@c) {@action};
 
-    // doesn't clash with nterm
-    class B {
+    nterm B ::= x@a | x@(y@b) {@action};
 
-        // nested classes not allowed (right now)
-        class C {
-            var x : T;
+    nterm C ::= x@a y@(z@b | z@c {@A1}) {@A2};
 
-            // methods not allowed (right now)
-            def meth(a : T1, b : T2) : T { return 0; }
-        }
+    nterm D ::= (x@a y@b)+;
 
-        var y : T;
-    }
-
-    // no conflict with B.C
-    class C {
-        var z : T;
-    }
+    nterm E ::= z@[x@a,y@b]+;
 
 }

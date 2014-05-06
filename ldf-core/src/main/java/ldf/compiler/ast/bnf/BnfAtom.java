@@ -1,6 +1,6 @@
 package ldf.compiler.ast.bnf;
 
-import ldf.compiler.ags.AgsNode;
+import ldf.compiler.semantics.ags.AgsNode;
 
 /**
  * <p>Common interface for BNF "atoms", which are the kernel of {@link
@@ -41,7 +41,7 @@ public interface BnfAtom {
      * Returns an `Abstract Grammar Specification` node, equivalent to
      * this node's AST.
      *
-     * @see ldf.compiler.ags.AgsNode
+     * @see ldf.compiler.semantics.ags.AgsNode
      */
     AgsNode getAbstractGrammarSpec();
 }

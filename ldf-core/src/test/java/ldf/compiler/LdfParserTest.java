@@ -1,7 +1,7 @@
 package ldf.compiler;
 
-import ldf.compiler.ags.AgsNode;
-import ldf.compiler.ags.AgsNodeUnion;
+import ldf.compiler.semantics.ags.AgsNode;
+import ldf.compiler.semantics.ags.AgsNodeUnion;
 import ldf.compiler.ast.AstSourceFile;
 import ldf.compiler.ast.decl.DeclGrammar;
 import ldf.compiler.ast.decl.Declaration;

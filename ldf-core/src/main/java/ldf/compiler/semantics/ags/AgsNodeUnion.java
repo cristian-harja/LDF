@@ -1,4 +1,4 @@
-package ldf.compiler.ags;
+package ldf.compiler.semantics.ags;
 
 import com.google.common.collect.Iterators;
 import ldf.compiler.ast.bnf.BnfSyntax;

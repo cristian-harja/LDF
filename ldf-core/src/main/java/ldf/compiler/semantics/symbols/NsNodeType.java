@@ -24,7 +24,8 @@ public enum NsNodeType {
 
         PACKAGE.childrenMask = PACKAGE.mask | GRAMMAR.mask;
         GRAMMAR.childrenMask = CLASS.mask | NTERM.mask;
-        CLASS.childrenMask   = VARIABLE.mask;
+        CLASS.childrenMask = VARIABLE.mask;
+        NTERM.childrenMask = VARIABLE.mask;
 
         int clash =  PACKAGE.mask | CLASS.mask | GRAMMAR.mask;
         PACKAGE.clashingMask = clash;

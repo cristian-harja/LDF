@@ -450,6 +450,9 @@ public abstract class AstNode extends LocationAwareEntityWrapper
             private void findFirst() {
                 while (notMatching()) {
                     moveToNext();
+                    if (next == null) {
+                        return;
+                    }
                 }
                 initialized = true;
             }

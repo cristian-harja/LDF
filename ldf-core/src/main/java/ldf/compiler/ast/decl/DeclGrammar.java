@@ -1,6 +1,6 @@
 package ldf.compiler.ast.decl;
 
-import ldf.compiler.ags.AgsNodeUnion;
+import ldf.compiler.semantics.ags.AgsNodeUnion;
 import ldf.compiler.ast.AstIdentifier;
 import ldf.compiler.ast.Reference;
 import ldf.compiler.ast.bnf.BnfSyntax;

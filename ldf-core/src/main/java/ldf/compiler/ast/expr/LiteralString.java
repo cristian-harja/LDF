@@ -1,6 +1,6 @@
 package ldf.compiler.ast.expr;
 
-import ldf.compiler.ags.AgsNode;
+import ldf.compiler.semantics.ags.AgsNode;
 import ldf.compiler.ast.AstNode;
 import ldf.compiler.ast.bnf.BnfAtom;
 import ldf.compiler.ast.bnf.BnfAtomType;

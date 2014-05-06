@@ -1,4 +1,4 @@
-package ldf.compiler.ags;
+package ldf.compiler.semantics.ags;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.UnmodifiableIterator;
@@ -77,6 +77,9 @@ public class AgsNode implements Iterable<AgsNode> {
     private List<BnfQuantifier> quantifiers;
     private List<BnfQuantifier> readOnlyQuantifiers = emptyList();
 
+    // list of labels visible to this node (used when `atom` is an action)
+    Snapshot snapshot;
+
     public static enum Type {
         ITEM,
         CONCAT,
@@ -102,6 +105,14 @@ public class AgsNode implements Iterable<AgsNode> {
         this.last = last;
     }
 
+    public boolean hasLabels() {
+        return !readOnlyLabels.isEmpty();
+    }
+
+    public boolean hasQuantifiers() {
+        return !readOnlyQuantifiers.isEmpty();
+    }
+
     @Nonnull
     public Type getType() {
         return type;
@@ -121,6 +132,11 @@ public class AgsNode implements Iterable<AgsNode> {
     public List<BnfQuantifier> quantifiers() {
         return readOnlyQuantifiers;
     }
+
+    public void initSymbols() {
+        new AgsSymTable().initSymbols(this);
+    }
+
 
     /**
      * List this node's children (if any).
@@ -156,7 +172,7 @@ public class AgsNode implements Iterable<AgsNode> {
      * iterator}), but if not, it will return a singleton iterator for the
      * node itself.</p>
      * <p>This has the effect that, for example, if the user is expecting
-     * to see a union containing one contatenation (which in turn contains
+     * to see a union containing one concatenation (which in turn contains
      * a few items), there will be (physically) only one node representing
      * the concatenation, but this method will allow the user to see the
      * logical structure of the grammar specification (a union containing
@@ -289,7 +305,7 @@ public class AgsNode implements Iterable<AgsNode> {
                 }
 
                 /*
-                    If we're looking at an empty branch whithin a union,
+                    If we're looking at an empty branch within a union,
                     we'll save it for later (instead of adding it to the
                     list of children of the node being created).
 

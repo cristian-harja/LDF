@@ -1,6 +1,6 @@
 package ldf.compiler.ast.bnf;
 
-import ldf.compiler.ags.AgsNode;
+import ldf.compiler.semantics.ags.AgsNode;
 import ldf.compiler.ast.AstNode;
 
 import javax.annotation.Nonnull;

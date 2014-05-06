@@ -52,6 +52,11 @@ public final class LdfCompiler extends ContextImpl
                     this, parser.getAbstractSyntaxTree()
             );
 
+            // create `Scope` objects
+            Phase_InitBnfSymbol.initBnfSymbol(
+                    this, parser.getAbstractSyntaxTree()
+            );
+
             // catalog declared symbols which are visible from the global scope
             Phase_CollectDeclarations.collectSymbols(
                     this, parser.getAbstractSyntaxTree()

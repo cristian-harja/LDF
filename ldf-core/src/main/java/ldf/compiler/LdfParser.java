@@ -147,15 +147,16 @@ public final class LdfParser extends ContextImpl
         try {
             Symbol parseResult;
             parseResult = parser.parse(); // invoke the parser
-            astRoot = (AstSourceFile) parseResult.value;
-            if (syntaxTree) {
-                stRoot = (StNode) parseResult;
-            }
             if (parser.failed) {
                 reportError(
                         fileName, parser.unrecoveredErrorPosition,
                         i18n().getString("syntax.unrecovered_error")
                 );
+            } else {
+                astRoot = (AstSourceFile) parseResult.value;
+                if (syntaxTree) {
+                    stRoot = (StNode) parseResult;
+                }
             }
             success = !parser.failed;
         } catch (Exception e) {

@@ -9,4 +9,10 @@ grammar Ex1 : Alias.Demo.Ex2 {
 
 grammar Ex2 : Ex1, Ex1.B {
     class A {}
+
+    // multiple `nterm` declarations don't conflict
+    // also, `nterm`s don't clash with classes
+    nterm A;
+    nterm B;
+    nterm B;
 }
