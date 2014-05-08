@@ -65,6 +65,21 @@ public class ObjectType extends AggregateType {
         ObjectType result = new ObjectType();
         result.fields.putAll(fields);
         result.fields.putAll(objType.fields);
+
+        SortedSet<String> commonFields = new TreeSet<String>();
+        commonFields.addAll(fields.keySet());
+        commonFields.retainAll(objType.fields.keySet());
+
+        for (String key: commonFields) {
+            DataType t1 = this.fields.get(key);
+            DataType t2 = objType.fields.get(key);
+            DataType lub = t1.getLeastUpperBound(t2);
+            if (lub == NoType.INSTANCE) {
+                return NoType.INSTANCE;
+            }
+            result.fields.put(key, lub);
+        }
+
         return result;
     }
 

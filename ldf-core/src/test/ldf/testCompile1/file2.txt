@@ -1,14 +1,16 @@
 package Ex1;
 
 grammar Ex2 {
-    nterm A ::= x@(y@a z@b) x@(y@c) {@action};
+    nterm A ::= x@(y@"a" z@"b") x@(y@"c") {@action};
 
-    nterm B ::= x@a | x@(y@b) {@action};
+    nterm B ::= x@"a" | x@(y@"b") {@action}
+    where x : java.lang.Object ;
 
-    nterm C ::= x@a y@(z@b | z@c {@A1}) {@A2};
+    nterm C ::= x@"a" y@(z@"b" | z@"c" {@A1}) {@A2}
+    where y : java.lang.String ;
 
-    nterm D ::= (x@a y@b)+;
+    nterm D ::= (x@"a" y@"b")+;
 
-    nterm E ::= z@[x@a,y@b]+;
+    nterm E ::= z@[x@"a",y@"b"]+;
 
 }

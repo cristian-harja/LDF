@@ -3,7 +3,10 @@ package ldf.compiler.ast.decl;
 import ldf.compiler.ast.AstIdentifier;
 import ldf.compiler.ast.bnf.BnfSyntax;
 import ldf.compiler.ast.type.TypeExpression;
+import ldf.compiler.context.CompilerContext;
+import ldf.compiler.semantics.ags.AgsSymTable;
 import ldf.compiler.semantics.symbols.NsNodeType;
+import ldf.compiler.util.Util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,7 +24,7 @@ public final class DeclNonTerminal extends Declaration {
     @Nonnull
     private AstIdentifier id;
 
-    @Nonnull
+    @Nullable
     private TypeExpression type;
 
     @Nullable
@@ -29,6 +32,8 @@ public final class DeclNonTerminal extends Declaration {
 
     @Nullable
     private DeclWhereClause whereClause;
+
+    boolean initSymbolsCalled;
 
     /**
      * @param identifier name of the non-terminal
@@ -45,7 +50,7 @@ public final class DeclNonTerminal extends Declaration {
         this.type = type;
         this.syntax = syntax;
         this.whereClause = whereClause;
-        addAstChildren(identifier, syntax, whereClause);
+        addAstChildren(identifier, type, syntax, whereClause);
     }
 
     @Nullable
@@ -63,7 +68,7 @@ public final class DeclNonTerminal extends Declaration {
         return id;
     }
 
-    @Nonnull
+    @Nullable
     public TypeExpression getType() {
         return type;
     }
@@ -76,5 +81,11 @@ public final class DeclNonTerminal extends Declaration {
     @Override
     public NsNodeType getDeclaredSymbolType() {
         return NsNodeType.NTERM;
+    }
+
+    public void initSymbols(@Nonnull CompilerContext ctx) {
+        Util.assertSetOnce(initSymbolsCalled, "initSymbols");
+        initSymbolsCalled = true;
+        new AgsSymTable(ctx, this).initSymbols();
     }
 }

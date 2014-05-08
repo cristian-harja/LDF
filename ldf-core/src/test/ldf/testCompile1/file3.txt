@@ -1,0 +1,50 @@
+package Ex3;
+
+grammar TypeChecks {
+
+    class Ta {}
+    class Tb {}
+    class Tc : Tb {} // Tc is a subclass of Tb
+    class Td : Tc {} // Td is a subclass of Tc
+
+    nterm a : Ta;
+    nterm b : Tb;
+    nterm c : Tc;
+    nterm d : Td;
+
+    nterm X ::= x@a y@b z@c
+    where
+        x : Ta,
+        y : Tb,
+        z : Tc
+    ;
+
+    nterm X ::= x@a | x@b; // no least upper bound -> the error type
+
+    nterm X ::= x@c | x@d; // LUB(Tc, Td) = Tc (not Tb)
+
+    nterm X ::= x@( y@c z@d )
+    where
+        x   : { y : Tc, z : Td },
+        x.y : Ta,
+        x.z : Tb
+    ;
+
+    class Tx {
+        var y : Tb;
+        var z : Tb;
+    }
+
+    nterm X ::= x@( y@c z@d )
+    where
+        x   : Tx,
+        x.y : Tc,
+        x.z : Td
+    ;
+
+    nterm X ::= x@( y@c z@d )
+    where x : Tx;
+
+    nterm X ::= x@[y@a, z@b]+;
+
+}

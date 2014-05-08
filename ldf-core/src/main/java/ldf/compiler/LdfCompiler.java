@@ -52,11 +52,6 @@ public final class LdfCompiler extends ContextImpl
                     this, parser.getAbstractSyntaxTree()
             );
 
-            // create `Scope` objects
-            Phase_InitBnfSymbol.initBnfSymbol(
-                    this, parser.getAbstractSyntaxTree()
-            );
-
             // catalog declared symbols which are visible from the global scope
             Phase_CollectDeclarations.collectSymbols(
                     this, parser.getAbstractSyntaxTree()
@@ -73,8 +68,31 @@ public final class LdfCompiler extends ContextImpl
             );
         }
 
+        // resolve the remaining references in the code
+        for (LdfParser parser: parsedFiles.values()) {
+            Phase_ResolveReferences.resolveReferences(
+                    parser.getAbstractSyntaxTree()
+            );
+        }
+
         // report cyclic dependencies in grammars
-        Check_GrammarExtendsCycles.checkExtends(globalNS);
+        Check_ExtendsCycles.checkExtends(globalNS);
+
+        // resolve type references to `DataType` objects
+        for (LdfParser parser: parsedFiles.values()) {
+            Phase_InitTypes.initTypes(
+                    this, parser.getAbstractSyntaxTree()
+            );
+        }
+
+        // initialize BNF symbols and their types
+        for (LdfParser parser: parsedFiles.values()) {
+            Phase_InitBnfSymbol.initBnfSymbol(
+                    this, parser.getAbstractSyntaxTree()
+            );
+        }
+
+
 
     }
 

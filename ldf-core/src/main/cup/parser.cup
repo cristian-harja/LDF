@@ -195,7 +195,10 @@ string_contents_    // sequence of valid (and invalid) bits of a string
 
 decl_class
     ::= CLASS id:id LCURLY decl_list:decl RCURLY
-        {:  RESULT = new DeclClass(id, decl);   :}
+        {:  RESULT = new DeclClass(id, null, decl);   :}
+    |   CLASS id:id COLON expr_reference:superClass
+        LCURLY decl_list:decl RCURLY
+        {:  RESULT = new DeclClass(id, superClass, decl);   :}
     ;
 
 decl_grammar

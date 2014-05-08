@@ -1,8 +1,10 @@
 package ldf.compiler.semantics.ags;
 
 import ldf.compiler.ast.AstIdentifier;
+import ldf.compiler.context.ParserContext;
 import ldf.compiler.semantics.types.DataType;
 import ldf.compiler.semantics.types.NoType;
+import ldf.compiler.semantics.types.TypeEnv;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -149,12 +151,52 @@ public final class AgsSymbol {
      */
     @Nonnull
     public DataType getActualType() {
+        int mask = (deductedType != null) ? 1 : 0;
+        mask |= (expectedType != null) ? 2 : 0;
+        switch (mask) {
+            case 0:
+                actualType = NoType.INSTANCE;
+                break;
+            case 1:
+                actualType = deductedType;
+                break;
+            case 2:
+                actualType = expectedType;
+                break;
+            case 3:
+                assert expectedType != null;
+                assert deductedType != null;
+                if (!expectedType.isAssignableFrom(deductedType)) {
+                    ParserContext ctx = label.getParserContext();
+                    ctx.reportError(label, ctx.i18n().getString(
+                            "type.not_assignable"
+                    ), expectedType.toString(), deductedType.toString());
+                }
+                actualType = expectedType;
+                break;
+        }
+        assert actualType != null;
         return actualType;
     }
 
-    //
+    // for debugging
+    @Override
+    public String toString() {
+        DataType type = null;
+        if (actualType != null) {
+            type = actualType;
+        } else if (expectedType != null) {
+            type = expectedType;
+        } else if (deductedType != null) {
+            type = deductedType;
+        }
+        return label.getName() + " : " + type;
+    }
 
-    static AgsSymbol makeUnion(Collection<AgsSymbol> items) {
+    static AgsSymbol makeUnion(
+            TypeEnv typeEnv,
+            Collection<AgsSymbol> items
+    ) {
         AgsSymbol e = new AgsSymbol();
         if (!items.isEmpty()) {
             e.label = items.iterator().next().label;
@@ -163,6 +205,24 @@ public final class AgsSymbol {
         e.unionSymbolsReadOnly = Collections.unmodifiableList(
                 e.unionSymbols
         );
+        int size = e.unionSymbols.size();
+        List<DataType> types = new ArrayList<DataType>(size);
+
+        DataType dt = null;
+
+        for (AgsSymbol symbol : e.unionSymbols) {
+            types.add(symbol.getActualType());
+        }
+        e.deductedType = typeEnv.computeLeastUpperBound(types);
+        if (e.deductedType == NoType.INSTANCE) {
+            AstIdentifier label = e.label;
+            if (label != null) {
+                ParserContext ctx = label.getParserContext();
+                ctx.reportError(label, ctx.i18n().getString(
+                        "type.no_lub"
+                ), label.getName());
+            }
+        }
         return e;
     }
 
@@ -171,6 +231,7 @@ public final class AgsSymbol {
         s.label = original.label;
         s.originalSymbol = original.originalSymbol;
         s.iteratedSymbol = original;
+        s.deductedType = original.getActualType().getArrayType();
         return s;
     }
 

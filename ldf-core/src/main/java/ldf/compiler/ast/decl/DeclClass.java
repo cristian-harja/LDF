@@ -1,9 +1,12 @@
 package ldf.compiler.ast.decl;
 
 import ldf.compiler.ast.AstIdentifier;
+import ldf.compiler.ast.Reference;
+import ldf.compiler.semantics.symbols.NsNode;
 import ldf.compiler.semantics.symbols.NsNodeType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * <p>A {@code class} declaration (not in the sense of OOP).
@@ -19,16 +22,21 @@ public final class DeclClass extends Declaration {
     @Nonnull
     private AstIdentifier id;
 
+    @Nullable
+    private Reference superClass;
+
     @Nonnull
     private DeclList declList;
 
     public DeclClass(
             @Nonnull AstIdentifier id,
+            @Nullable Reference superClass,
             @Nonnull DeclList declList
     ) {
         this.id = id;
+        this.superClass = superClass;
         this.declList = declList;
-        addAstChildren(declList);
+        addAstChildren(superClass, declList);
     }
 
     @Nonnull
@@ -54,4 +62,19 @@ public final class DeclClass extends Declaration {
     public NsNodeType getDeclaredSymbolType() {
         return NsNodeType.CLASS;
     }
+
+    @Nullable
+    public Reference getSuperClass() {
+        return superClass;
+    }
+
+    @Nullable
+    public DeclClass getSuperClassDecl() {
+        if (superClass == null) return null;
+        NsNode n = superClass.getReferencedNsNode();
+        if (n == null) return null;
+        assert n.getType() == NsNodeType.CLASS;
+        return (DeclClass) n.getAstNode();
+    }
+
 }

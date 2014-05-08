@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
 
 /**
  * @author Cristian Harja
@@ -26,7 +27,7 @@ public abstract class DataType {
 
     public final boolean isAssignableFrom(DataType t) {
         DataType nt = NoType.INSTANCE;
-        return this == nt || t == nt || isAssignableFromImpl(t);
+        return this == nt || t.equals(nt) || isAssignableFromImpl(t);
     }
 
     protected boolean isAssignableFromImpl(DataType t) {
@@ -97,5 +98,75 @@ public abstract class DataType {
 
     public DataType getLeastUpperBound(DataType t) {
         return NoType.INSTANCE;
+    }
+
+    public static DataType tryComputeLeastUpperBound(
+            Collection<DataType> types
+    ) {
+        int numTypes = types.size();
+        int numArrays = 0;
+        int numObject = 0;
+        int numClass = 0;
+        int numForeign = 0;
+
+        for (DataType type : types) {
+            if (type.isArray()) {
+                numArrays++;
+            } else if (type instanceof ObjectType) {
+                numObject++;
+            } else if (type instanceof LdfClassType) {
+                numClass++;
+            } else {
+                numForeign++;
+            }
+        }
+
+        if (numArrays > 0) {
+            if (numArrays != numTypes) return NoType.INSTANCE;
+            DataType dt = null;
+            for (DataType t : types) {
+                if (dt == null) {
+                    dt = t;
+                } else {
+                    if (!dt.equals(t)) {
+                        return NoType.INSTANCE;
+                    }
+                }
+            }
+            return dt;
+        }
+
+        if (numObject > 0) {
+            if (numObject != numTypes) return NoType.INSTANCE;
+            DataType dt = null;
+            for (DataType t : types) {
+                if (dt == null) {
+                    dt = t;
+                } else {
+                    dt = dt.getLeastUpperBound(t);
+                }
+            }
+            return dt;
+        }
+
+        if (numClass > 0) {
+            if (numClass != numTypes) return NoType.INSTANCE;
+            DataType dt = null;
+            for (DataType t : types) {
+                if (dt == null) {
+                    dt = t;
+                } else {
+                    dt = dt.getLeastUpperBound(t);
+                }
+            }
+            return dt;
+        }
+
+        if (numForeign > 0) {
+            if (numForeign != numTypes) return NoType.INSTANCE;
+            // ... nothing to do here
+        }
+
+        return null;
     }
 }

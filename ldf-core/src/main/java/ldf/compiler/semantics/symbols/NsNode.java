@@ -4,10 +4,13 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.*;
 import ldf.compiler.ast.AstIdentifier;
 import ldf.compiler.ast.AstNode;
+import ldf.compiler.ast.Reference;
+import ldf.compiler.context.ParserContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
+import java.io.IOException;
 import java.util.*;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
@@ -55,6 +58,158 @@ public final class NsNode {
 
     public static NsNode initGlobalNS() {
         return new NsNode(NsNodeType.PACKAGE, null, null);
+    }
+
+    /**
+     * Resolves a {@link ldf.compiler.ast.Reference}, provided a
+     * {@link ldf.compiler.semantics.symbols.NsNode}.
+     */
+    public NsNode resolveSymbol(
+            boolean testResolve,
+            @Nonnull Reference ref,
+            @Nonnull Iterator<AstIdentifier> it,
+            @Nonnull NsNodeType[] pathTypes,
+            @Nonnull NsNodeType[] targetTypes,
+            boolean allowWildcard,
+            boolean[] out_usedWildcard
+    ) {
+        assertValidNsNodeTypes(pathTypes, targetTypes);
+
+        AstIdentifier id;
+        String idName;
+        boolean isLastId;
+        NsNodeType[] types;
+        Multimap<NsNodeType, NsNode> mm;
+        NsNode current;
+
+        current = this;
+
+        do {
+            id = it.next();
+            idName = id.getName();
+            isLastId = !it.hasNext();
+
+            if (idName.equals("_")) {
+                ParserContext ctx = id.getParserContext();
+                if (!allowWildcard) {
+                    if (!testResolve) {
+                        ctx.reportError(id, ctx.i18n().getString(
+                                "syntax.wildcard.not_allowed"
+                        ));
+                    }
+                    return null;
+                }
+                if (!isLastId) {
+                    if (!testResolve) {
+                        ctx.reportError(id, ctx.i18n().getString(
+                                "syntax.wildcard.misplaced"
+                        ));
+                    }
+                    return null;
+                }
+                out_usedWildcard[0] = true;
+
+                if (!testResolve) {
+                    ref.setReferencedNsNode(current);
+                }
+                return current;
+            }
+
+            types = isLastId ? targetTypes : pathTypes;
+            mm = current.getChildren().get(idName);
+
+            int matchingSymbols = 0;
+            NsNodeType matchingType = null;
+            for (NsNodeType t : types) {
+                if (mm.containsKey(t)) {
+                    ++matchingSymbols;
+                    matchingType = t;
+                }
+            }
+
+            // there should be exactly one symbol with the correct type
+            if (matchingSymbols != 1) {
+                // if not, report the error and quit
+                if (!testResolve) {
+                    reportSymbolsMismatch(
+                            ref, id, targetTypes,
+                            mm, matchingSymbols
+                    );
+                }
+                return null;
+            }
+
+            current = getOnlyElement(mm.get(matchingType));
+
+            if (isLastId) {
+                if (!testResolve) {
+                    ref.setReferencedNsNode(current);
+                }
+                return current;
+            }
+
+        } while (true);
+
+    }
+
+    static void reportSymbolsMismatch(
+            Reference ref,
+            AstIdentifier id,
+            NsNodeType[] targetTypes,
+            Multimap<NsNodeType, NsNode> foundSymbols,
+            int matchingSymbols
+    ) {
+        String idName = id.getName();
+        ParserContext ctx = ref.getParserContext();
+        if (foundSymbols.isEmpty()) {
+            ctx.reportError(id, ctx.i18n().getString(
+                    "symbol.unresolved"
+            ), idName, targetTypes, foundSymbols.keySet());
+        } else if (matchingSymbols > 1) {
+            ctx.reportError(id, ctx.i18n().getString(
+                    "symbol.ambiguous"
+            ), idName);
+        } else {
+            StringBuilder sb = new StringBuilder(32);
+
+            formatTypeList(sb, Arrays.asList(targetTypes));
+            String strTargetTypes = sb.toString();
+
+            formatTypeList(sb, foundSymbols.keySet());
+            String strFoundTypes = sb.toString();
+
+            ctx.reportError(id, ctx.i18n().getString(
+                    "reference.illegal.target"
+            ), idName, strTargetTypes, strFoundTypes);
+        }
+    }
+
+    private static void formatTypeList(
+            StringBuilder sb, Collection<NsNodeType> types
+    ) {
+        boolean first = true;
+        sb.setLength(0);
+        if (types.size() != 1) sb.append('{');
+        for(NsNodeType t : types) {
+            if (!first) {
+                sb.append(',');
+            }
+            first = false;
+            sb.append(t);
+        }
+        if (types.size() != 1) sb.append('}');
+    }
+
+    static void assertValidNsNodeTypes(
+            NsNodeType[] pathTypes,
+            NsNodeType[] targetTypes
+    ) {
+        if (pathTypes.length == 0) {
+            throw new IllegalArgumentException("Empty list `pathTypes`.");
+        }
+        if (targetTypes.length == 0) {
+            throw new IllegalArgumentException("Empty list `targetTypes`.");
+        }
     }
 
     public final NsNodeType getType() {
@@ -149,7 +304,6 @@ public final class NsNode {
 
         // create references between these objects
         result.astIdentifier = id;
-        id.setReferencedNsNode(result);
         id.setDeclaredNsNode(result);
 
         if (astNode != null) {
@@ -165,6 +319,7 @@ public final class NsNode {
             @Nonnull NsNodeType type,
             @Nonnull AstNode astNode
     ) {
+        String name = String.valueOf(readOnlyAnonChildren.size());
         NsNode result = new NsNode(type, this, name);
         if (anonChildren == null) {
             anonChildren = new ArrayList<NsNode>();
@@ -231,4 +386,11 @@ public final class NsNode {
         });
     }
 
+    public void format(Appendable out) throws IOException {
+        if (parent.name != null) {
+            parent.format(out);
+            out.append('.');
+        }
+        out.append(name);
+    }
 }

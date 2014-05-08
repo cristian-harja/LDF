@@ -1,6 +1,7 @@
 package ldf.compiler.phases;
 
 import ldf.compiler.ast.AstIdentifier;
+import ldf.compiler.ast.AstNode;
 import ldf.compiler.ast.AstSourceFile;
 import ldf.compiler.ast.Reference;
 import ldf.compiler.ast.decl.Declaration;
@@ -71,9 +72,15 @@ public final class Phase_CollectDeclarations {
                     ? parentDecl.getDeclaredNsNode()
                     : packageNode;
 
-            assert parentNsNode != null;
+            AstNode parent = decl.getAstParent();
 
-            parentNsNode.declareChild(id, t, decl);
+            assert parentNsNode != null;
+            assert parent != null;
+
+            parent.getScope().importOne(
+                    parentNsNode.declareChild(id, t, decl),
+                    id.getName()
+            );
 
         }
 

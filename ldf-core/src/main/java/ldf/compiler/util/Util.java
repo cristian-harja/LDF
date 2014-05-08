@@ -31,13 +31,19 @@ public final class Util {
     }
 
     public static void assertSetOnce(
-            Object currentValue, String functionName
+            boolean wasSet, String functionName
     ) throws IllegalStateException {
-        if (currentValue == null) return;
+        if (!wasSet) return;
         throw new IllegalStateException(
                 functionName + "() must only be called ONCE, " +
                         "upon object initialization"
         );
+    }
+
+    public static void assertSetOnce(
+            Object currentValue, String functionName
+    ) throws IllegalStateException {
+        assertSetOnce(currentValue != null, functionName);
     }
 
     /**

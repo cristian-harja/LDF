@@ -108,6 +108,7 @@ public final class DeclWhereClause extends AstNode {
         ) {
             this.label = label;
             this.type = type;
+            addAstChildren(label, type);
         }
 
         @Nonnull

@@ -3,7 +3,9 @@ package ldf.compiler.semantics.ags;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.UnmodifiableIterator;
 import ldf.compiler.ast.AstIdentifier;
+import ldf.compiler.ast.AstNode;
 import ldf.compiler.ast.bnf.*;
+import ldf.compiler.semantics.types.DataType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -69,6 +71,10 @@ public class AgsNode implements Iterable<AgsNode> {
     @Nullable
     private BnfAtom atom;
 
+    private AstNode astNode;
+
+    DataType dataType;
+
     // label(s) attached to this node
     private List<AstIdentifier> labels;
     private List<AstIdentifier> readOnlyLabels = emptyList();
@@ -79,6 +85,10 @@ public class AgsNode implements Iterable<AgsNode> {
 
     // list of labels visible to this node (used when `atom` is an action)
     Snapshot snapshot;
+
+    public AstNode getAstNode() {
+        return astNode;
+    }
 
     public static enum Type {
         ITEM,
@@ -93,6 +103,7 @@ public class AgsNode implements Iterable<AgsNode> {
     private AgsNode(@Nullable BnfAtom atom) {
         type = Type.ITEM;
         this.atom = atom;
+        this.astNode = (AstNode) atom;
     }
 
     private AgsNode(
@@ -132,11 +143,6 @@ public class AgsNode implements Iterable<AgsNode> {
     public List<BnfQuantifier> quantifiers() {
         return readOnlyQuantifiers;
     }
-
-    public void initSymbols() {
-        new AgsSymTable().initSymbols(this);
-    }
-
 
     /**
      * List this node's children (if any).
@@ -229,6 +235,7 @@ public class AgsNode implements Iterable<AgsNode> {
         if (item.getLabel() != null && !node.quantifiers().isEmpty()) {
             node = new AgsNode(Type.ITEM, node, node);
         }
+        node.astNode = item;
         node.addLabel(item.getLabel());
         node.addQuantifier(item.getQuantifier());
         return node;
@@ -256,7 +263,9 @@ public class AgsNode implements Iterable<AgsNode> {
      */
     @Nonnull
     public static AgsNode agsInit(@Nonnull BnfUnion item) {
-        return agsInit(item.getItems(), Type.UNION);
+        AgsNode node = agsInit(item.getItems(), Type.UNION);
+        node.astNode = item;
+        return node;
     }
 
     /**
@@ -264,7 +273,9 @@ public class AgsNode implements Iterable<AgsNode> {
      */
     @Nonnull
     public static AgsNode agsInit(@Nonnull BnfConcat item) {
-        return agsInit(item.getItems(), Type.CONCAT);
+        AgsNode node = agsInit(item.getItems(), Type.CONCAT);
+        node.astNode = item;
+        return node;
     }
 
     /**

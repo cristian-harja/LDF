@@ -1,7 +1,7 @@
 package ldf.compiler.phases;
 
 import ldf.compiler.ast.AstSourceFile;
-import ldf.compiler.ast.bnf.BnfSyntax;
+import ldf.compiler.ast.decl.DeclNonTerminal;
 import ldf.compiler.context.CompilerContext;
 
 import java.util.Iterator;
@@ -20,11 +20,12 @@ public final class Phase_InitBnfSymbol {
             AstSourceFile file
     ) {
 
-        Iterator<BnfSyntax> it = file.findAllOfType(BnfSyntax.class);
+        Iterator<DeclNonTerminal> it;
+        it = file.findAllOfType(DeclNonTerminal.class);
 
         while (it.hasNext()) {
-            BnfSyntax syntax = it.next();
-            syntax.getAgsRoot().initSymbols();
+            DeclNonTerminal nterm = it.next();
+            nterm.initSymbols(ctx);
         }
 
     }

@@ -189,7 +189,8 @@ public abstract class AstNode extends LocationAwareEntityWrapper
      *
      * @throws java.lang.IllegalStateException
      */
-    public final void setReferencedNsNode(NsNode referencedNsNode) {
+    public void setReferencedNsNode(NsNode referencedNsNode) {
+        Util.assertSetOnce(this.referencedNsNode, "setReferencedNsNode");
         this.referencedNsNode = referencedNsNode;
     }
 
@@ -205,7 +206,9 @@ public abstract class AstNode extends LocationAwareEntityWrapper
      *
      * @throws java.lang.IllegalStateException
      */
-    public final void setDeclaredNsNode(NsNode declaredNsNode) {
+    public void setDeclaredNsNode(NsNode declaredNsNode) {
+        Util.assertSetOnce(this.declaredNsNode, "setDeclaredNsNode");
+        setReferencedNsNode(declaredNsNode);
         this.declaredNsNode = declaredNsNode;
     }
 

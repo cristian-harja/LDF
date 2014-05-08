@@ -22,6 +22,10 @@ public final class JavaClassType extends DataType {
         this.clazz = cls;
     }
 
+    public Class<?> getWrappedClass() {
+        return clazz;
+    }
+
     @Override
     public boolean isAggregate() {
         return true;

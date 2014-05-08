@@ -4,10 +4,17 @@ import Ex1 => Alias;
 grammar Ex1 : Alias.Demo.Ex2 {
     class A {}
     class A {}
-    class B {}
+    class B {
+        var b;
+    }
+    class C : B {
+        var b;
+    }
+    class D : E { var x; }
+    class E : D { var x; }
 }
 
-grammar Ex2 : Ex1, Ex1.B {
+grammar Ex2 : Ex1, Ex1.B, _.Ex1 {
     class A {}
 
     // multiple `nterm` declarations don't conflict
