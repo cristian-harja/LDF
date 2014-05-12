@@ -85,6 +85,7 @@ public class AgsNode implements Iterable<AgsNode> {
 
     // list of labels visible to this node (used when `atom` is an action)
     Snapshot snapshot;
+    public boolean propagated;
 
     public AstNode getAstNode() {
         return astNode;
@@ -142,6 +143,14 @@ public class AgsNode implements Iterable<AgsNode> {
     @Nonnull
     public List<BnfQuantifier> quantifiers() {
         return readOnlyQuantifiers;
+    }
+
+    public Snapshot getSnapshot() {
+        return snapshot;
+    }
+
+    public boolean isPropagated() {
+        return propagated;
     }
 
     /**

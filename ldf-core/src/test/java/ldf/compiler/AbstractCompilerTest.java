@@ -1,5 +1,7 @@
 package ldf.compiler;
 
+import ldf.compiler.util.NaivePackratCompiler;
+
 import java.io.File;
 
 /**
@@ -26,6 +28,7 @@ public abstract class AbstractCompilerTest {
                 settings.addSourceFile(f);
             }
         }
+        settings.setParserGen(new NaivePackratCompiler());
         return new LdfCompiler(settings);
     }
 

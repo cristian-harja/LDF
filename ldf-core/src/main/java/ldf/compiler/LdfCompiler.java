@@ -6,6 +6,7 @@ import ldf.compiler.phases.*;
 import ldf.compiler.semantics.symbols.NsNode;
 import ldf.compiler.semantics.symbols.Scope;
 import ldf.compiler.semantics.types.TypeEnv;
+import ldf.compiler.util.ParserGeneratorBase;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.File;
@@ -28,11 +29,19 @@ public final class LdfCompiler extends ContextImpl
 
     final Map<File, LdfParser> parsedFiles;
 
+    private boolean attemptedCompile;
+    private boolean parsed;
+    private boolean analyzed;
+    private boolean success;
+
+    ParserGeneratorBase parserGen;
+
     public LdfCompiler(LdfCompilerSettings settings) throws Exception {
         sources = settings.sources;
         typeEnv = settings.typeEnv.newInstance();
         globalNS = NsNode.initGlobalNS();
         globalScope = new Scope();
+        parserGen = settings.parserGen;
 
         initLogger(
                 settings.locale,
@@ -43,7 +52,10 @@ public final class LdfCompiler extends ContextImpl
         parsedFiles = new TreeMap<File, LdfParser>();
     }
 
-    public void compileParsedFiles() {
+    public void analyzeParsedFiles() {
+        parseAllFiles();
+        if (analyzed) return;
+        analyzed = true;
 
         for (LdfParser parser: parsedFiles.values()) {
 
@@ -93,7 +105,20 @@ public final class LdfCompiler extends ContextImpl
         }
 
 
+        success = !getLogger().hasErrors();
+    }
 
+    public void generateParser(String grammarName) throws Exception {
+        analyzeParsedFiles();
+        if (!success) return;
+        if (attemptedCompile) return;
+        attemptedCompile = true;
+        if (parserGen == null) {
+            throw new IllegalArgumentException(
+                    "Parser generator not configured"
+            );
+        }
+        success = parserGen.compile(grammarName, this);
     }
 
     @Override
@@ -112,6 +137,8 @@ public final class LdfCompiler extends ContextImpl
     }
 
     public synchronized void parseAllFiles() {
+        if (parsed) return;
+        parsed = true;
         for (File f : sources) {
             if (f.isFile()) {
                 try {

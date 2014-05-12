@@ -22,6 +22,7 @@ import static java.text.MessageFormat.format;
  */
 public class CompilerLog {
 
+    private boolean hasErrors;
     private SortedSet<Entry> messages;
     private SortedSet<Entry> readOnlyMessages;
 
@@ -42,13 +43,11 @@ public class CompilerLog {
             x2 = (o2.pos == null) ? -1 : o2.pos.getOffsetL();
             if (x1 != x2) return x1 - x2;
 
-            if (x1 == -1) {
-                return 0;
+            if (x1 != -1) {
+                x1 = o1.pos.getOffsetR();
+                x2 = o2.pos.getOffsetR();
+                if (x1 != x2) return x1 - x2;
             }
-
-            x1 = o1.pos.getOffsetR();
-            x2 = o2.pos.getOffsetR();
-            if (x1 != x2) return x1 - x2;
 
             x1 = o1.hashCode();
             x2 = o2.hashCode();
@@ -83,10 +82,18 @@ public class CompilerLog {
         res.msgArgs = args;
 
         messages.add(res);
+
+        if (type == EntryType.ERROR) {
+            hasErrors = true;
+        }
     }
 
     public SortedSet<Entry> getMessages() {
         return readOnlyMessages;
+    }
+
+    public boolean hasErrors() {
+        return hasErrors;
     }
 
     private static void formatLocation(

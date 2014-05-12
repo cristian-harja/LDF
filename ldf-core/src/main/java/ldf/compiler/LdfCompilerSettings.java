@@ -2,6 +2,7 @@ package ldf.compiler;
 
 import ldf.compiler.semantics.types.TypeEnv;
 import ldf.compiler.targets.java.types.JavaTypeEnv;
+import ldf.compiler.util.ParserGeneratorBase;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,6 +22,9 @@ public class LdfCompilerSettings {
 
     @Nonnull
     ArrayList<File> sources = new ArrayList<File>();
+
+    @Nullable
+    ParserGeneratorBase parserGen;
 
     @Nonnull
     Class<? extends TypeEnv> typeEnv = DEFAULT_TYPE_ENV;
@@ -52,6 +56,10 @@ public class LdfCompilerSettings {
 
     public void setI18n(@Nullable ResourceBundle i18n) {
         this.i18n = i18n;
+    }
+
+    public void setParserGen(@Nonnull ParserGeneratorBase parserGen) {
+        this.parserGen = parserGen;
     }
 
 }

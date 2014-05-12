@@ -5,10 +5,7 @@ import ldf.compiler.ast.bnf.BnfSyntax;
 import ldf.compiler.ast.decl.DeclNonTerminal;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * <p>A special case of a {@link AgsNode.Type#UNION}.
@@ -51,7 +48,7 @@ import java.util.NoSuchElementException;
 public final class AgsNodeUnion extends AgsNode {
     private List<AgsNode> items = new ArrayList<AgsNode>();
 
-    public AgsNodeUnion(List<BnfSyntax> syntax) {
+    public AgsNodeUnion(Collection<BnfSyntax> syntax) {
         super(Type.UNION);
         for (BnfSyntax s : syntax) {
             // DeclNonTerminal#syntax is @Nullable, because

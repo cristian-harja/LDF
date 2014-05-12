@@ -297,7 +297,34 @@ public final class AgsSymTable {
             }
             if (node.hasLabels()) {
                 // nest labels
+                int numUnderscore = 0;
                 for (AstIdentifier label : node.labels()) {
+                    if (label.getName().equals("_")) {
+                        if (sf.hasActions) {
+                            ParserContext ctx = label.getParserContext();
+                            ctx.reportError(label, ctx.i18n().getString(
+                                    "nterm.underscore_beside_action"
+                            ));
+                        } else if (numUnderscore != 0) {
+                            ParserContext ctx = label.getParserContext();
+                            ctx.reportError(label, ctx.i18n().getString(
+                                    "nterm.multiple_underscore"
+                            ));
+                        }
+                        numUnderscore++;
+                    }
+                }
+                for (AstIdentifier label : node.labels()) {
+                    if (numUnderscore != 0) {
+                        if (!label.getName().equals("_")) {
+                            ParserContext ctx = label.getParserContext();
+                            ctx.reportError(label, ctx.i18n().getString(
+                                    "nterm.label_beside_underscore"
+                            ));
+                        } else {
+                            node.propagated = true;
+                        }
+                    }
                     AgsSymbol s = add(label, node, sf);
                     s.expectedType = expectedType;
                     s.getActualType();
@@ -360,12 +387,20 @@ public final class AgsSymTable {
     }
 
     private AgsSymbol add(AstIdentifier label, AgsNode node, StackFrame sf) {
+        AgsSymbol n = create(label, node, sf);
+        stack.peek().currentSymbols.put(label.getName(), n);
+        return n;
+    }
+
+    private AgsSymbol create(
+            AstIdentifier label, AgsNode node, StackFrame sf
+    ) {
         AgsSymbol e = new AgsSymbol();
         e.agsNode = node;
         e.label = label;
         e.originalSymbol = e;
         e.deductedType = node.dataType;
-        if (sf != null) {
+        if (!node.propagated && sf != null) {
             if (!sf.currentSymbols.isEmpty() && !sf.hasActions) {
                 e.nestedSymbols = new LinkedHashMap<String, AgsSymbol>(
                         sf.currentSymbols
@@ -398,10 +433,10 @@ public final class AgsSymTable {
             ), "LABEL", name);
         }
 
-        // add new label
-        top.currentSymbols.put(label.getName(), e);
         return e;
     }
+
+
 
 }
 

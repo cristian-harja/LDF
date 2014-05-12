@@ -1,0 +1,45 @@
+
+grammar Base {
+
+    nterm LETTER_LOWERCASE : java.lang.String
+        ::= _@'a' | _@'b' | _@'c' | _@'d' | _@'e' | _@'f' | _@'g' | _@'h'
+        |   _@'i' | _@'j' | _@'k' | _@'l' | _@'m' | _@'n' | _@'p' | _@'q'
+        |   _@'r' | _@'s' | _@'t' | _@'u' | _@'v' | _@'w' | _@'x' | _@'y'
+        |   _@'z'
+    ;
+
+    nterm LETTER_UPPERCASE : java.lang.String
+        ::= _@'A' | _@'B' | _@'C' | _@'D' | _@'E' | _@'F' | _@'G' | _@'H'
+        |   _@'I' | _@'J' | _@'K' | _@'L' | _@'M' | _@'N' | _@'P' | _@'Q'
+        |   _@'R' | _@'S' | _@'T' | _@'U' | _@'V' | _@'W' | _@'X' | _@'Y'
+        |   _@'Z'
+    ;
+
+    nterm DECIMAL_DIGIT : java.lang.String
+        ::= _@'0' | _@'1' | _@'2' | _@'3' | _@'4' | _@'5' | _@'6' | _@'7'
+        |   _@'8' | _@'9'
+    ;
+
+    nterm INT : java.lang.Integer
+        ::= d@DECIMAL_DIGIT+  {:
+            return parseInt(join(d));
+        :}
+    ;
+
+    nterm ID_START : java.lang.String
+        ::= _@LETTER_LOWERCASE | _@LETTER_UPPERCASE
+    ;
+
+    nterm ID_CONT : java.lang.String
+        ::= c@(_@ID_START | _@DECIMAL_DIGIT)+  {:
+            return join(c);
+        :}
+    ;
+
+    nterm ID : java.lang.String
+        ::= a@ID_START b@ID_CONT  {:
+            return a + b;
+        :}
+    ;
+
+}

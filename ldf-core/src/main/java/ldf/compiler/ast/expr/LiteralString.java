@@ -1,9 +1,9 @@
 package ldf.compiler.ast.expr;
 
-import ldf.compiler.semantics.ags.AgsNode;
 import ldf.compiler.ast.AstNode;
 import ldf.compiler.ast.bnf.BnfAtom;
 import ldf.compiler.ast.bnf.BnfAtomType;
+import ldf.compiler.semantics.ags.AgsNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -51,6 +51,14 @@ public final class LiteralString extends ExprLiteral
     @Nonnull
     public List<Fragment> getInvalidFragments() {
         return invalid;
+    }
+
+    public String getFullString() {
+        StringBuilder sb = new StringBuilder();
+        for (Fragment f : frags) {
+            sb.append(f.getString());
+        }
+        return sb.toString();
     }
 
     public boolean isCharLiteral() {

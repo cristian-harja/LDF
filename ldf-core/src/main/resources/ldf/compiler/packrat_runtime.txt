@@ -1,0 +1,74 @@
+
+class ParseResult {
+    Object semanticValue;
+    int nextIndex;
+
+    ParseResult(Object val, int index) {
+        semanticValue = val;
+        nextIndex = index;
+    }
+
+    boolean isError() {
+        return nextIndex == -1;
+    }
+
+}
+
+class PackratRuntime {
+
+    static ParseResult PARSE_ERROR = new ParseResult(null, -1);
+
+    ParseResult matchString(int index, String str) {
+        char c;
+        do {
+            c = input.charAt(index);
+        } while (c == ' ' || c == '\\n' || c == '\\t');
+
+        if (input.substring(index, str.length()).equals(str)) {
+            return new ParseResult(null, index + str.length());
+        } else {
+            return PARSE_ERROR;
+        }
+    }
+
+
+    protected String input;
+    public PackratRuntime (String input) { this.input = input; }
+
+    static ParseResult PARSE_ERROR = new ParseResult(null, -1);
+
+    ParseResult matchString(int index, String str) {
+        char c;
+        do {
+            c = input.charAt(index);
+        } while (c == ' ' || c == '\n' || c == '\t');
+        if (input.substring(index, str.length()).equals(str)) {
+            return new ParseResult(null, index + str.length());
+        } else {
+            return PARSE_ERROR;
+        }
+    }
+
+    Map<Integer, Map<String, ParseResult>> results;
+
+    protected ParseResult get(int index, String command) {
+        if (results == null) return null;
+        Map<String, ParseResult> map = results.get(index);
+        if (map == null) return null;
+        return map.get(command);
+    }
+
+    protected ParseResult put(int index, String command, int lastIndex) {
+        if (results == null) {
+            results = new LinkedHashMap<Integer, Map<String, ParseResult>>();
+        }
+        Map<String, ParseResult> map = results.get(index);
+        if (map == null) {
+            map = new LinkedHashMap<String, ParseResult>();
+            results.put(index, map);
+        }
+        ParseResult res = new ParseResult(null, lastIndex);
+        map.put(command, res);
+        return res;
+    }
+}

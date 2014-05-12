@@ -1,0 +1,13 @@
+
+grammar Robot {
+
+    nterm command
+        ::= "turn" ( "left" | "right" )
+        |   "move"
+        ;
+
+    nterm command_block
+        ::= "begin" command* "end"
+    ;
+
+}
